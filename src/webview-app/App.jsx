@@ -9,6 +9,7 @@ import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
 import { fromConnectParams } from './mapping/fromConnectParams.js'
 import { useEditorState } from './state/useEditorState.jsx'
+import { resetFlowLayout } from './actions/resetFlowLayout.js'
 
 const nodeTypes = {
   diagramNode: DiagramNode,
@@ -88,10 +89,14 @@ function AppInner() {
   }, [])
 
   const handleAutoLayout = React.useCallback(() => {
-    postToHost({
-      type: 'autoLayout',
+    resetFlowLayout({
+      setNodes,
+      setEdges,
+      flowNodes,
+      flowEdges,
+      postToHost,
     })
-  }, [])
+  }, [flowEdges, flowNodes, setEdges, setNodes])
 
   const handleConnect = React.useCallback((connection) => {
     if (!connection?.source || !connection?.target) {

@@ -1,3 +1,5 @@
+import { toNodeHandlePositions } from './toNodeHandlePositions.js'
+
 const DEFAULT_LAYOUT = {
   x: 10,
   y: 20,
@@ -11,6 +13,7 @@ const GROUP_PADDING_BOTTOM = 24
 export function toFlowNodes(graphOrNodes, layout) {
   const graphNodes = Array.isArray(graphOrNodes) ? graphOrNodes : graphOrNodes.nodes
   const graphGroups = Array.isArray(graphOrNodes) ? [] : graphOrNodes.groups ?? []
+  const handlePositions = toNodeHandlePositions(Array.isArray(graphOrNodes) ? 'LR' : graphOrNodes.direction)
   const diagramNodes = graphNodes.map((node) => {
     const nodeLayout = layout?.nodes?.[node.id] ?? DEFAULT_LAYOUT
 
@@ -24,6 +27,7 @@ export function toFlowNodes(graphOrNodes, layout) {
       },
       data: {
         label: node.label,
+        ...handlePositions,
       },
       style: {
         width: nodeLayout.w,

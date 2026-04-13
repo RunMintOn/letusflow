@@ -15,7 +15,7 @@ test('maps graph nodes and layout entries to XYFlow nodes', () => {
       type: 'diagramNode',
       className: 'diagram-flow-node',
       position: { x: 80, y: 120 },
-      data: { label: '开始' },
+      data: { label: '开始', targetPosition: 'left', sourcePosition: 'right' },
       style: { width: 140, height: 56 },
     },
   ])
@@ -33,7 +33,7 @@ test('maps graph nodes with default layout when a layout entry is missing', () =
       type: 'diagramNode',
       className: 'diagram-flow-node',
       position: { x: 10, y: 20 },
-      data: { label: '开始' },
+      data: { label: '开始', targetPosition: 'left', sourcePosition: 'right' },
       style: { width: 140, height: 56 },
     },
   ])
@@ -76,4 +76,21 @@ test('diagram nodes carry read-mode classes for Mermaid-like styling', () => {
 
   assert.equal(nodes[0].className, 'diagram-flow-group')
   assert.equal(nodes[1].className, 'diagram-flow-node')
+})
+
+test('diagram nodes use vertical handles for TD graphs', () => {
+  const nodes = toFlowNodes(
+    {
+      direction: 'TD',
+      groups: [],
+      nodes: [{ id: 'start', label: 'User Input' }],
+    },
+    { nodes: { start: { x: 80, y: 120, w: 132, h: 46 } } },
+  )
+
+  assert.deepEqual(nodes[0].data, {
+    label: 'User Input',
+    targetPosition: 'top',
+    sourcePosition: 'bottom',
+  })
 })

@@ -209,6 +209,14 @@ body {
   right: -5px;
 }
 
+.diagram-node .react-flow__handle-top {
+  top: -5px;
+}
+
+.diagram-node .react-flow__handle-bottom {
+  bottom: -5px;
+}
+
 .react-flow__edge-path,
 .react-flow__connection-path {
   stroke: var(--edge);
