@@ -1,5 +1,5 @@
 import React from 'react'
-import { Background, Controls, MiniMap, ReactFlow } from '@xyflow/react'
+import { Background, Controls, ReactFlow } from '@xyflow/react'
 
 export function FlowCanvas({
   nodes,
@@ -15,6 +15,7 @@ export function FlowCanvas({
     <div className="flow-canvas">
       <ReactFlow
         fitView
+        fitViewOptions={{ padding: 0.18 }}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
@@ -23,10 +24,10 @@ export function FlowCanvas({
         onConnect={onConnect}
         onNodeClick={onNodeClick}
         onNodeDragStop={onNodeDragStop}
+        proOptions={{ hideAttribution: true }}
       >
-        <MiniMap />
-        <Background />
-        <Controls />
+        <Background className="flow-background" gap={24} size={1} />
+        <Controls showInteractive={false} />
       </ReactFlow>
     </div>
   )
