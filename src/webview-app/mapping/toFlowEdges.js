@@ -21,7 +21,7 @@ const READ_EDGE_MARKER = {
   color: '#6f6f78',
 }
 
-export function toFlowEdges(graphEdges, layout, direction = 'LR') {
+export function toFlowEdges(graphEdges, layout, direction = 'LR', edgeRenderMode = 'straight') {
   const feedbackRoutes = toFeedbackRoutes(graphEdges, layout, direction)
 
   return graphEdges.map((edge) => {
@@ -41,7 +41,7 @@ export function toFlowEdges(graphEdges, layout, direction = 'LR') {
       source: edge.from,
       target: edge.to,
       label: edge.label,
-      type: isFeedback ? 'feedbackEdge' : 'straight',
+      type: isFeedback ? 'feedbackEdge' : edgeRenderMode,
       markerEnd: READ_EDGE_MARKER,
       style: isFeedback ? FEEDBACK_EDGE_STYLE : READ_EDGE_STYLE,
       labelBgPadding: [4, 2],

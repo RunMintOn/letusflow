@@ -9,16 +9,20 @@ const NODE_HORIZONTAL_PADDING = 42
 const DAGRE_RANK_SEP = 74
 const DAGRE_NODE_SEP = 46
 const DAGRE_MARGIN = 48
+const MIN_DAGRE_SPACING = 30
+const MAX_DAGRE_SPACING = 150
+const DEFAULT_DAGRE_SPACING = 100
 const DAGRE_FORWARD_EDGE_WEIGHT = 3
 const DAGRE_NEUTRAL_EDGE_WEIGHT = 1
 const DAGRE_EDGE_MINLEN = 1
 
-export function autoLayoutGraph(graph) {
+export function autoLayoutGraph(graph, options = {}) {
+  const spacing = toDagreSpacing(options)
   const dagreGraph = new dagre.graphlib.Graph({ multigraph: true })
   dagreGraph.setGraph({
     rankdir: graph.direction === 'TB' || graph.direction === 'TD' ? 'TB' : 'LR',
-    ranksep: DAGRE_RANK_SEP,
-    nodesep: DAGRE_NODE_SEP,
+    ranksep: spacing.ranksep,
+    nodesep: spacing.nodesep,
     marginx: DAGRE_MARGIN,
     marginy: DAGRE_MARGIN,
   })
@@ -85,4 +89,22 @@ export function toDagreEdgePriority(edge, nodeOrder) {
     weight: sourceOrder <= targetOrder ? DAGRE_FORWARD_EDGE_WEIGHT : DAGRE_NEUTRAL_EDGE_WEIGHT,
     minlen: DAGRE_EDGE_MINLEN,
   }
+}
+
+export function toDagreSpacing(options = {}) {
+  const spacingPercent = normalizeDagreSpacing(options.spacing)
+
+  return {
+    ranksep: Math.round(DAGRE_RANK_SEP * spacingPercent / 100),
+    nodesep: Math.round(DAGRE_NODE_SEP * spacingPercent / 100),
+  }
+}
+
+function normalizeDagreSpacing(value) {
+  const spacing = Number(value ?? DEFAULT_DAGRE_SPACING)
+  if (!Number.isFinite(spacing)) {
+    return DEFAULT_DAGRE_SPACING
+  }
+
+  return Math.max(MIN_DAGRE_SPACING, Math.min(MAX_DAGRE_SPACING, spacing))
 }

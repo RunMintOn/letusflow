@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {
   autoLayoutGraph,
   toDagreEdgePriority,
+  toDagreSpacing,
 } from '../src/model/layout.js'
 
 test('auto-layout places nodes by dependency depth for LR graphs', () => {
@@ -149,4 +150,34 @@ test('dagre edge priority stays neutral when an edge references unknown nodes', 
     toDagreEdgePriority({ from: 'start', to: 'missing' }, nodeOrder),
     { weight: 1, minlen: 1 },
   )
+})
+
+test('auto-layout keeps default spacing compatible with old calls', () => {
+  assert.deepEqual(toDagreSpacing(), { ranksep: 74, nodesep: 46 })
+})
+
+test('auto-layout scales dagre spacing from a percentage option', () => {
+  assert.deepEqual(toDagreSpacing({ spacing: 150 }), { ranksep: 111, nodesep: 69 })
+})
+
+test('auto-layout applies spacing options to node placement', () => {
+  const graph = {
+    direction: 'LR',
+    groups: [],
+    nodes: [
+      { id: 'start', label: 'Start' },
+      { id: 'done', label: 'Done' },
+    ],
+    edges: [{ from: 'start', to: 'done' }],
+  }
+  const compact = autoLayoutGraph(graph, { spacing: 30 })
+  const loose = autoLayoutGraph(graph, { spacing: 150 })
+
+  assert.ok(loose.nodes.done.x - loose.nodes.start.x > compact.nodes.done.x - compact.nodes.start.x)
+})
+
+test('auto-layout clamps invalid spacing options', () => {
+  assert.deepEqual(toDagreSpacing({ spacing: 10 }), { ranksep: 22, nodesep: 14 })
+  assert.deepEqual(toDagreSpacing({ spacing: 220 }), { ranksep: 111, nodesep: 69 })
+  assert.deepEqual(toDagreSpacing({ spacing: 'wide' }), { ranksep: 74, nodesep: 46 })
 })

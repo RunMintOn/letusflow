@@ -25,6 +25,17 @@ test('maps graph edges to stable readable XYFlow edges', () => {
   ])
 })
 
+test('maps graph edges to optional bezier XYFlow edges', () => {
+  const edges = toFlowEdges(
+    [{ from: 'start', to: 'review', label: '通过' }],
+    undefined,
+    'LR',
+    'default',
+  )
+
+  assert.equal(edges[0].type, 'default')
+})
+
 test('keeps edge ids stable when another edge is inserted before it', () => {
   const targetEdge = { from: 'review', to: 'done', label: '通过' }
   const before = toFlowEdges([targetEdge])
@@ -66,4 +77,20 @@ test('maps upstream edges to feedback smoothstep edges', () => {
     targetOffset: 24,
   })
   assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, opacity: 0.72 })
+})
+
+test('keeps feedback edges custom when optional bezier mode is selected', () => {
+  const edges = toFlowEdges(
+    [{ from: 'append_result', to: 'build_ctx', label: undefined }],
+    {
+      nodes: {
+        build_ctx: { x: 120, y: 120, w: 132, h: 46 },
+        append_result: { x: 80, y: 560, w: 132, h: 46 },
+      },
+    },
+    'TD',
+    'default',
+  )
+
+  assert.equal(edges[0].type, 'feedbackEdge')
 })
