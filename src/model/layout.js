@@ -141,12 +141,12 @@ function computeIncomingRank(graph) {
 }
 
 function computeNodeLevels(graph) {
-  const nodesById = new Map(graph.nodes.map((node) => [node.id, node]))
-  const indegreeById = new Map(graph.nodes.map((node) => [node.id, 0]))
   const outgoingById = new Map(graph.nodes.map((node) => [node.id, []]))
+  const indegreeById = new Map(graph.nodes.map((node) => [node.id, 0]))
+  const nodeIds = new Set(graph.nodes.map((node) => node.id))
 
   for (const edge of graph.edges) {
-    if (!nodesById.has(edge.from) || !nodesById.has(edge.to)) {
+    if (!nodeIds.has(edge.from) || !nodeIds.has(edge.to)) {
       continue
     }
 
@@ -154,35 +154,37 @@ function computeNodeLevels(graph) {
     indegreeById.set(edge.to, (indegreeById.get(edge.to) ?? 0) + 1)
   }
 
-  const queue = graph.nodes
+  const roots = graph.nodes
     .filter((node) => (indegreeById.get(node.id) ?? 0) === 0)
     .map((node) => node.id)
   const levelByNodeId = new Map(graph.nodes.map((node) => [node.id, 0]))
-  const visited = new Set()
 
-  while (queue.length > 0) {
-    const nodeId = queue.shift()
-    if (!nodeId) {
-      continue
-    }
-
-    visited.add(nodeId)
-    const currentLevel = levelByNodeId.get(nodeId) ?? 0
-
-    for (const targetId of outgoingById.get(nodeId) ?? []) {
-      levelByNodeId.set(targetId, Math.max(levelByNodeId.get(targetId) ?? 0, currentLevel + 1))
-      indegreeById.set(targetId, (indegreeById.get(targetId) ?? 0) - 1)
-      if ((indegreeById.get(targetId) ?? 0) === 0) {
-        queue.push(targetId)
-      }
-    }
-  }
-
-  for (const node of graph.nodes) {
-    if (!visited.has(node.id) && !levelByNodeId.has(node.id)) {
-      levelByNodeId.set(node.id, 0)
-    }
+  for (const rootId of roots.length > 0 ? roots : graph.nodes.map((node) => node.id)) {
+    assignLevelsFrom(rootId, outgoingById, levelByNodeId, new Set())
   }
 
   return levelByNodeId
+}
+
+function assignLevelsFrom(nodeId, outgoingById, levelByNodeId, ancestors) {
+  if (ancestors.has(nodeId)) {
+    return
+  }
+
+  const nextAncestors = new Set(ancestors)
+  nextAncestors.add(nodeId)
+  const currentLevel = levelByNodeId.get(nodeId) ?? 0
+
+  for (const targetId of outgoingById.get(nodeId) ?? []) {
+    if (nextAncestors.has(targetId)) {
+      continue
+    }
+
+    const nextLevel = currentLevel + 1
+    if (nextLevel > (levelByNodeId.get(targetId) ?? 0)) {
+      levelByNodeId.set(targetId, nextLevel)
+    }
+
+    assignLevelsFrom(targetId, outgoingById, levelByNodeId, nextAncestors)
+  }
 }

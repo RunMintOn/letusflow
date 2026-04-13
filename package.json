@@ -4,6 +4,7 @@
   "description": "VS Code MVP for a custom diagram DSL with a layout sidecar.",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "main": "./src/extension.cjs",
   "engines": {
     "vscode": "^1.90.0"

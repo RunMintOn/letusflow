@@ -19,3 +19,20 @@ test('maps graph nodes and layout entries to XYFlow nodes', () => {
     },
   ])
 })
+
+test('maps graph nodes with default layout when a layout entry is missing', () => {
+  const nodes = toFlowNodes(
+    [{ id: 'start', label: '开始' }],
+    { nodes: {} },
+  )
+
+  assert.deepEqual(nodes, [
+    {
+      id: 'start',
+      type: 'diagramNode',
+      position: { x: 10, y: 20 },
+      data: { label: '开始' },
+      style: { width: 140, height: 56 },
+    },
+  ])
+})
