@@ -12,7 +12,7 @@ test('maps graph edges to stable readable XYFlow edges', () => {
       source: 'start',
       target: 'review',
       label: '通过',
-      type: 'smoothstep',
+      type: 'straight',
       markerEnd: { type: 'arrowclosed', color: '#6f6f78' },
       style: { stroke: '#6f6f78', strokeWidth: 1.2 },
       labelBgPadding: [4, 2],

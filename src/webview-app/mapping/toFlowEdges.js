@@ -21,7 +21,7 @@ export function toFlowEdges(graphEdges) {
       source: edge.from,
       target: edge.to,
       label: edge.label,
-      type: 'smoothstep',
+      type: 'straight',
       markerEnd: READ_EDGE_MARKER,
       style: READ_EDGE_STYLE,
       labelBgPadding: [4, 2],

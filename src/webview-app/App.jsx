@@ -110,7 +110,7 @@ function AppInner() {
         {
           source: connection.source,
           target: connection.target,
-          type: 'smoothstep',
+          type: 'straight',
         },
         currentEdges,
       ),
