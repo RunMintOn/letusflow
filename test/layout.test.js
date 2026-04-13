@@ -1,7 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { autoLayoutGraph } from '../src/model/layout.js'
+import {
+  autoLayoutGraph,
+  toDagreEdgePriority,
+} from '../src/model/layout.js'
 
 test('auto-layout places nodes by dependency depth for LR graphs', () => {
   const next = autoLayoutGraph({
@@ -111,4 +114,39 @@ test('auto-layout keeps the complex runtime graph within a readable TD footprint
   assert.ok(maxX - minX <= 2200)
   assert.ok(maxY - minY <= 3000)
   assert.ok(maxY > minY)
+})
+
+test('dagre edge priority favors edges that follow declaration order', () => {
+  const nodeOrder = new Map([
+    ['start', 0],
+    ['work', 1],
+    ['retry', 2],
+  ])
+
+  assert.deepEqual(
+    toDagreEdgePriority({ from: 'start', to: 'work' }, nodeOrder),
+    { weight: 3, minlen: 1 },
+  )
+})
+
+test('dagre edge priority weakens edges that point back in declaration order', () => {
+  const nodeOrder = new Map([
+    ['start', 0],
+    ['work', 1],
+    ['retry', 2],
+  ])
+
+  assert.deepEqual(
+    toDagreEdgePriority({ from: 'retry', to: 'work' }, nodeOrder),
+    { weight: 1, minlen: 1 },
+  )
+})
+
+test('dagre edge priority stays neutral when an edge references unknown nodes', () => {
+  const nodeOrder = new Map([['start', 0]])
+
+  assert.deepEqual(
+    toDagreEdgePriority({ from: 'start', to: 'missing' }, nodeOrder),
+    { weight: 1, minlen: 1 },
+  )
 })

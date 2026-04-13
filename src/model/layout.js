@@ -9,6 +9,9 @@ const NODE_HORIZONTAL_PADDING = 42
 const DAGRE_RANK_SEP = 74
 const DAGRE_NODE_SEP = 46
 const DAGRE_MARGIN = 48
+const DAGRE_FORWARD_EDGE_WEIGHT = 3
+const DAGRE_NEUTRAL_EDGE_WEIGHT = 1
+const DAGRE_EDGE_MINLEN = 1
 
 export function autoLayoutGraph(graph) {
   const dagreGraph = new dagre.graphlib.Graph({ multigraph: true })
@@ -29,8 +32,15 @@ export function autoLayoutGraph(graph) {
     })
   }
 
+  const nodeOrder = new Map(graph.nodes.map((node, index) => [node.id, index]))
+
   graph.edges.forEach((edge, index) => {
-    dagreGraph.setEdge(edge.from, edge.to, {}, `${edge.from}->${edge.to}#${index}`)
+    dagreGraph.setEdge(
+      edge.from,
+      edge.to,
+      toDagreEdgePriority(edge, nodeOrder),
+      `${edge.from}->${edge.to}#${index}`,
+    )
   })
 
   dagre.layout(dagreGraph)
@@ -57,5 +67,22 @@ function getNodeDimensions(node) {
       Math.min(MAX_NODE_WIDTH, node.label.length * LABEL_CHARACTER_WIDTH + NODE_HORIZONTAL_PADDING),
     ),
     h: node.type === 'decision' ? DECISION_NODE_HEIGHT : DEFAULT_NODE_HEIGHT,
+  }
+}
+
+export function toDagreEdgePriority(edge, nodeOrder) {
+  const sourceOrder = nodeOrder.get(edge.from)
+  const targetOrder = nodeOrder.get(edge.to)
+
+  if (sourceOrder === undefined || targetOrder === undefined) {
+    return {
+      weight: DAGRE_NEUTRAL_EDGE_WEIGHT,
+      minlen: DAGRE_EDGE_MINLEN,
+    }
+  }
+
+  return {
+    weight: sourceOrder <= targetOrder ? DAGRE_FORWARD_EDGE_WEIGHT : DAGRE_NEUTRAL_EDGE_WEIGHT,
+    minlen: DAGRE_EDGE_MINLEN,
   }
 }
