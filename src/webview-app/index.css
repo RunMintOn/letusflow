@@ -198,6 +198,30 @@ body {
   overflow-wrap: anywhere;
 }
 
+.diagram-node__successor {
+  position: absolute;
+  right: -26px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--node-stroke-strong);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--node-stroke-strong);
+  font-size: 15px;
+  line-height: 18px;
+  padding: 0;
+}
+
+.diagram-node__successor--bottom {
+  right: auto;
+  top: auto;
+  left: 50%;
+  bottom: -26px;
+  transform: translateX(-50%);
+}
+
 .react-flow__node.selected .diagram-node {
   border-color: var(--node-stroke-strong);
   box-shadow: 0 0 0 2px rgba(158, 142, 241, 0.14);

@@ -48,6 +48,10 @@ async function openPreview() {
     { createNode },
     { createEdge },
     { generateNodeId },
+    { deleteNode },
+    { deleteEdge },
+    { renameEdgeLabel },
+    { createSuccessorNode },
   ] = await Promise.all([
     loadModule('./extension-helpers/createWebviewDocumentModel.js'),
     loadModule('./model/renameNodeLabel.js'),
@@ -59,6 +63,10 @@ async function openPreview() {
     loadModule('./model/createNode.js'),
     loadModule('./model/createEdge.js'),
     loadModule('./model/generateNodeId.js'),
+    loadModule('./model/deleteNode.js'),
+    loadModule('./model/deleteEdge.js'),
+    loadModule('./model/renameEdgeLabel.js'),
+    loadModule('./model/createSuccessorNode.js'),
   ])
 
   const documentModel = await loadDiagramDocument(fsLike, sourcePath)
@@ -127,9 +135,71 @@ async function openPreview() {
         return
       }
 
+      if (message?.type === 'createSuccessorNode' && message.nodeId) {
+        if (!documentModel.graph.nodes.some((node) => node.id === message.nodeId)) {
+          postHostDebug(panel, `createSuccessorNode ignored: missing node ${message.nodeId}`)
+          return
+        }
+
+        const label = typeof message.label === 'string' && message.label.trim()
+          ? message.label.trim()
+          : '新节点'
+        const nodeId = generateNodeId(documentModel.graph.nodes, 'node')
+
+        documentModel.graph = createSuccessorNode(documentModel.graph, message.nodeId, { id: nodeId, label })
+        documentModel.layout = autoLayoutGraph(documentModel.graph)
+
+        const mode = await persistGraph()
+        postHostDebug(panel, `createSuccessorNode saved via ${mode}: ${message.nodeId} -> ${nodeId}`)
+        await rerender()
+        return
+      }
+
       if (message?.type === 'autoLayout') {
         documentModel.layout = autoLayoutGraph(documentModel.graph)
         postHostDebug(panel, 'autoLayout applied')
+        await rerender()
+        return
+      }
+
+      if (message?.type === 'deleteNode' && message.nodeId) {
+        documentModel.graph = deleteNode(documentModel.graph, message.nodeId)
+        documentModel.layout = autoLayoutGraph(documentModel.graph)
+
+        const mode = await persistGraph()
+        postHostDebug(panel, `deleteNode saved via ${mode}: ${message.nodeId}`)
+        await rerender()
+        return
+      }
+
+      if (message?.type === 'deleteEdge' && message.edge) {
+        documentModel.graph = deleteEdge(documentModel.graph, message.edge)
+        documentModel.layout = autoLayoutGraph(documentModel.graph)
+
+        const mode = await persistGraph()
+        postHostDebug(panel, `deleteEdge saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
+        await rerender()
+        return
+      }
+
+      if (message?.type === 'renameEdgeLabel' && message.edge) {
+        const nextLabel = typeof message.label === 'string' ? message.label.trim() : ''
+        const matchingNextLabelCount = documentModel.graph.edges.filter((edge) =>
+          edge.from === message.edge.from
+          && edge.to === message.edge.to
+          && (edge.label ?? '') === nextLabel
+          && (edge.style ?? '') === (message.edge.style ?? ''),
+        ).length
+        const keepsCurrentLabel = (message.edge.label ?? '') === nextLabel
+        const duplicate = keepsCurrentLabel ? matchingNextLabelCount > 1 : matchingNextLabelCount > 0
+        if (duplicate) {
+          postHostDebug(panel, `renameEdgeLabel ignored: duplicate ${message.edge.from} -> ${message.edge.to}`)
+          return
+        }
+
+        documentModel.graph = renameEdgeLabel(documentModel.graph, message.edge, nextLabel)
+        const mode = await persistGraph()
+        postHostDebug(panel, `renameEdgeLabel saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
         await rerender()
         return
       }

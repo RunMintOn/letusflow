@@ -11,6 +11,8 @@ import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
 import { fromConnectParams } from './mapping/fromConnectParams.js'
 import { useEditorState } from './state/useEditorState.jsx'
 import { resetFlowLayout } from './actions/resetFlowLayout.js'
+import { deleteSelectedElement } from './actions/deleteSelectedElement.js'
+import { withNodeActions } from './actions/withNodeActions.js'
 
 const nodeTypes = {
   diagramNode: DiagramNode,
@@ -27,7 +29,7 @@ function AppInner() {
   const { documentModel, flowNodes, flowEdges } = useEditorState(initialDocument)
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges)
-  const [selectedNodeId, setSelectedNodeId] = React.useState(null)
+  const [selectedElement, setSelectedElement] = React.useState(null)
   const [isInspectorCollapsed, setIsInspectorCollapsed] = React.useState(false)
 
   React.useEffect(() => {
@@ -48,23 +50,44 @@ function AppInner() {
   }, [flowEdges, setEdges])
 
   const selectedNode = React.useMemo(
-    () => nodes.find((node) => node.id === selectedNodeId) ?? null,
-    [nodes, selectedNodeId],
+    () => selectedElement?.type === 'node'
+      ? nodes.find((node) => node.id === selectedElement.id) ?? null
+      : null,
+    [nodes, selectedElement],
+  )
+
+  const selectedEdge = React.useMemo(
+    () => selectedElement?.type === 'edge'
+      ? edges.find((edge) => edge.id === selectedElement.id) ?? null
+      : null,
+    [edges, selectedElement],
   )
 
   const handleNodeClick = React.useCallback((_event, node) => {
-    setSelectedNodeId(node.id)
+    setSelectedElement({ type: 'node', id: node.id })
+  }, [])
+
+  const handleEdgeClick = React.useCallback((_event, edge) => {
+    setSelectedElement({
+      type: 'edge',
+      id: edge.id,
+      edgeRef: edge.data.edgeRef,
+    })
+  }, [])
+
+  const handlePaneClick = React.useCallback(() => {
+    setSelectedElement(null)
   }, [])
 
   const handleRenameNode = React.useCallback((nextLabel) => {
     const trimmedLabel = nextLabel.trim()
-    if (!selectedNodeId || !trimmedLabel) {
+    if (selectedElement?.type !== 'node' || !trimmedLabel) {
       return
     }
 
     setNodes((currentNodes) =>
       currentNodes.map((node) =>
-        node.id === selectedNodeId
+        node.id === selectedElement.id
           ? {
               ...node,
               data: {
@@ -78,14 +101,83 @@ function AppInner() {
 
     postToHost({
       type: 'renameNode',
-      nodeId: selectedNodeId,
+      nodeId: selectedElement.id,
       label: trimmedLabel,
     })
-  }, [selectedNodeId, setNodes])
+  }, [selectedElement, setNodes])
+
+  const handleRenameEdgeLabel = React.useCallback((nextLabel) => {
+    if (selectedElement?.type !== 'edge') {
+      return
+    }
+
+    const trimmedLabel = nextLabel.trim()
+    const edgeRef = selectedElement.edgeRef
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) =>
+        edge.id === selectedElement.id
+          ? {
+              ...edge,
+              label: trimmedLabel || undefined,
+              data: {
+                ...edge.data,
+                edgeRef: {
+                  ...edgeRef,
+                  label: trimmedLabel || undefined,
+                },
+              },
+            }
+          : edge,
+      ),
+    )
+    setSelectedElement((current) =>
+      current?.type === 'edge'
+        ? {
+            ...current,
+            edgeRef: {
+              ...edgeRef,
+              label: trimmedLabel || undefined,
+            },
+          }
+        : current,
+    )
+
+    postToHost({
+      type: 'renameEdgeLabel',
+      edge: edgeRef,
+      label: trimmedLabel,
+    })
+  }, [selectedElement, setEdges])
+
+  React.useEffect(() => {
+    const handleKeyDown = (event) => {
+      const tagName = event.target?.tagName?.toLowerCase()
+      if (tagName === 'input' || tagName === 'textarea') {
+        return
+      }
+      if (event.key !== 'Delete' && event.key !== 'Backspace') {
+        return
+      }
+
+      event.preventDefault()
+      deleteSelectedElement({ selectedElement, postToHost })
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedElement])
 
   const handleCreateNode = React.useCallback(() => {
     postToHost({
       type: 'createNode',
+      label: '新节点',
+    })
+  }, [])
+
+  const handleCreateSuccessorNode = React.useCallback((nodeId) => {
+    postToHost({
+      type: 'createSuccessorNode',
+      nodeId,
       label: '新节点',
     })
   }, [])
@@ -132,6 +224,11 @@ function AppInner() {
     )
   }, [setNodes])
 
+  const interactiveNodes = React.useMemo(
+    () => withNodeActions(nodes, { onCreateSuccessor: handleCreateSuccessorNode }),
+    [handleCreateSuccessorNode, nodes],
+  )
+
   return (
     <main className="app-shell">
       <TopToolbar
@@ -141,18 +238,22 @@ function AppInner() {
       />
       <section className={toInspectorLayoutClass(isInspectorCollapsed)}>
         <FlowCanvas
-          nodes={nodes}
+          nodes={interactiveNodes}
           edges={edges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={handleConnect}
           onNodeClick={handleNodeClick}
+          onEdgeClick={handleEdgeClick}
+          onPaneClick={handlePaneClick}
           onNodeDragStop={handleNodeDragStop}
           nodeTypes={nodeTypes}
         />
         <InspectorPanel
           selectedNode={selectedNode}
+          selectedEdge={selectedEdge}
           onRenameNode={handleRenameNode}
+          onRenameEdgeLabel={handleRenameEdgeLabel}
           isCollapsed={isInspectorCollapsed}
           onToggleCollapsed={() => setIsInspectorCollapsed((current) => !current)}
         />

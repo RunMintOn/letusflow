@@ -16,6 +16,15 @@ const READ_EDGE_MARKER = {
 
 export function toFlowEdges(graphEdges) {
   return graphEdges.map((edge) => {
+    const edgeRef = {
+      from: edge.from,
+      to: edge.to,
+      label: edge.label,
+    }
+    if (edge.style) {
+      edgeRef.style = edge.style
+    }
+
     const flowEdge = {
       id: `${edge.from}->${edge.to}#${edge.label ?? ''}`,
       source: edge.from,
@@ -27,6 +36,9 @@ export function toFlowEdges(graphEdges) {
       labelBgPadding: [4, 2],
       labelBgBorderRadius: 2,
       labelStyle: READ_EDGE_LABEL_STYLE,
+      data: {
+        edgeRef,
+      },
     }
 
     if (edge.style === 'dashed') {

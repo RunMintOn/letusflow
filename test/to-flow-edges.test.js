@@ -18,6 +18,9 @@ test('maps graph edges to stable readable XYFlow edges', () => {
       labelBgPadding: [4, 2],
       labelBgBorderRadius: 2,
       labelStyle: { fill: '#55555f', fontSize: 11, fontWeight: 400 },
+      data: {
+        edgeRef: { from: 'start', to: 'review', label: '通过' },
+      },
     },
   ])
 })
