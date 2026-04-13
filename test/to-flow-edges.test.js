@@ -57,8 +57,13 @@ test('maps upstream edges to feedback smoothstep edges', () => {
     'TD',
   )
 
-  assert.equal(edges[0].type, 'smoothstep')
+  assert.equal(edges[0].type, 'feedbackEdge')
   assert.equal(edges[0].className, 'diagram-flow-edge--feedback')
-  assert.deepEqual(edges[0].pathOptions, { borderRadius: 12, offset: 48 })
+  assert.deepEqual(edges[0].data.feedbackRoute, {
+    direction: 'TD',
+    laneX: 32,
+    sourceOffset: 24,
+    targetOffset: 24,
+  })
   assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, opacity: 0.72 })
 })

@@ -5,6 +5,7 @@ import { FlowCanvas } from './components/FlowCanvas.jsx'
 import { TopToolbar } from './components/TopToolbar.jsx'
 import { InspectorPanel } from './components/InspectorPanel.jsx'
 import { toInspectorLayoutClass } from './components/inspectorLayout.js'
+import { FeedbackEdge } from './components/edges/FeedbackEdge.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
 import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
@@ -17,6 +18,10 @@ import { withNodeActions } from './actions/withNodeActions.js'
 const nodeTypes = {
   diagramNode: DiagramNode,
   groupNode: GroupNode,
+}
+
+const edgeTypes = {
+  feedbackEdge: FeedbackEdge,
 }
 
 function AppInner() {
@@ -248,6 +253,7 @@ function AppInner() {
           onPaneClick={handlePaneClick}
           onNodeDragStop={handleNodeDragStop}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
         />
         <InspectorPanel
           selectedNode={selectedNode}

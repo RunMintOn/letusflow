@@ -12,6 +12,7 @@ export function FlowCanvas({
   onPaneClick,
   onNodeDragStop,
   nodeTypes,
+  edgeTypes,
 }) {
   return (
     <div className="flow-canvas">
@@ -21,6 +22,7 @@ export function FlowCanvas({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
