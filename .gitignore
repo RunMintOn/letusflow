@@ -1,6 +1,7 @@
 .codex
 .git.superpowers-backup/
 superpowers/
+.worktrees/
 node_modules/
 dist/
 *.png
