@@ -1,67 +1,101 @@
-# Diagram Editor MVP
+# LetusFlow
 
-## 运行
+一个用于编写和预览流程图的轻量级 VS Code 插件。
 
-1. 在 VS Code 打开这个项目目录。
-2. 运行 `npm install`。
-3. 运行 `npm run build`。
-4. 打开 `Run and Debug`，选择 `Run Diagram Editor MVP`。
-5. 按 `F5` 打开 Extension Host 窗口。
-6. 在新窗口里打开 `example.flow`。
-7. 执行命令 `Diagram Editor: Open Preview`。
+使用 `.flow` 声明式语法描述图结构，自动计算布局并实时预览，无需手动拖拽排布节点。
 
-## 当前可验证能力
+---
 
-- 读取 `.flow` DSL 并渲染到 Webview
-- 使用 dagre 自动生成流程图布局
-- 拖拽节点做临时查看调整，不写回磁盘
-- 在右侧属性面板里修改节点文字并写回 `.flow`
-- 点击 `新增节点`
-- 直接从一个节点连到另一个节点
-- 点击 `整理布局` 恢复算法布局
+## 特性
 
-复杂度验收样例：
+- **简洁的 DSL** — 4 个关键字（`dir` / `group` / `node` / `edge`），5 分钟上手
+- **自动布局** — 基于 Dagre 算法，生成清晰的有向图排版
+- **实时预览** — 在 VS Code 内打开 Webview 预览，所见即所得
+- **双向编辑** — 在属性面板修改标签或拖拽节点，变更写回 `.flow` 源文件
+- **间距调节** — 工具栏滑条实时调整图密度，无需修改源码
+- **反馈边外侧路由** — 回环连线自动绕行主图，避免遮挡
 
-```text
-complex-runtime.flow
+---
+
+## 快速开始
+
+### 安装
+
+```bash
+npm install
+npm run build
 ```
 
-## 视觉验收目标
+### 运行
 
-`complex-runtime.flow` 是第一阶段视觉验收样例。它应该和 `mermaid例图.md` 的 Mermaid 渲染结果对比，但不做像素级复刻。
+1. 在 VS Code 中打开本项目目录
+2. 按 `F5` 启动 Extension Host
+3. 在新窗口中打开 `example.flow` 或任意 `.flow` 文件
+4. 执行命令 `Diagram Editor: Open Preview`
 
-验收点：
+---
 
-- 图能正常打开，不出现空白 Webview。
-- 第一眼是自上而下的流程图，不是编辑器调试画布。
-- 默认连接点隐藏，只在 hover 或选中时出现。
-- 连线比节点更轻，并且箭头方向清楚。
-- 连线标签可读，但不抢占视觉主体。
-- `Prompt Assembly` 显示为轻量分组边界。
-- 整体密度足够通过缩放和平移查看，不再像一屏只有少量节点的松散图。
+## .flow 语法速览
 
-## 文件模型
+```flow
+dir TD                      # 布局方向：LR(默认) | TD/TB
 
-```text
-example.flow
-```
-
-- `.flow` 保存语义结构
-- 节点坐标由 dagre 在打开文件或整理布局时生成
-- `.layout.json` 不再作为真数据源；旧文件可以忽略或删除
-
-## DSL 示例
-
-```text
-dir LR
+group tools "工具调用"       # 分组声明
 
 node start "开始"
-node review "审批"
-node revise "补充信息"
-node done "完成"
+node decision "需要工具？" type=decision
+node call "调用工具" in tools
+node end "结束"
 
-edge start -> review
-edge review -> done "通过"
-edge review -> revise "驳回"
-edge revise -> review
+edge start -> decision
+edge decision -> call "是"
+edge decision -> end "否"
+edge call -> decision dashed
 ```
+
+**关键字一览：**
+
+| 关键字 | 作用 |
+|--------|------|
+| `dir LR\|TD\|TB` | 设置布局方向 |
+| `group <id> "标题"` | 声明分组 |
+| `node <id> "标签" [in <组>] [type=decision]` | 定义节点 |
+| `edge <起点> -> <终点> ["标签"] [dashed]` | 定义连线 |
+
+完整语法参考 → [`docs/flow-syntax.md`](docs/flow-syntax.md)
+
+---
+
+## 截图
+
+> 在预览面板中，拖拽节点仅临时调整视图；点击 **整理布局** 恢复算法排版。
+
+---
+
+## 技术栈
+
+| 层级 | 技术 |
+|------|------|
+| 解析器 | 手写正则 + 词法分析 |
+| 布局引擎 | [dagre](https://github.com/dagrejs/dagre) |
+| 渲染层 | [@xyflow/react](https://reactflow.dev/) + SVG |
+| 构建 | esbuild |
+| 宿主 | VS Code Extension API |
+
+---
+
+## 开发
+
+```bash
+# 构建 webview 产物
+npm run build
+
+# 运行测试
+npm test
+```
+
+---
+
+## 协议
+
+MIT
