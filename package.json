@@ -1,0 +1,28 @@
+{
+  "name": "diagram-editor-mvp",
+  "displayName": "Diagram Editor MVP",
+  "description": "VS Code MVP for a custom diagram DSL with a layout sidecar.",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/extension.cjs",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:diagramEditor.openPreview"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "diagramEditor.openPreview",
+        "title": "Diagram Editor: Open Preview"
+      }
+    ]
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  }
+}
