@@ -12,7 +12,7 @@ export function TopToolbar({ sourcePath, onCreateNode, onAutoLayout }) {
           新增节点
         </button>
         <button type="button" onClick={onAutoLayout} disabled={!onAutoLayout}>
-          自动布局
+          整理布局
         </button>
       </div>
     </header>

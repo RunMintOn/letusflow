@@ -114,16 +114,14 @@ function AppInner() {
   }, [setEdges])
 
   const handleNodeDragStop = React.useCallback((_event, node) => {
-    postToHost({
-      type: 'moveNodes',
-      nodes: [
-        {
-          id: node.id,
-          position: node.position,
-        },
-      ],
-    })
-  }, [])
+    setNodes((currentNodes) =>
+      currentNodes.map((currentNode) =>
+        currentNode.id === node.id
+          ? { ...currentNode, position: node.position }
+          : currentNode,
+      ),
+    )
+  }, [setNodes])
 
   return (
     <main className="app-shell">

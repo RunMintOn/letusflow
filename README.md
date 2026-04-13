@@ -13,20 +13,22 @@
 ## 当前可验证能力
 
 - 读取 `.flow` DSL 并渲染到 Webview
-- 拖拽节点并写回 `.flow.layout.json`
+- 使用 dagre 自动生成流程图布局
+- 拖拽节点做临时查看调整，不写回磁盘
 - 在右侧属性面板里修改节点文字并写回 `.flow`
 - 点击 `新增节点`
 - 直接从一个节点连到另一个节点
+- 点击 `整理布局` 恢复算法布局
 
 ## 文件模型
 
 ```text
 example.flow
-example.flow.layout.json
 ```
 
 - `.flow` 保存语义结构
-- `.flow.layout.json` 保存节点坐标和尺寸
+- 节点坐标由 dagre 在打开文件或整理布局时生成
+- `.layout.json` 不再作为真数据源；旧文件可以忽略或删除
 
 ## DSL 示例
 

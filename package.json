@@ -1,7 +1,7 @@
 {
   "name": "diagram-editor-mvp",
   "displayName": "Diagram Editor MVP",
-  "description": "VS Code MVP for a custom diagram DSL with a layout sidecar.",
+  "description": "VS Code MVP for a custom diagram DSL with algorithmic layout.",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -30,6 +30,7 @@
   },
   "dependencies": {
     "@xyflow/react": "^12.8.0",
+    "dagre": "^0.8.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

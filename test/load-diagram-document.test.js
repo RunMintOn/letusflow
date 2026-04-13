@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 
 import { loadDiagramDocument } from '../src/workspace/loadDiagramDocument.js'
 
-test('loads diagram source and layout into one document model', async () => {
+test('loads diagram source and derives layout from graph instead of old sidecar positions', async () => {
   const files = new Map([
     [
       '/workspace/example.flow',
@@ -18,7 +18,7 @@ test('loads diagram source and layout into one document model', async () => {
       '/workspace/example.flow.layout.json',
       JSON.stringify({
         nodes: {
-          start: { x: 80, y: 120, w: 140, h: 56 },
+          start: { x: 999, y: 999, w: 140, h: 56 },
         },
       }),
     ],
@@ -38,6 +38,9 @@ test('loads diagram source and layout into one document model', async () => {
   assert.equal(doc.sourcePath, '/workspace/example.flow')
   assert.equal(doc.layoutPath, '/workspace/example.flow.layout.json')
   assert.equal(doc.graph.nodes.length, 2)
-  assert.deepEqual(doc.layout.nodes.start, { x: 80, y: 120, w: 140, h: 56 })
-  assert.deepEqual(doc.layout.nodes.review, { x: 300, y: 120, w: 140, h: 56 })
+  assert.notEqual(doc.layout.nodes.start.x, 999)
+  assert.notEqual(doc.layout.nodes.start.y, 999)
+  assert.equal(doc.layout.nodes.start.w, 140)
+  assert.equal(doc.layout.nodes.start.h, 56)
+  assert.ok(doc.layout.nodes.start.x < doc.layout.nodes.review.x)
 })

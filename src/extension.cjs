@@ -44,8 +44,7 @@ async function openPreview() {
     { loadDiagramDocument },
     { renderGraphHtml },
     { saveDiagramSource },
-    { saveLayoutFile },
-    { applyMovedNodes, autoLayoutGraph, createLayoutForNode },
+    { autoLayoutGraph },
     { createNode },
     { createEdge },
     { generateNodeId },
@@ -56,7 +55,6 @@ async function openPreview() {
     loadModule('./workspace/loadDiagramDocument.js'),
     loadModule('./webview/renderGraphHtml.js'),
     loadModule('./workspace/saveDiagramSource.js'),
-    loadModule('./workspace/saveLayoutFile.js'),
     loadModule('./model/layout.js'),
     loadModule('./model/createNode.js'),
     loadModule('./model/createEdge.js'),
@@ -99,34 +97,6 @@ async function openPreview() {
         return
       }
 
-      if (message?.type === 'moveNode') {
-        const layout = documentModel.layout.nodes[message.nodeId]
-        if (!layout) {
-          postHostDebug(panel, 'moveNode: missing layout for node')
-          return
-        }
-        layout.x = message.x
-        layout.y = message.y
-        await saveLayoutFile(fsLike, documentModel.layoutPath, documentModel.layout)
-        postHostDebug(panel, `moveNode saved: ${message.nodeId} -> (${message.x}, ${message.y})`)
-        return
-      }
-
-      if (message?.type === 'moveNodes' && Array.isArray(message.nodes)) {
-        documentModel.layout = applyMovedNodes(documentModel.layout, message.nodes)
-        await saveLayoutFile(fsLike, documentModel.layoutPath, documentModel.layout)
-        postHostDebug(panel, `moveNodes saved: ${message.nodes.length}`)
-        return
-      }
-
-      if (message?.type === 'replaceLayout' && message.layout) {
-        documentModel.layout = message.layout
-        await saveLayoutFile(fsLike, documentModel.layoutPath, documentModel.layout)
-        postHostDebug(panel, 'replaceLayout saved')
-        await rerender()
-        return
-      }
-
       if (message?.type === 'renameNode' && message.nodeId && typeof message.label === 'string') {
         const nextLabel = message.label.trim()
         if (!nextLabel) {
@@ -149,9 +119,8 @@ async function openPreview() {
         const nodeId = generateNodeId(documentModel.graph.nodes, 'node')
 
         documentModel.graph = createNode(documentModel.graph, { id: nodeId, label })
-        documentModel.layout = createLayoutForNode(documentModel.layout, nodeId)
+        documentModel.layout = autoLayoutGraph(documentModel.graph)
 
-        await saveLayoutFile(fsLike, documentModel.layoutPath, documentModel.layout)
         const mode = await persistGraph()
         postHostDebug(panel, `createNode saved via ${mode}: ${nodeId}`)
         await rerender()
@@ -160,8 +129,7 @@ async function openPreview() {
 
       if (message?.type === 'autoLayout') {
         documentModel.layout = autoLayoutGraph(documentModel.graph)
-        await saveLayoutFile(fsLike, documentModel.layoutPath, documentModel.layout)
-        postHostDebug(panel, 'autoLayout saved')
+        postHostDebug(panel, 'autoLayout applied')
         await rerender()
         return
       }
@@ -185,6 +153,7 @@ async function openPreview() {
         }
 
         documentModel.graph = createEdge(documentModel.graph, { from, to, label })
+        documentModel.layout = autoLayoutGraph(documentModel.graph)
         const mode = await persistGraph()
         postHostDebug(panel, `createEdge saved via ${mode}: ${from} -> ${to}`)
         await rerender()
