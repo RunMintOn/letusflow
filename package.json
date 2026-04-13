@@ -23,6 +23,16 @@
     ]
   },
   "scripts": {
+    "build:webview": "node esbuild.webview.mjs",
+    "build": "npm run build:webview",
     "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "@xyflow/react": "^12.8.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
   }
 }

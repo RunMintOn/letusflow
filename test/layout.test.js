@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { preserveLayout } from '../src/model/layout.js'
+import { autoLayoutGraph, preserveLayout } from '../src/model/layout.js'
 
 test('preserves layout for existing node ids and auto-places new nodes', () => {
   const previous = {
@@ -25,4 +25,26 @@ test('preserves layout for existing node ids and auto-places new nodes', () => {
   assert.deepEqual(next.nodes.start, { x: 10, y: 20, w: 140, h: 56 })
   assert.deepEqual(next.nodes.review, { x: 230, y: 20, w: 140, h: 56 })
   assert.equal(next.nodes.removed, undefined)
+})
+
+test('auto-layout places nodes by dependency depth for LR graphs', () => {
+  const next = autoLayoutGraph({
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+      { id: 'revise', label: '补充信息' },
+      { id: 'done', label: '完成' },
+    ],
+    edges: [
+      { from: 'start', to: 'review' },
+      { from: 'review', to: 'done' },
+      { from: 'review', to: 'revise' },
+    ],
+  })
+
+  assert.deepEqual(next.nodes.start, { x: 80, y: 120, w: 140, h: 56 })
+  assert.deepEqual(next.nodes.review, { x: 320, y: 120, w: 140, h: 56 })
+  assert.deepEqual(next.nodes.done, { x: 560, y: 120, w: 140, h: 56 })
+  assert.deepEqual(next.nodes.revise, { x: 560, y: 280, w: 140, h: 56 })
 })

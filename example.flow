@@ -4,6 +4,7 @@ node start "开始"
 node review "审批"
 node revise "补充信息"
 node done "完成"
+node node "新节点"
 
 edge start -> review
 edge review -> done "通过"

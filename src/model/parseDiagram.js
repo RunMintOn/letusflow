@@ -2,6 +2,37 @@ const DIRECTION_PREFIX = 'dir '
 const NODE_PREFIX = 'node '
 const EDGE_PREFIX = 'edge '
 
+function parseQuotedValue(rawValue, line) {
+  if (!rawValue.startsWith('"') || !rawValue.endsWith('"')) {
+    throw new Error(`Invalid quoted value: ${line}`)
+  }
+
+  let result = ''
+  let escaping = false
+
+  for (let index = 1; index < rawValue.length - 1; index += 1) {
+    const character = rawValue[index]
+    if (escaping) {
+      result += character
+      escaping = false
+      continue
+    }
+
+    if (character === '\\') {
+      escaping = true
+      continue
+    }
+
+    result += character
+  }
+
+  if (escaping) {
+    throw new Error(`Invalid escape sequence: ${line}`)
+  }
+
+  return result
+}
+
 export function parseDiagram(source) {
   const graph = {
     direction: 'LR',
@@ -24,12 +55,13 @@ export function parseDiagram(source) {
     }
 
     if (line.startsWith(NODE_PREFIX)) {
-      const match = line.match(/^node\s+([A-Za-z0-9_-]+)\s+"([^"]+)"$/)
+      const match = line.match(/^node\s+([A-Za-z0-9_-]+)\s+("(?:(?:\\.)|[^"])*")$/)
       if (!match) {
         throw new Error(`Invalid node line: ${line}`)
       }
 
-      const [, id, label] = match
+      const [, id, rawLabel] = match
+      const label = parseQuotedValue(rawLabel, line)
       if (!seenNodes.has(id)) {
         graph.nodes.push({ id, label })
         seenNodes.add(id)
@@ -38,16 +70,16 @@ export function parseDiagram(source) {
     }
 
     if (line.startsWith(EDGE_PREFIX)) {
-      const match = line.match(/^edge\s+([A-Za-z0-9_-]+)\s+->\s+([A-Za-z0-9_-]+)(?:\s+"([^"]+)")?$/)
+      const match = line.match(/^edge\s+([A-Za-z0-9_-]+)\s+->\s+([A-Za-z0-9_-]+)(?:\s+("(?:(?:\\.)|[^"])*"))?$/)
       if (!match) {
         throw new Error(`Invalid edge line: ${line}`)
       }
 
-      const [, from, to, label] = match
+      const [, from, to, rawLabel] = match
       graph.edges.push({
         from,
         to,
-        label,
+        label: rawLabel ? parseQuotedValue(rawLabel, line) : undefined,
       })
       continue
     }

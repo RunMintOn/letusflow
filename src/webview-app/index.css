@@ -1,0 +1,189 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f1e8;
+  --panel: #fffdf7;
+  --ink: #1f1f1a;
+  --line: #4d5c47;
+  --border: rgba(43, 59, 47, 0.16);
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  font-family: ui-sans-serif, sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, #fff7da 0, transparent 28%),
+    linear-gradient(180deg, #f7f0dc 0%, var(--bg) 100%);
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255, 253, 247, 0.88);
+}
+
+.toolbar-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.toolbar-path {
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.toolbar-actions button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  min-height: 0;
+}
+
+.flow-canvas {
+  min-height: calc(100vh - 61px);
+}
+
+.inspector-panel {
+  border-left: 1px solid var(--border);
+  padding: 16px;
+  background: rgba(255, 253, 247, 0.84);
+  overflow: auto;
+}
+
+.inspector-title {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.inspector-meta {
+  margin-bottom: 12px;
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.inspector-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspector-field span {
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.inspector-field input {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.inspector-save {
+  margin-top: 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--ink);
+}
+
+.inspector-empty {
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.diagram-node {
+  position: relative;
+  min-width: 140px;
+  min-height: 56px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  border: 2px solid #2b3b2f;
+  background: #fff9ea;
+  box-sizing: border-box;
+}
+
+.diagram-node__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.react-flow__node.selected .diagram-node {
+  border-color: #175c46;
+}
+
+.diagram-node .react-flow__handle {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #2b3b2f;
+  background: #fffdf7;
+}
+
+.diagram-node .react-flow__handle-left {
+  left: -8px;
+}
+
+.diagram-node .react-flow__handle-right {
+  right: -8px;
+}
+
+.react-flow__edge-path,
+.react-flow__connection-path {
+  stroke: #66775f;
+  stroke-width: 2px;
+}
+
+.react-flow__edge-textbg {
+  fill: rgba(255, 253, 247, 0.92);
+}
+
+@media (max-width: 560px) {
+  .app-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+
+  .inspector-panel {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+}
