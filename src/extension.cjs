@@ -72,6 +72,8 @@ async function openPreview() {
   const documentModel = await loadDiagramDocument(fsLike, sourcePath)
   let layoutSpacing = 100
   let edgeRenderMode = 'straight'
+  let viewport = null
+  let fitViewRequestToken = 0
   const panel = vscode.window.createWebviewPanel(
     'diagramEditor.preview',
     `Diagram: ${path.basename(sourcePath)}`,
@@ -84,7 +86,7 @@ async function openPreview() {
 
   const autoLayoutCurrentGraph = () => autoLayoutGraph(documentModel.graph, { spacing: layoutSpacing })
 
-  const rerender = async (nextModel = documentModel) => {
+  const rerender = async (nextModel = documentModel, options = {}) => {
     panel.webview.html = renderGraphHtml(
       createWebviewDocumentModel(
         panel.webview,
@@ -92,6 +94,9 @@ async function openPreview() {
           ...nextModel,
           layoutSpacing,
           edgeRenderMode,
+          viewport,
+          fitViewOnLoad: options.fitViewOnLoad ?? false,
+          fitViewRequestToken,
         },
         extensionContext.extensionUri,
         vscode.Uri.joinPath,
@@ -166,7 +171,8 @@ async function openPreview() {
       if (message?.type === 'autoLayout') {
         documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(panel, 'autoLayout applied')
-        await rerender()
+        fitViewRequestToken += 1
+        await rerender(documentModel, { fitViewOnLoad: true })
         return
       }
 
@@ -179,6 +185,16 @@ async function openPreview() {
       if (message?.type === 'setEdgeRenderMode') {
         edgeRenderMode = message.value === 'default' ? 'default' : 'straight'
         postHostDebug(panel, `setEdgeRenderMode applied: ${edgeRenderMode}`)
+        return
+      }
+
+      if (message?.type === 'setViewport') {
+        if (!message.viewport) {
+          return
+        }
+
+        viewport = normalizeViewport(message.viewport)
+        postHostDebug(panel, `setViewport applied: ${viewport.x},${viewport.y},${viewport.zoom}`)
         return
       }
 
@@ -254,7 +270,8 @@ async function openPreview() {
     }
   })
 
-  await rerender()
+  fitViewRequestToken += 1
+  await rerender(documentModel, { fitViewOnLoad: true })
   postHostDebug(panel, 'host ready')
 }
 
@@ -295,6 +312,18 @@ function normalizeLayoutSpacing(value) {
   }
 
   return Math.max(30, Math.min(150, spacing))
+}
+
+function normalizeViewport(value) {
+  const x = Number(value?.x)
+  const y = Number(value?.y)
+  const zoom = Number(value?.zoom)
+
+  return {
+    x: Number.isFinite(x) ? x : 0,
+    y: Number.isFinite(y) ? y : 0,
+    zoom: Number.isFinite(zoom) && zoom > 0 ? zoom : 1,
+  }
 }
 
 function postHostDebug(panel, text) {

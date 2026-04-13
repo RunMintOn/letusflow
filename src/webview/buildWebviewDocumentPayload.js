@@ -5,5 +5,8 @@ export function buildWebviewDocumentPayload(documentModel) {
     layout: documentModel.layout,
     layoutSpacing: documentModel.layoutSpacing,
     edgeRenderMode: documentModel.edgeRenderMode,
+    viewport: documentModel.viewport,
+    fitViewOnLoad: documentModel.fitViewOnLoad,
+    fitViewRequestToken: documentModel.fitViewRequestToken,
   })
 }

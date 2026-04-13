@@ -29,6 +29,8 @@ function AppInner() {
     sourcePath: '',
     graph: { direction: 'LR', nodes: [], edges: [] },
     layout: { nodes: {} },
+    fitViewOnLoad: false,
+    fitViewRequestToken: 0,
   }
 
   const [edgeRenderMode, setEdgeRenderMode] = React.useState(initialDocument.edgeRenderMode ?? 'straight')
@@ -238,6 +240,13 @@ function AppInner() {
     })
   }, [])
 
+  const handleViewportChange = React.useCallback((nextViewport) => {
+    postToHost({
+      type: 'setViewport',
+      viewport: nextViewport,
+    })
+  }, [])
+
   const handleConnect = React.useCallback((connection) => {
     if (!connection?.source || !connection?.target) {
       return
@@ -300,6 +309,10 @@ function AppInner() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           isSpacingPreviewActive={isSpacingPreviewActive}
+          initialViewport={initialDocument.viewport}
+          fitViewOnLoad={initialDocument.fitViewOnLoad}
+          fitViewRequestToken={initialDocument.fitViewRequestToken}
+          onViewportChange={handleViewportChange}
         />
         <InspectorPanel
           selectedNode={selectedNode}

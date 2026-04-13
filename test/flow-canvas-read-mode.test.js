@@ -8,7 +8,9 @@ test('flow canvas defaults to read-first chrome', async () => {
   assert.doesNotMatch(source, /MiniMap/)
   assert.match(source, /showInteractive=\{false\}/)
   assert.match(source, /hideAttribution: true/)
-  assert.match(source, /fitViewOptions=\{\{ padding: 0\.18 \}\}/)
+  assert.doesNotMatch(source, /\sfitView[\s>]/)
+  assert.match(source, /fitView\(\{ padding: 0\.18/)
+  assert.match(source, /defaultViewport=\{resolvedInitialViewport\}/)
 })
 
 test('flow canvas exposes a spacing preview class hook', async () => {
@@ -16,4 +18,20 @@ test('flow canvas exposes a spacing preview class hook', async () => {
 
   assert.match(source, /isSpacingPreviewActive/)
   assert.match(source, /flow-canvas--spacing-preview/)
+})
+
+test('flow canvas only performs explicit fit requests', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /fitViewOnLoad/)
+  assert.match(source, /fitViewRequestToken/)
+  assert.match(source, /useNodesInitialized/)
+  assert.match(source, /onMoveEnd/)
+})
+
+test('flow canvas falls back to a safe default viewport when none is provided', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /resolvedInitialViewport/)
+  assert.match(source, /initialViewport \?\? \{ x: 0, y: 0, zoom: 1 \}/)
 })

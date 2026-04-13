@@ -17,6 +17,18 @@ test('extension handles layout spacing as view state without persisting graph so
   assert.doesNotMatch(setSpacingBlock, /await rerender\(\)/)
 })
 
+test('extension stores viewport as view state without rerendering', async () => {
+  const source = await readFile('src/extension.cjs', 'utf8')
+
+  assert.match(source, /message\?\.type === 'setViewport'/)
+  assert.match(source, /viewport\s*=/)
+
+  const setViewportBlock = source.match(/if \(message\?\.type === 'setViewport'\) \{[\s\S]*?return\n      \}/)?.[0]
+  assert.ok(setViewportBlock)
+  assert.doesNotMatch(setViewportBlock, /await rerender\(\)/)
+  assert.doesNotMatch(setViewportBlock, /documentModel\.layout\s*=/)
+})
+
 test('webview app debounces layout spacing messages to host', async () => {
   const source = await readFile('src/webview-app/App.jsx', 'utf8')
 
@@ -46,4 +58,12 @@ test('host preserves edge render mode across spacing rerenders', async () => {
   assert.match(extensionSource, /message\?\.type === 'setEdgeRenderMode'/)
   assert.match(appSource, /initialDocument\.edgeRenderMode/)
   assert.match(appSource, /type: 'setEdgeRenderMode'/)
+})
+
+test('webview app posts viewport updates and fit requests separately', async () => {
+  const appSource = await readFile('src/webview-app/App.jsx', 'utf8')
+
+  assert.match(appSource, /type: 'setViewport'/)
+  assert.match(appSource, /fitViewOnLoad/)
+  assert.match(appSource, /fitViewRequestToken/)
 })
