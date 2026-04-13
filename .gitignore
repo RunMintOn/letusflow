@@ -4,4 +4,4 @@ superpowers/
 .worktrees/
 node_modules/
 dist/
-*.png
+.png/
