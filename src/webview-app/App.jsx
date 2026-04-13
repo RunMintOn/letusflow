@@ -4,6 +4,7 @@ import { ReactFlowProvider, addEdge, useEdgesState, useNodesState } from '@xyflo
 import { FlowCanvas } from './components/FlowCanvas.jsx'
 import { TopToolbar } from './components/TopToolbar.jsx'
 import { InspectorPanel } from './components/InspectorPanel.jsx'
+import { toInspectorLayoutClass } from './components/inspectorLayout.js'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
 import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
@@ -27,6 +28,7 @@ function AppInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges)
   const [selectedNodeId, setSelectedNodeId] = React.useState(null)
+  const [isInspectorCollapsed, setIsInspectorCollapsed] = React.useState(false)
 
   React.useEffect(() => {
     const api = getVsCodeApi()
@@ -137,7 +139,7 @@ function AppInner() {
         onCreateNode={handleCreateNode}
         onAutoLayout={handleAutoLayout}
       />
-      <section className="app-main">
+      <section className={toInspectorLayoutClass(isInspectorCollapsed)}>
         <FlowCanvas
           nodes={nodes}
           edges={edges}
@@ -151,6 +153,8 @@ function AppInner() {
         <InspectorPanel
           selectedNode={selectedNode}
           onRenameNode={handleRenameNode}
+          isCollapsed={isInspectorCollapsed}
+          onToggleCollapsed={() => setIsInspectorCollapsed((current) => !current)}
         />
       </section>
     </main>

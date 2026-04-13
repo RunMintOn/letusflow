@@ -1,15 +1,40 @@
 import React from 'react'
 
-export function InspectorPanel({ selectedNode, onRenameNode }) {
+export function InspectorPanel({ selectedNode, onRenameNode, isCollapsed, onToggleCollapsed }) {
   const [draftLabel, setDraftLabel] = React.useState('')
 
   React.useEffect(() => {
     setDraftLabel(selectedNode?.data?.label ?? '')
   }, [selectedNode])
 
+  if (isCollapsed) {
+    return (
+      <aside className="inspector-panel inspector-panel--collapsed">
+        <button
+          type="button"
+          className="inspector-toggle inspector-toggle--collapsed"
+          onClick={onToggleCollapsed}
+          aria-label="展开属性面板"
+        >
+          属性
+        </button>
+      </aside>
+    )
+  }
+
   return (
     <aside className="inspector-panel">
-      <div className="inspector-title">节点信息</div>
+      <div className="inspector-header">
+        <div className="inspector-title">节点信息</div>
+        <button
+          type="button"
+          className="inspector-toggle"
+          onClick={onToggleCollapsed}
+          aria-label="收起属性面板"
+        >
+          收起
+        </button>
+      </div>
       {selectedNode ? (
         <>
           <div className="inspector-meta">ID: {selectedNode.id}</div>
