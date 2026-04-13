@@ -37,6 +37,8 @@ node S1 "persist session.json updatedAt"
 node S2 "persist events.jsonl"
 node S3 "persist artifacts/"
 node END3 "turn ends"
+node node "这是一个测试节点"
+node node-2 "新节点"
 
 edge U -> E1
 edge E1 -> R1
@@ -77,3 +79,6 @@ edge P6 -> S1
 edge S1 -> S2
 edge S2 -> S3
 edge S3 -> END3
+edge E1 -> node
+edge node -> D4
+edge P6 -> node-2

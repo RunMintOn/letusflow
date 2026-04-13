@@ -1,0 +1,19 @@
+dir LR
+
+node start "用户输入"
+node build_ctx "构建上下文"
+node call_llm "调用 LLM"
+node decision "需要工具?"
+node exec_tool "执行工具"
+node append_result "追加结果"
+node return_answer "返回回答"
+node end "结束"
+
+edge start -> build_ctx
+edge build_ctx -> call_llm
+edge call_llm -> decision
+edge decision -> exec_tool "是"
+edge exec_tool -> append_result
+edge append_result -> build_ctx
+edge decision -> return_answer "否"
+edge return_answer -> end
