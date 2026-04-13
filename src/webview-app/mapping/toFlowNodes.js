@@ -17,6 +17,7 @@ export function toFlowNodes(graphOrNodes, layout) {
     return {
       id: node.id,
       type: 'diagramNode',
+      className: 'diagram-flow-node',
       position: {
         x: nodeLayout.x,
         y: nodeLayout.y,
@@ -56,6 +57,7 @@ function toGroupNode(group, graphNodes, layout) {
   return {
     id: `group:${group.id}`,
     type: 'groupNode',
+    className: 'diagram-flow-group',
     position: {
       x: minX - GROUP_PADDING_X,
       y: minY - GROUP_PADDING_TOP,

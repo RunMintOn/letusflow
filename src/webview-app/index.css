@@ -1,10 +1,16 @@
 :root {
   color-scheme: light;
-  --bg: #f5f1e8;
-  --panel: #fffdf7;
-  --ink: #1f1f1a;
-  --line: #4d5c47;
-  --border: rgba(43, 59, 47, 0.16);
+  --bg: #f8f8f4;
+  --panel: #ffffff;
+  --ink: #33333a;
+  --muted-ink: #6b6b76;
+  --node-fill: #f7f5ff;
+  --node-stroke: #c7bdf7;
+  --node-stroke-strong: #9e8ef1;
+  --edge: #6f6f78;
+  --group-fill: rgba(255, 250, 205, 0.42);
+  --group-stroke: rgba(201, 191, 85, 0.58);
+  --border: rgba(60, 60, 68, 0.14);
 }
 
 html,
@@ -16,11 +22,9 @@ body,
 }
 
 body {
-  font-family: ui-sans-serif, sans-serif;
+  font-family: "Aptos", "Segoe UI", ui-sans-serif, sans-serif;
   color: var(--ink);
-  background:
-    radial-gradient(circle at top left, #fff7da 0, transparent 28%),
-    linear-gradient(180deg, #f7f0dc 0%, var(--bg) 100%);
+  background: var(--bg);
 }
 
 .app-shell {
@@ -76,7 +80,12 @@ body {
 }
 
 .flow-canvas {
-  min-height: calc(100vh - 61px);
+  min-height: calc(100vh - 73px);
+  background: #f8f8f4;
+}
+
+.flow-background {
+  opacity: 0.18;
 }
 
 .inspector-panel {
@@ -133,19 +142,21 @@ body {
 
 .diagram-node {
   position: relative;
-  min-width: 140px;
-  min-height: 56px;
+  min-width: 132px;
+  min-height: 46px;
   display: grid;
   place-items: center;
-  border-radius: 16px;
-  border: 2px solid #2b3b2f;
-  background: #fff9ea;
+  border-radius: 0;
+  border: 1.4px solid var(--node-stroke);
+  background: var(--node-fill);
   box-sizing: border-box;
+  box-shadow: none;
 }
 
 .diagram-node__label {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.25;
   color: var(--ink);
   max-width: 100%;
   padding: 0 12px;
@@ -154,24 +165,26 @@ body {
 }
 
 .react-flow__node.selected .diagram-node {
-  border-color: #175c46;
+  border-color: var(--node-stroke-strong);
+  box-shadow: 0 0 0 2px rgba(158, 142, 241, 0.14);
 }
 
 .group-node {
   width: 100%;
   height: 100%;
-  border: 1px dashed rgba(43, 59, 47, 0.36);
-  border-radius: 22px;
-  background: rgba(255, 253, 247, 0.46);
+  border: 1px solid var(--group-stroke);
+  border-radius: 0;
+  background: var(--group-fill);
   box-sizing: border-box;
   pointer-events: none;
 }
 
 .group-node__label {
-  padding: 12px 16px;
+  padding: 6px 10px;
   font-size: 12px;
-  font-weight: 700;
-  color: rgba(31, 31, 26, 0.62);
+  font-weight: 500;
+  color: var(--muted-ink);
+  text-align: center;
 }
 
 .diagram-node .react-flow__handle {
