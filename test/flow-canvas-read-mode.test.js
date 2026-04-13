@@ -10,3 +10,10 @@ test('flow canvas defaults to read-first chrome', async () => {
   assert.match(source, /hideAttribution: true/)
   assert.match(source, /fitViewOptions=\{\{ padding: 0\.18 \}\}/)
 })
+
+test('flow canvas exposes a spacing preview class hook', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /isSpacingPreviewActive/)
+  assert.match(source, /flow-canvas--spacing-preview/)
+})

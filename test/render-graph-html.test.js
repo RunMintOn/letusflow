@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { renderGraphHtml } from '../src/webview/renderGraphHtml.js'
+import { isIgnorableBootErrorMessage, renderGraphHtml } from '../src/webview/renderGraphHtml.js'
 
 test('injects serialized document payload and bundle references into the webview shell', () => {
   const html = renderGraphHtml({
@@ -36,4 +36,26 @@ test('does not expose layoutPath in the webview payload', () => {
 
   assert.doesNotMatch(html, /layoutPath/)
   assert.doesNotMatch(html, /example\.flow\.layout\.json/)
+})
+
+test('preserves view-only spacing and edge mode state in the webview payload', () => {
+  const html = renderGraphHtml({
+    sourcePath: '/workspace/example.flow',
+    graph: { direction: 'LR', nodes: [], edges: [] },
+    layout: { nodes: {} },
+    layoutSpacing: 135,
+    edgeRenderMode: 'default',
+  })
+
+  assert.match(html, /"layoutSpacing":135/)
+  assert.match(html, /"edgeRenderMode":"default"/)
+})
+
+test('ignores benign ResizeObserver loop warnings in boot status handling', () => {
+  assert.equal(
+    isIgnorableBootErrorMessage('ResizeObserver loop completed with undelivered notifications.'),
+    true,
+  )
+  assert.equal(isIgnorableBootErrorMessage('ResizeObserver loop limit exceeded'), true)
+  assert.equal(isIgnorableBootErrorMessage('TypeError: failed to load graph'), false)
 })

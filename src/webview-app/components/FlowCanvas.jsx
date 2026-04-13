@@ -13,9 +13,10 @@ export function FlowCanvas({
   onNodeDragStop,
   nodeTypes,
   edgeTypes,
+  isSpacingPreviewActive,
 }) {
   return (
-    <div className="flow-canvas">
+    <div className={isSpacingPreviewActive ? 'flow-canvas flow-canvas--spacing-preview' : 'flow-canvas'}>
       <ReactFlow
         fitView
         fitViewOptions={{ padding: 0.18 }}

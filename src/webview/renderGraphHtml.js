@@ -1,5 +1,11 @@
 import { buildWebviewDocumentPayload } from './buildWebviewDocumentPayload.js'
 
+const ignorableBootErrorPatternSource = 'ResizeObserver'
+
+export function isIgnorableBootErrorMessage(message) {
+  return new RegExp(ignorableBootErrorPatternSource, 'i').test(message ?? '')
+}
+
 export function renderGraphHtml(documentModel) {
   const scriptUri = documentModel.webviewScriptUri ?? './dist/webview/webview-app.js'
   const styleUri = documentModel.webviewStyleUri ?? './dist/webview/webview-app.css'
@@ -42,11 +48,31 @@ export function renderGraphHtml(documentModel) {
 
         window.__setDiagramBootStatus = setBootStatus
         window.addEventListener('error', function (event) {
-          setBootStatus('boot error: ' + (event.error?.stack || event.message || 'unknown'))
+          const errorText = event.error?.stack || event.message || 'unknown'
+          const errorMessage = event.error?.message || event.message || errorText
+          const isIgnorableBootErrorMessage = (message) =>
+            /${ignorableBootErrorPatternSource}/i.test(message || '')
+
+          if (isIgnorableBootErrorMessage(errorMessage) || isIgnorableBootErrorMessage(errorText)) {
+            event.preventDefault()
+            return
+          }
+
+          setBootStatus('boot error: ' + errorText)
         })
         window.addEventListener('unhandledrejection', function (event) {
           const reason = event.reason
-          setBootStatus('boot rejection: ' + (reason?.stack || reason?.message || String(reason)))
+          const rejectionText = reason?.stack || reason?.message || String(reason)
+          const rejectionMessage = reason?.message || rejectionText
+          const isIgnorableBootErrorMessage = (message) =>
+            /${ignorableBootErrorPatternSource}/i.test(message || '')
+
+          if (isIgnorableBootErrorMessage(rejectionMessage) || isIgnorableBootErrorMessage(rejectionText)) {
+            event.preventDefault()
+            return
+          }
+
+          setBootStatus('boot rejection: ' + rejectionText)
         })
 
         setBootStatus('boot: payload ready')

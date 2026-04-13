@@ -31,7 +31,16 @@ function AppInner() {
     layout: { nodes: {} },
   }
 
-  const { documentModel, flowNodes, flowEdges } = useEditorState(initialDocument)
+  const [edgeRenderMode, setEdgeRenderMode] = React.useState(initialDocument.edgeRenderMode ?? 'straight')
+  const [layoutSpacing, setLayoutSpacing] = React.useState(initialDocument.layoutSpacing ?? 100)
+  const spacingMessageTimeoutRef = React.useRef(null)
+  const spacingPreviewTimeoutRef = React.useRef(null)
+  const [isSpacingPreviewActive, setIsSpacingPreviewActive] = React.useState(false)
+  const { documentModel, flowNodes, flowEdges } = useEditorState(
+    initialDocument,
+    edgeRenderMode,
+    layoutSpacing,
+  )
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges)
   const [selectedElement, setSelectedElement] = React.useState(null)
@@ -53,6 +62,13 @@ function AppInner() {
   React.useEffect(() => {
     setEdges(flowEdges)
   }, [flowEdges, setEdges])
+
+  React.useEffect(() => {
+    return () => {
+      window.clearTimeout(spacingMessageTimeoutRef.current)
+      window.clearTimeout(spacingPreviewTimeoutRef.current)
+    }
+  }, [])
 
   const selectedNode = React.useMemo(
     () => selectedElement?.type === 'node'
@@ -197,6 +213,31 @@ function AppInner() {
     })
   }, [flowEdges, flowNodes, setEdges, setNodes])
 
+  const handleLayoutSpacingChange = React.useCallback((nextSpacing) => {
+    const value = Number(nextSpacing)
+    setLayoutSpacing(value)
+    setIsSpacingPreviewActive(true)
+    window.clearTimeout(spacingPreviewTimeoutRef.current)
+    spacingPreviewTimeoutRef.current = window.setTimeout(() => {
+      setIsSpacingPreviewActive(false)
+    }, 140)
+    window.clearTimeout(spacingMessageTimeoutRef.current)
+    spacingMessageTimeoutRef.current = window.setTimeout(() => {
+      postToHost({
+        type: 'setSpacing',
+        value,
+      })
+    }, 200)
+  }, [])
+
+  const handleEdgeRenderModeChange = React.useCallback((nextEdgeRenderMode) => {
+    setEdgeRenderMode(nextEdgeRenderMode)
+    postToHost({
+      type: 'setEdgeRenderMode',
+      value: nextEdgeRenderMode,
+    })
+  }, [])
+
   const handleConnect = React.useCallback((connection) => {
     if (!connection?.source || !connection?.target) {
       return
@@ -207,7 +248,7 @@ function AppInner() {
         {
           source: connection.source,
           target: connection.target,
-          type: 'straight',
+          type: edgeRenderMode,
         },
         currentEdges,
       ),
@@ -217,7 +258,7 @@ function AppInner() {
       type: 'createEdge',
       edge: fromConnectParams(connection),
     })
-  }, [setEdges])
+  }, [edgeRenderMode, setEdges])
 
   const handleNodeDragStop = React.useCallback((_event, node) => {
     setNodes((currentNodes) =>
@@ -238,8 +279,12 @@ function AppInner() {
     <main className="app-shell">
       <TopToolbar
         sourcePath={documentModel.sourcePath}
+        edgeRenderMode={edgeRenderMode}
+        layoutSpacing={layoutSpacing}
         onCreateNode={handleCreateNode}
         onAutoLayout={handleAutoLayout}
+        onEdgeRenderModeChange={handleEdgeRenderModeChange}
+        onLayoutSpacingChange={handleLayoutSpacingChange}
       />
       <section className={toInspectorLayoutClass(isInspectorCollapsed)}>
         <FlowCanvas
@@ -254,6 +299,7 @@ function AppInner() {
           onNodeDragStop={handleNodeDragStop}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          isSpacingPreviewActive={isSpacingPreviewActive}
         />
         <InspectorPanel
           selectedNode={selectedNode}

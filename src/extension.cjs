@@ -70,6 +70,8 @@ async function openPreview() {
   ])
 
   const documentModel = await loadDiagramDocument(fsLike, sourcePath)
+  let layoutSpacing = 100
+  let edgeRenderMode = 'straight'
   const panel = vscode.window.createWebviewPanel(
     'diagramEditor.preview',
     `Diagram: ${path.basename(sourcePath)}`,
@@ -80,11 +82,17 @@ async function openPreview() {
     },
   )
 
+  const autoLayoutCurrentGraph = () => autoLayoutGraph(documentModel.graph, { spacing: layoutSpacing })
+
   const rerender = async (nextModel = documentModel) => {
     panel.webview.html = renderGraphHtml(
       createWebviewDocumentModel(
         panel.webview,
-        nextModel,
+        {
+          ...nextModel,
+          layoutSpacing,
+          edgeRenderMode,
+        },
         extensionContext.extensionUri,
         vscode.Uri.joinPath,
       ),
@@ -127,7 +135,7 @@ async function openPreview() {
         const nodeId = generateNodeId(documentModel.graph.nodes, 'node')
 
         documentModel.graph = createNode(documentModel.graph, { id: nodeId, label })
-        documentModel.layout = autoLayoutGraph(documentModel.graph)
+        documentModel.layout = autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
         postHostDebug(panel, `createNode saved via ${mode}: ${nodeId}`)
@@ -147,7 +155,7 @@ async function openPreview() {
         const nodeId = generateNodeId(documentModel.graph.nodes, 'node')
 
         documentModel.graph = createSuccessorNode(documentModel.graph, message.nodeId, { id: nodeId, label })
-        documentModel.layout = autoLayoutGraph(documentModel.graph)
+        documentModel.layout = autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
         postHostDebug(panel, `createSuccessorNode saved via ${mode}: ${message.nodeId} -> ${nodeId}`)
@@ -156,15 +164,27 @@ async function openPreview() {
       }
 
       if (message?.type === 'autoLayout') {
-        documentModel.layout = autoLayoutGraph(documentModel.graph)
+        documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(panel, 'autoLayout applied')
         await rerender()
         return
       }
 
+      if (message?.type === 'setSpacing') {
+        layoutSpacing = normalizeLayoutSpacing(message.value)
+        postHostDebug(panel, `setSpacing applied: ${layoutSpacing}`)
+        return
+      }
+
+      if (message?.type === 'setEdgeRenderMode') {
+        edgeRenderMode = message.value === 'default' ? 'default' : 'straight'
+        postHostDebug(panel, `setEdgeRenderMode applied: ${edgeRenderMode}`)
+        return
+      }
+
       if (message?.type === 'deleteNode' && message.nodeId) {
         documentModel.graph = deleteNode(documentModel.graph, message.nodeId)
-        documentModel.layout = autoLayoutGraph(documentModel.graph)
+        documentModel.layout = autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
         postHostDebug(panel, `deleteNode saved via ${mode}: ${message.nodeId}`)
@@ -174,7 +194,7 @@ async function openPreview() {
 
       if (message?.type === 'deleteEdge' && message.edge) {
         documentModel.graph = deleteEdge(documentModel.graph, message.edge)
-        documentModel.layout = autoLayoutGraph(documentModel.graph)
+        documentModel.layout = autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
         postHostDebug(panel, `deleteEdge saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
@@ -223,7 +243,7 @@ async function openPreview() {
         }
 
         documentModel.graph = createEdge(documentModel.graph, { from, to, label })
-        documentModel.layout = autoLayoutGraph(documentModel.graph)
+        documentModel.layout = autoLayoutCurrentGraph()
         const mode = await persistGraph()
         postHostDebug(panel, `createEdge saved via ${mode}: ${from} -> ${to}`)
         await rerender()
@@ -266,6 +286,15 @@ async function persistSourceText(sourcePath, sourceText, fsLike, saveDiagramSour
     await saveDiagramSource(fsLike, sourcePath, sourceText)
     return 'fsWrite'
   }
+}
+
+function normalizeLayoutSpacing(value) {
+  const spacing = Number(value)
+  if (!Number.isFinite(spacing)) {
+    return 100
+  }
+
+  return Math.max(30, Math.min(150, spacing))
 }
 
 function postHostDebug(panel, text) {
