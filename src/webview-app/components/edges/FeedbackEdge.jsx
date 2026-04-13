@@ -1,7 +1,10 @@
 import React from 'react'
 import { BaseEdge } from '@xyflow/react'
 
-import { toFeedbackEdgePath } from './feedbackEdgePath.js'
+import {
+  toFeedbackEdgeLabelPosition,
+  toFeedbackEdgePath,
+} from './feedbackEdgePath.js'
 
 export function FeedbackEdge({
   id,
@@ -24,6 +27,13 @@ export function FeedbackEdge({
     targetY,
     route: data.feedbackRoute,
   })
+  const labelPosition = toFeedbackEdgeLabelPosition({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    route: data.feedbackRoute,
+  })
 
   return (
     <BaseEdge
@@ -32,8 +42,8 @@ export function FeedbackEdge({
       markerEnd={markerEnd}
       style={style}
       label={label}
-      labelX={(sourceX + targetX) / 2}
-      labelY={(sourceY + targetY) / 2}
+      labelX={labelPosition.x}
+      labelY={labelPosition.y}
       labelStyle={labelStyle}
       labelBgPadding={labelBgPadding}
       labelBgBorderRadius={labelBgBorderRadius}
