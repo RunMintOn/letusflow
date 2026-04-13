@@ -188,28 +188,36 @@ body {
 }
 
 .diagram-node .react-flow__handle {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #2b3b2f;
-  background: #fffdf7;
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--node-stroke-strong);
+  background: var(--panel);
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.react-flow__node:hover .diagram-node .react-flow__handle,
+.react-flow__node.selected .diagram-node .react-flow__handle {
+  opacity: 1;
 }
 
 .diagram-node .react-flow__handle-left {
-  left: -8px;
+  left: -5px;
 }
 
 .diagram-node .react-flow__handle-right {
-  right: -8px;
+  right: -5px;
 }
 
 .react-flow__edge-path,
 .react-flow__connection-path {
-  stroke: #66775f;
-  stroke-width: 2px;
+  stroke: var(--edge);
+  stroke-width: 1.2px;
 }
 
 .react-flow__edge-textbg {
-  fill: rgba(255, 253, 247, 0.92);
+  fill: rgba(248, 248, 244, 0.92);
+  stroke: transparent;
 }
 
 @media (max-width: 560px) {

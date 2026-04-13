@@ -3,10 +3,8 @@ import assert from 'node:assert/strict'
 
 import { toFlowEdges } from '../src/webview-app/mapping/toFlowEdges.js'
 
-test('maps graph edges to stable XYFlow edges', () => {
-  const edges = toFlowEdges([
-    { from: 'start', to: 'review', label: '通过' },
-  ])
+test('maps graph edges to stable readable XYFlow edges', () => {
+  const edges = toFlowEdges([{ from: 'start', to: 'review', label: '通过' }])
 
   assert.deepEqual(edges, [
     {
@@ -15,6 +13,11 @@ test('maps graph edges to stable XYFlow edges', () => {
       target: 'review',
       label: '通过',
       type: 'smoothstep',
+      markerEnd: { type: 'arrowclosed', color: '#6f6f78' },
+      style: { stroke: '#6f6f78', strokeWidth: 1.2 },
+      labelBgPadding: [4, 2],
+      labelBgBorderRadius: 2,
+      labelStyle: { fill: '#55555f', fontSize: 11, fontWeight: 400 },
     },
   ])
 })
@@ -36,5 +39,5 @@ test('maps dashed graph edges to dashed XYFlow edges', () => {
   ])
 
   assert.equal(edges[0].animated, false)
-  assert.deepEqual(edges[0].style, { strokeDasharray: '6 6' })
+  assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, strokeDasharray: '4 4' })
 })
