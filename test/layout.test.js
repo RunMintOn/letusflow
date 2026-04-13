@@ -22,10 +22,10 @@ test('auto-layout places nodes by dependency depth for LR graphs', () => {
   assert.ok(next.nodes.start.x < next.nodes.review.x)
   assert.ok(next.nodes.review.x < next.nodes.done.x)
   assert.ok(next.nodes.review.x < next.nodes.revise.x)
-  assert.ok(next.nodes.review.x - next.nodes.start.x >= 50)
-  assert.ok(next.nodes.done.x - next.nodes.review.x >= 50)
-  assert.equal(next.nodes.start.w, 140)
-  assert.equal(next.nodes.start.h, 56)
+  assert.ok(next.nodes.review.x - next.nodes.start.x >= 40)
+  assert.ok(next.nodes.done.x - next.nodes.review.x >= 40)
+  assert.equal(next.nodes.start.w, 132)
+  assert.equal(next.nodes.start.h, 46)
 })
 
 test('auto-layout gives long-label nodes enough width', () => {
@@ -79,4 +79,22 @@ test('auto-layout keeps back-edge cycles from collapsing into the root level', (
     { x: next.nodes.review.x, y: next.nodes.review.y },
     { x: next.nodes.revise.x, y: next.nodes.revise.y },
   )
+})
+
+test('auto-layout keeps the complex runtime graph within a readable TD footprint', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const { parseDiagram } = await import('../src/model/parseDiagram.js')
+
+  const graph = parseDiagram(await readFile('complex-runtime.flow', 'utf8'))
+  const next = autoLayoutGraph(graph)
+
+  const boxes = Object.values(next.nodes)
+  const minX = Math.min(...boxes.map((box) => box.x))
+  const minY = Math.min(...boxes.map((box) => box.y))
+  const maxX = Math.max(...boxes.map((box) => box.x + box.w))
+  const maxY = Math.max(...boxes.map((box) => box.y + box.h))
+
+  assert.ok(maxX - minX <= 2200)
+  assert.ok(maxY - minY <= 3000)
+  assert.ok(maxY > minY)
 })

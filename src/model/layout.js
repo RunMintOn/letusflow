@@ -1,13 +1,13 @@
 import dagre from 'dagre'
 
-const DEFAULT_NODE_WIDTH = 140
-const DEFAULT_NODE_HEIGHT = 56
-const MAX_NODE_WIDTH = 320
-const LABEL_CHARACTER_WIDTH = 7
-const NODE_HORIZONTAL_PADDING = 52
-const DAGRE_RANK_SEP = 100
-const DAGRE_NODE_SEP = 80
-const DAGRE_MARGIN = 80
+const DEFAULT_NODE_WIDTH = 132
+const DEFAULT_NODE_HEIGHT = 46
+const MAX_NODE_WIDTH = 300
+const LABEL_CHARACTER_WIDTH = 6.6
+const NODE_HORIZONTAL_PADDING = 42
+const DAGRE_RANK_SEP = 74
+const DAGRE_NODE_SEP = 46
+const DAGRE_MARGIN = 48
 
 export function autoLayoutGraph(graph) {
   const dagreGraph = new dagre.graphlib.Graph({ multigraph: true })
