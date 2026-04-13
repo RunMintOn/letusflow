@@ -32,7 +32,7 @@ export function InspectorPanel({
   return (
     <aside className="inspector-panel">
       <div className="inspector-header">
-        <div className="inspector-title">{selectedEdge ? '连线信息' : '节点信息'}</div>
+        <div className="inspector-title">{selectedEdge ? '连线信息' : '节点信息'} v1.02</div>
         <button
           type="button"
           className="inspector-toggle"

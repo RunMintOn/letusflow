@@ -5,8 +5,13 @@ node review "审批"
 node revise "补充信息"
 node done "完成"
 node node "新节点"
+node node-2 "新节点"
+node node-3 "新节点"
 
 edge start -> review
 edge review -> done "通过"
 edge review -> revise "驳回"
 edge revise -> review
+edge node -> review
+edge node -> revise
+edge node-2 -> revise
