@@ -25,3 +25,15 @@ test('injects serialized document payload and bundle references into the webview
   assert.match(html, /vscode-resource:\/dist\/webview\/webview-app\.css/)
   assert.match(html, /<div id="app"><\/div>/)
 })
+
+test('does not expose layoutPath in the webview payload', () => {
+  const html = renderGraphHtml({
+    sourcePath: '/workspace/example.flow',
+    layoutPath: '/workspace/example.flow.layout.json',
+    graph: { direction: 'LR', nodes: [], edges: [] },
+    layout: { nodes: {} },
+  })
+
+  assert.doesNotMatch(html, /layoutPath/)
+  assert.doesNotMatch(html, /example\.flow\.layout\.json/)
+})

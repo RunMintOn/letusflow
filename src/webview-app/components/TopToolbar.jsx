@@ -6,6 +6,7 @@ export function TopToolbar({ sourcePath, onCreateNode, onAutoLayout }) {
       <div>
         <div className="toolbar-title">Diagram Editor</div>
         <div className="toolbar-path">{sourcePath}</div>
+        <div className="toolbar-hint">拖拽只临时调整视图；点击“整理布局”会恢复算法排版。</div>
       </div>
       <div className="toolbar-actions">
         <button type="button" onClick={onCreateNode}>

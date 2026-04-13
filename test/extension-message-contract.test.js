@@ -18,7 +18,6 @@ test('creates a webview document model with script and style uris', () => {
     fakeWebview,
     {
       sourcePath: '/workspace/example.flow',
-      layoutPath: '/workspace/example.flow.layout.json',
       sourceText: 'dir LR',
       graph: { direction: 'LR', nodes: [], edges: [] },
       layout: { nodes: {} },
@@ -29,4 +28,5 @@ test('creates a webview document model with script and style uris', () => {
 
   assert.match(model.webviewScriptUri, /webview:\/extension-root\/dist\/webview\/webview-app\.js/)
   assert.match(model.webviewStyleUri, /webview:\/extension-root\/dist\/webview\/webview-app\.css/)
+  assert.equal('layoutPath' in model, false)
 })

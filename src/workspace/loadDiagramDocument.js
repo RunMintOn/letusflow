@@ -4,12 +4,10 @@ import { parseDiagram } from '../model/parseDiagram.js'
 export async function loadDiagramDocument(fsLike, sourcePath) {
   const sourceText = await fsLike.readFile(sourcePath)
   const graph = parseDiagram(sourceText)
-  const layoutPath = `${sourcePath}.layout.json`
   const layout = autoLayoutGraph(graph)
 
   return {
     sourcePath,
-    layoutPath,
     sourceText,
     graph,
     layout,

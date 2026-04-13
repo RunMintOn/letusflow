@@ -22,6 +22,8 @@ test('auto-layout places nodes by dependency depth for LR graphs', () => {
   assert.ok(next.nodes.start.x < next.nodes.review.x)
   assert.ok(next.nodes.review.x < next.nodes.done.x)
   assert.ok(next.nodes.review.x < next.nodes.revise.x)
+  assert.ok(next.nodes.review.x - next.nodes.start.x >= 50)
+  assert.ok(next.nodes.done.x - next.nodes.review.x >= 50)
   assert.equal(next.nodes.start.w, 140)
   assert.equal(next.nodes.start.h, 56)
 })

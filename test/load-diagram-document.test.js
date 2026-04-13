@@ -36,7 +36,7 @@ test('loads diagram source and derives layout from graph instead of old sidecar 
   const doc = await loadDiagramDocument(fsLike, '/workspace/example.flow')
 
   assert.equal(doc.sourcePath, '/workspace/example.flow')
-  assert.equal(doc.layoutPath, '/workspace/example.flow.layout.json')
+  assert.equal('layoutPath' in doc, false)
   assert.equal(doc.graph.nodes.length, 2)
   assert.notEqual(doc.layout.nodes.start.x, 999)
   assert.notEqual(doc.layout.nodes.start.y, 999)

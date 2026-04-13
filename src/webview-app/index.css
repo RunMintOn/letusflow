@@ -49,6 +49,12 @@ body {
   opacity: 0.72;
 }
 
+.toolbar-hint {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(31, 31, 26, 0.56);
+}
+
 .toolbar-actions {
   display: flex;
   gap: 8px;
