@@ -147,10 +147,31 @@ body {
   font-size: 14px;
   font-weight: 600;
   color: var(--ink);
+  max-width: 100%;
+  padding: 0 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .react-flow__node.selected .diagram-node {
   border-color: #175c46;
+}
+
+.group-node {
+  width: 100%;
+  height: 100%;
+  border: 1px dashed rgba(43, 59, 47, 0.36);
+  border-radius: 22px;
+  background: rgba(255, 253, 247, 0.46);
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.group-node__label {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(31, 31, 26, 0.62);
 }
 
 .diagram-node .react-flow__handle {

@@ -27,3 +27,30 @@ test('parses nodes and edges from the custom diagram DSL', () => {
     { from: 'review', to: 'done', label: '通过' },
   ])
 })
+
+test('parses groups, grouped nodes, and dashed edges', () => {
+  const text = [
+    'dir TD',
+    '',
+    'group prompt "Prompt Assembly"',
+    'node A1 "A1 identity system prompt" in prompt',
+    'node B "provider messages" in prompt',
+    'edge A1 -> B',
+    'edge R1 -> D3 "tests / injected runner" dashed',
+  ].join('\n')
+
+  const graph = parseDiagram(text)
+
+  assert.equal(graph.direction, 'TD')
+  assert.deepEqual(graph.groups, [
+    { id: 'prompt', label: 'Prompt Assembly' },
+  ])
+  assert.deepEqual(graph.nodes, [
+    { id: 'A1', label: 'A1 identity system prompt', groupId: 'prompt' },
+    { id: 'B', label: 'provider messages', groupId: 'prompt' },
+  ])
+  assert.deepEqual(graph.edges, [
+    { from: 'A1', to: 'B', label: undefined },
+    { from: 'R1', to: 'D3', label: 'tests / injected runner', style: 'dashed' },
+  ])
+})

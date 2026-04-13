@@ -7,7 +7,7 @@ export function useEditorState(initialDocument) {
   const [documentModel, setDocumentModel] = React.useState(initialDocument)
 
   const flowNodes = React.useMemo(
-    () => toFlowNodes(documentModel.graph.nodes, documentModel.layout),
+    () => toFlowNodes(documentModel.graph, documentModel.layout),
     [documentModel],
   )
 

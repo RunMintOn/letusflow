@@ -5,12 +5,14 @@ import { FlowCanvas } from './components/FlowCanvas.jsx'
 import { TopToolbar } from './components/TopToolbar.jsx'
 import { InspectorPanel } from './components/InspectorPanel.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
+import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
 import { fromConnectParams } from './mapping/fromConnectParams.js'
 import { useEditorState } from './state/useEditorState.jsx'
 
 const nodeTypes = {
   diagramNode: DiagramNode,
+  groupNode: GroupNode,
 }
 
 function AppInner() {

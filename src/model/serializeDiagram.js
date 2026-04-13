@@ -7,15 +7,25 @@ function escapeLabel(label) {
 export function serializeDiagram(graph) {
   const lines = [`dir ${graph.direction}`, '']
 
+  for (const group of graph.groups ?? []) {
+    lines.push(`group ${group.id} "${escapeLabel(group.label)}"`)
+  }
+
+  if ((graph.groups ?? []).length > 0) {
+    lines.push('')
+  }
+
   for (const node of graph.nodes) {
-    lines.push(`node ${node.id} "${escapeLabel(node.label)}"`)
+    const groupPart = node.groupId ? ` in ${node.groupId}` : ''
+    lines.push(`node ${node.id} "${escapeLabel(node.label)}"${groupPart}`)
   }
 
   lines.push('')
 
   for (const edge of graph.edges) {
     const labelPart = edge.label ? ` "${escapeLabel(edge.label)}"` : ''
-    lines.push(`edge ${edge.from} -> ${edge.to}${labelPart}`)
+    const stylePart = edge.style ? ` ${edge.style}` : ''
+    lines.push(`edge ${edge.from} -> ${edge.to}${labelPart}${stylePart}`)
   }
 
   return lines.join('\n')

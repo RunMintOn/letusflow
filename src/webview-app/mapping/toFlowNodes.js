@@ -4,9 +4,14 @@ const DEFAULT_LAYOUT = {
   w: 140,
   h: 56,
 }
+const GROUP_PADDING_X = 24
+const GROUP_PADDING_TOP = 42
+const GROUP_PADDING_BOTTOM = 24
 
-export function toFlowNodes(graphNodes, layout) {
-  return graphNodes.map((node) => {
+export function toFlowNodes(graphOrNodes, layout) {
+  const graphNodes = Array.isArray(graphOrNodes) ? graphOrNodes : graphOrNodes.nodes
+  const graphGroups = Array.isArray(graphOrNodes) ? [] : graphOrNodes.groups ?? []
+  const diagramNodes = graphNodes.map((node) => {
     const nodeLayout = layout?.nodes?.[node.id] ?? DEFAULT_LAYOUT
 
     return {
@@ -25,4 +30,44 @@ export function toFlowNodes(graphNodes, layout) {
       },
     }
   })
+
+  const groupNodes = graphGroups
+    .map((group) => toGroupNode(group, graphNodes, layout))
+    .filter(Boolean)
+
+  return [...groupNodes, ...diagramNodes]
+}
+
+function toGroupNode(group, graphNodes, layout) {
+  const childLayouts = graphNodes
+    .filter((node) => node.groupId === group.id)
+    .map((node) => layout?.nodes?.[node.id])
+    .filter(Boolean)
+
+  if (childLayouts.length === 0) {
+    return null
+  }
+
+  const minX = Math.min(...childLayouts.map((nodeLayout) => nodeLayout.x))
+  const minY = Math.min(...childLayouts.map((nodeLayout) => nodeLayout.y))
+  const maxX = Math.max(...childLayouts.map((nodeLayout) => nodeLayout.x + nodeLayout.w))
+  const maxY = Math.max(...childLayouts.map((nodeLayout) => nodeLayout.y + nodeLayout.h))
+
+  return {
+    id: `group:${group.id}`,
+    type: 'groupNode',
+    position: {
+      x: minX - GROUP_PADDING_X,
+      y: minY - GROUP_PADDING_TOP,
+    },
+    data: {
+      label: group.label,
+    },
+    draggable: false,
+    selectable: false,
+    style: {
+      width: maxX - minX + GROUP_PADDING_X * 2,
+      height: maxY - minY + GROUP_PADDING_TOP + GROUP_PADDING_BOTTOM,
+    },
+  }
 }

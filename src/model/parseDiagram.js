@@ -1,4 +1,5 @@
 const DIRECTION_PREFIX = 'dir '
+const GROUP_PREFIX = 'group '
 const NODE_PREFIX = 'node '
 const EDGE_PREFIX = 'edge '
 
@@ -36,10 +37,12 @@ function parseQuotedValue(rawValue, line) {
 export function parseDiagram(source) {
   const graph = {
     direction: 'LR',
+    groups: [],
     nodes: [],
     edges: [],
   }
 
+  const seenGroups = new Set()
   const seenNodes = new Set()
   const lines = source.split(/\r?\n/)
 
@@ -54,33 +57,52 @@ export function parseDiagram(source) {
       continue
     }
 
-    if (line.startsWith(NODE_PREFIX)) {
-      const match = line.match(/^node\s+([A-Za-z0-9_-]+)\s+("(?:(?:\\.)|[^"])*")$/)
+    if (line.startsWith(GROUP_PREFIX)) {
+      const match = line.match(/^group\s+([A-Za-z0-9_-]+)\s+("(?:(?:\\.)|[^"])*")$/)
       if (!match) {
-        throw new Error(`Invalid node line: ${line}`)
+        throw new Error(`Invalid group line: ${line}`)
       }
 
       const [, id, rawLabel] = match
       const label = parseQuotedValue(rawLabel, line)
+      if (!seenGroups.has(id)) {
+        graph.groups.push({ id, label })
+        seenGroups.add(id)
+      }
+      continue
+    }
+
+    if (line.startsWith(NODE_PREFIX)) {
+      const match = line.match(/^node\s+([A-Za-z0-9_-]+)\s+("(?:(?:\\.)|[^"])*")(?:\s+in\s+([A-Za-z0-9_-]+))?$/)
+      if (!match) {
+        throw new Error(`Invalid node line: ${line}`)
+      }
+
+      const [, id, rawLabel, groupId] = match
+      const label = parseQuotedValue(rawLabel, line)
       if (!seenNodes.has(id)) {
-        graph.nodes.push({ id, label })
+        graph.nodes.push(groupId ? { id, label, groupId } : { id, label })
         seenNodes.add(id)
       }
       continue
     }
 
     if (line.startsWith(EDGE_PREFIX)) {
-      const match = line.match(/^edge\s+([A-Za-z0-9_-]+)\s+->\s+([A-Za-z0-9_-]+)(?:\s+("(?:(?:\\.)|[^"])*"))?$/)
+      const match = line.match(/^edge\s+([A-Za-z0-9_-]+)\s+->\s+([A-Za-z0-9_-]+)(?:\s+("(?:(?:\\.)|[^"])*"))?(?:\s+(dashed))?$/)
       if (!match) {
         throw new Error(`Invalid edge line: ${line}`)
       }
 
-      const [, from, to, rawLabel] = match
-      graph.edges.push({
+      const [, from, to, rawLabel, style] = match
+      const edge = {
         from,
         to,
         label: rawLabel ? parseQuotedValue(rawLabel, line) : undefined,
-      })
+      }
+      if (style) {
+        edge.style = style
+      }
+      graph.edges.push(edge)
       continue
     }
 

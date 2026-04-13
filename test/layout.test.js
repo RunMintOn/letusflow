@@ -28,6 +28,33 @@ test('auto-layout places nodes by dependency depth for LR graphs', () => {
   assert.equal(next.nodes.start.h, 56)
 })
 
+test('auto-layout gives long-label nodes enough width', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    groups: [],
+    nodes: [
+      { id: 'P1', label: 'record model_call_started + write request artifact' },
+    ],
+    edges: [],
+  })
+
+  assert.ok(next.nodes.P1.w > 220)
+})
+
+test('auto-layout treats TD as top-to-bottom direction', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    groups: [],
+    nodes: [
+      { id: 'start', label: 'Start' },
+      { id: 'done', label: 'Done' },
+    ],
+    edges: [{ from: 'start', to: 'done' }],
+  })
+
+  assert.ok(next.nodes.start.y < next.nodes.done.y)
+})
+
 test('auto-layout keeps back-edge cycles from collapsing into the root level', () => {
   const next = autoLayoutGraph({
     direction: 'LR',

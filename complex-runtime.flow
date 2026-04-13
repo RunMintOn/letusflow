@@ -1,0 +1,79 @@
+dir TD
+
+group prompt "Prompt Assembly"
+
+node U "User Input"
+node E1 "append user_message event"
+node R1 "Stage 1: defaultControlDecision"
+node D1 "decision = execute"
+node D2 "decision = answer"
+node D3 "decision = clarify"
+node D4 "decision = task_mode"
+node L1 "append runtime_decision"
+node L2 "append system_status routing"
+node C1 "append assistant_text question"
+node CS1 "persist context snapshot if needed"
+node END1 "turn ends"
+node T1 "append assistant_text Task Mode selected ..."
+node CS2 "persist context snapshot if needed"
+node END2 "turn ends"
+node X1 "parseReadOnlyToolRequest again"
+node X2 "run read-only tool"
+node X3 "append tool_call"
+node X4 "append tool_result"
+node P0 "assemble provider messages"
+node A1 "A1 identity system prompt" in prompt
+node A2 "A2 tools visibility system prompt" in prompt
+node A3 "A3 response policy prompt" in prompt
+node A4 "A4 projected history events" in prompt
+node B "provider messages" in prompt
+node P1 "record model_call_started + write request artifact"
+node P2 "call provider"
+node P3 "record model_call_finished + response artifact"
+node P4 "still close model_call_finished with error"
+node P5 "append system_status provider"
+node P6 "append assistant_text"
+node S1 "persist session.json updatedAt"
+node S2 "persist events.jsonl"
+node S3 "persist artifacts/"
+node END3 "turn ends"
+
+edge U -> E1
+edge E1 -> R1
+edge R1 -> D1 "explicit read-only tool request"
+edge R1 -> D2 "otherwise"
+edge R1 -> D3 "tests / injected runner" dashed
+edge R1 -> D4 "tests / injected runner" dashed
+edge D1 -> L1
+edge D2 -> L1
+edge D3 -> L1
+edge D4 -> L1
+edge L1 -> L2
+edge L2 -> C1 "clarify"
+edge C1 -> CS1
+edge CS1 -> END1
+edge L2 -> T1 "task_mode"
+edge T1 -> CS2
+edge CS2 -> END2
+edge L2 -> X1 "execute"
+edge X1 -> X2 "matched"
+edge X2 -> X3
+edge X3 -> X4
+edge X4 -> P0
+edge L2 -> P0 "answer"
+edge A1 -> B
+edge A2 -> B
+edge A3 -> B
+edge A4 -> B
+edge P0 -> B
+edge B -> P1
+edge P1 -> P2
+edge P2 -> P3 "success"
+edge P2 -> P4 "provider error"
+edge P3 -> P5
+edge P4 -> P5
+edge P5 -> P6
+edge P6 -> S1
+edge S1 -> S2
+edge S2 -> S3
+edge S3 -> END3

@@ -29,3 +29,12 @@ test('keeps edge ids stable when another edge is inserted before it', () => {
 
   assert.equal(before[0].id, after[1].id)
 })
+
+test('maps dashed graph edges to dashed XYFlow edges', () => {
+  const edges = toFlowEdges([
+    { from: 'R1', to: 'D3', label: 'tests / injected runner', style: 'dashed' },
+  ])
+
+  assert.equal(edges[0].animated, false)
+  assert.deepEqual(edges[0].style, { strokeDasharray: '6 6' })
+})

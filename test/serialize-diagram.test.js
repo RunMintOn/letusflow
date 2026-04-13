@@ -30,3 +30,33 @@ test('renames a node label and serializes the graph back to DSL', () => {
     ].join('\n'),
   )
 })
+
+test('serializes groups, grouped nodes, and dashed edges', () => {
+  const graph = {
+    direction: 'TD',
+    groups: [{ id: 'prompt', label: 'Prompt Assembly' }],
+    nodes: [
+      { id: 'A1', label: 'A1 identity system prompt', groupId: 'prompt' },
+      { id: 'B', label: 'provider messages', groupId: 'prompt' },
+    ],
+    edges: [
+      { from: 'A1', to: 'B', label: undefined, style: undefined },
+      { from: 'R1', to: 'D3', label: 'tests / injected runner', style: 'dashed' },
+    ],
+  }
+
+  assert.equal(
+    serializeDiagram(graph),
+    [
+      'dir TD',
+      '',
+      'group prompt "Prompt Assembly"',
+      '',
+      'node A1 "A1 identity system prompt" in prompt',
+      'node B "provider messages" in prompt',
+      '',
+      'edge A1 -> B',
+      'edge R1 -> D3 "tests / injected runner" dashed',
+    ].join('\n'),
+  )
+})
