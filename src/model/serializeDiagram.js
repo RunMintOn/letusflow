@@ -17,7 +17,8 @@ export function serializeDiagram(graph) {
 
   for (const node of graph.nodes) {
     const groupPart = node.groupId ? ` in ${node.groupId}` : ''
-    lines.push(`node ${node.id} "${escapeLabel(node.label)}"${groupPart}`)
+    const typePart = node.type ? ` type=${node.type}` : ''
+    lines.push(`node ${node.id} "${escapeLabel(node.label)}"${groupPart}${typePart}`)
   }
 
   lines.push('')

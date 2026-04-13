@@ -2,8 +2,13 @@ import React from 'react'
 import { Handle, Position } from '@xyflow/react'
 
 export function DiagramNode({ id, data, selected }) {
+  const nodeClassName = [
+    'diagram-node',
+    data.nodeType === 'decision' ? 'diagram-node--decision' : '',
+  ].filter(Boolean).join(' ')
+
   return (
-    <div className="diagram-node">
+    <div className={nodeClassName}>
       <Handle type="target" position={data.targetPosition ?? Position.Left} />
       <div className="diagram-node__label">{data.label}</div>
       {selected ? (

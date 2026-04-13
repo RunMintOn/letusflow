@@ -2,6 +2,14 @@ const READ_EDGE_STYLE = {
   stroke: '#6f6f78',
   strokeWidth: 1.2,
 }
+const FEEDBACK_EDGE_STYLE = {
+  ...READ_EDGE_STYLE,
+  opacity: 0.72,
+}
+const FEEDBACK_EDGE_PATH_OPTIONS = {
+  borderRadius: 12,
+  offset: 48,
+}
 
 const READ_EDGE_LABEL_STYLE = {
   fill: '#55555f',
@@ -14,8 +22,9 @@ const READ_EDGE_MARKER = {
   color: '#6f6f78',
 }
 
-export function toFlowEdges(graphEdges) {
+export function toFlowEdges(graphEdges, layout, direction = 'LR') {
   return graphEdges.map((edge) => {
+    const isFeedback = isFeedbackEdge(edge, layout, direction)
     const edgeRef = {
       from: edge.from,
       to: edge.to,
@@ -30,9 +39,9 @@ export function toFlowEdges(graphEdges) {
       source: edge.from,
       target: edge.to,
       label: edge.label,
-      type: 'straight',
+      type: isFeedback ? 'smoothstep' : 'straight',
       markerEnd: READ_EDGE_MARKER,
-      style: READ_EDGE_STYLE,
+      style: isFeedback ? FEEDBACK_EDGE_STYLE : READ_EDGE_STYLE,
       labelBgPadding: [4, 2],
       labelBgBorderRadius: 2,
       labelStyle: READ_EDGE_LABEL_STYLE,
@@ -41,11 +50,31 @@ export function toFlowEdges(graphEdges) {
       },
     }
 
+    if (isFeedback) {
+      flowEdge.className = 'diagram-flow-edge--feedback'
+      flowEdge.pathOptions = FEEDBACK_EDGE_PATH_OPTIONS
+    }
+
     if (edge.style === 'dashed') {
       flowEdge.animated = false
-      flowEdge.style = { ...READ_EDGE_STYLE, strokeDasharray: '4 4' }
+      flowEdge.style = { ...flowEdge.style, strokeDasharray: '4 4' }
     }
 
     return flowEdge
   })
+}
+
+function isFeedbackEdge(edge, layout, direction) {
+  const sourceLayout = layout?.nodes?.[edge.from]
+  const targetLayout = layout?.nodes?.[edge.to]
+
+  if (!sourceLayout || !targetLayout) {
+    return false
+  }
+
+  if (direction === 'TD' || direction === 'TB') {
+    return targetLayout.y < sourceLayout.y
+  }
+
+  return targetLayout.x < sourceLayout.x
 }

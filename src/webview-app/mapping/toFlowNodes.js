@@ -27,6 +27,7 @@ export function toFlowNodes(graphOrNodes, layout) {
       },
       data: {
         label: node.label,
+        ...(node.type ? { nodeType: node.type } : {}),
         ...handlePositions,
       },
       style: {

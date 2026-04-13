@@ -41,6 +41,20 @@ test('auto-layout gives long-label nodes enough width', () => {
   assert.ok(next.nodes.P1.w > 220)
 })
 
+test('auto-layout gives decision nodes a diamond-friendly footprint', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    groups: [],
+    nodes: [
+      { id: 'decision', label: '需要工具?', type: 'decision' },
+    ],
+    edges: [],
+  })
+
+  assert.equal(next.nodes.decision.w, 132)
+  assert.equal(next.nodes.decision.h, 86)
+})
+
 test('auto-layout treats TD as top-to-bottom direction', () => {
   const next = autoLayoutGraph({
     direction: 'TD',
@@ -85,7 +99,7 @@ test('auto-layout keeps the complex runtime graph within a readable TD footprint
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
 
-  const graph = parseDiagram(await readFile('complex-runtime.flow', 'utf8'))
+  const graph = parseDiagram(await readFile('例图与对比/complex-runtime.flow', 'utf8'))
   const next = autoLayoutGraph(graph)
 
   const boxes = Object.values(next.nodes)

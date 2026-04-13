@@ -2,6 +2,7 @@ const DIRECTION_PREFIX = 'dir '
 const GROUP_PREFIX = 'group '
 const NODE_PREFIX = 'node '
 const EDGE_PREFIX = 'edge '
+const IDENTIFIER_PATTERN = /^[A-Za-z0-9_-]+$/
 
 function parseQuotedValue(rawValue, line) {
   if (!rawValue.startsWith('"') || !rawValue.endsWith('"')) {
@@ -73,15 +74,21 @@ export function parseDiagram(source) {
     }
 
     if (line.startsWith(NODE_PREFIX)) {
-      const match = line.match(/^node\s+([A-Za-z0-9_-]+)\s+("(?:(?:\\.)|[^"])*")(?:\s+in\s+([A-Za-z0-9_-]+))?$/)
+      const match = line.match(/^node\s+([A-Za-z0-9_-]+)\s+("(?:(?:\\.)|[^"])*")(.*)$/)
       if (!match) {
         throw new Error(`Invalid node line: ${line}`)
       }
 
-      const [, id, rawLabel, groupId] = match
+      const [, id, rawLabel, rawOptions] = match
       const label = parseQuotedValue(rawLabel, line)
+      const options = parseNodeOptions(rawOptions.trim(), line)
       if (!seenNodes.has(id)) {
-        graph.nodes.push(groupId ? { id, label, groupId } : { id, label })
+        graph.nodes.push({
+          id,
+          label,
+          ...(options.groupId ? { groupId: options.groupId } : {}),
+          ...(options.type ? { type: options.type } : {}),
+        })
         seenNodes.add(id)
       }
       continue
@@ -110,4 +117,41 @@ export function parseDiagram(source) {
   }
 
   return graph
+}
+
+function parseNodeOptions(rawOptions, line) {
+  if (!rawOptions) {
+    return {}
+  }
+
+  const options = {}
+  const tokens = rawOptions.split(/\s+/)
+
+  for (let index = 0; index < tokens.length;) {
+    const token = tokens[index]
+
+    if (token === 'in') {
+      const groupId = tokens[index + 1]
+      if (!groupId || !IDENTIFIER_PATTERN.test(groupId) || options.groupId) {
+        throw new Error(`Invalid node line: ${line}`)
+      }
+      options.groupId = groupId
+      index += 2
+      continue
+    }
+
+    if (token.startsWith('type=')) {
+      const type = token.slice('type='.length)
+      if (!type || !IDENTIFIER_PATTERN.test(type) || options.type) {
+        throw new Error(`Invalid node line: ${line}`)
+      }
+      options.type = type
+      index += 1
+      continue
+    }
+
+    throw new Error(`Invalid node line: ${line}`)
+  }
+
+  return options
 }

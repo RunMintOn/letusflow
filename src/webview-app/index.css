@@ -187,7 +187,28 @@ body {
   box-shadow: none;
 }
 
+.diagram-node--decision {
+  min-height: 86px;
+  border: 0;
+  background: transparent;
+}
+
+.diagram-node--decision::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  border: 1.4px solid var(--node-stroke);
+  background: var(--node-fill);
+  transform: translate(-50%, -50%) rotate(45deg);
+  box-sizing: border-box;
+}
+
 .diagram-node__label {
+  position: relative;
+  z-index: 1;
   font-size: 13px;
   font-weight: 500;
   line-height: 1.25;
@@ -223,6 +244,15 @@ body {
 }
 
 .react-flow__node.selected .diagram-node {
+  border-color: var(--node-stroke-strong);
+  box-shadow: 0 0 0 2px rgba(158, 142, 241, 0.14);
+}
+
+.react-flow__node.selected .diagram-node--decision {
+  box-shadow: none;
+}
+
+.react-flow__node.selected .diagram-node--decision::before {
   border-color: var(--node-stroke-strong);
   box-shadow: 0 0 0 2px rgba(158, 142, 241, 0.14);
 }
@@ -284,6 +314,10 @@ body {
 .react-flow__edge-textbg {
   fill: rgba(248, 248, 244, 0.92);
   stroke: transparent;
+}
+
+.react-flow__edge.diagram-flow-edge--feedback .react-flow__edge-path {
+  stroke-width: 1px;
 }
 
 @media (max-width: 560px) {

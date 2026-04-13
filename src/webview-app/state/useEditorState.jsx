@@ -12,7 +12,7 @@ export function useEditorState(initialDocument) {
   )
 
   const flowEdges = React.useMemo(
-    () => toFlowEdges(documentModel.graph.edges),
+    () => toFlowEdges(documentModel.graph.edges, documentModel.layout, documentModel.graph.direction),
     [documentModel],
   )
 

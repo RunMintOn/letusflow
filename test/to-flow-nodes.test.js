@@ -94,3 +94,23 @@ test('diagram nodes use vertical handles for TD graphs', () => {
     sourcePosition: 'bottom',
   })
 })
+
+test('maps decision node type into diagram node data', () => {
+  const nodes = toFlowNodes(
+    {
+      direction: 'TD',
+      groups: [],
+      nodes: [{ id: 'decision', label: '需要工具?', type: 'decision' }],
+    },
+    { nodes: { decision: { x: 80, y: 120, w: 132, h: 86 } } },
+  )
+
+  assert.equal(nodes[0].type, 'diagramNode')
+  assert.deepEqual(nodes[0].data, {
+    label: '需要工具?',
+    nodeType: 'decision',
+    targetPosition: 'top',
+    sourcePosition: 'bottom',
+  })
+  assert.deepEqual(nodes[0].style, { width: 132, height: 86 })
+})

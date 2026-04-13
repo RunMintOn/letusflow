@@ -65,16 +65,18 @@ group <组ID> "<组标题>"
 node start "开始"
 node U "User Input"
 node A1 "A1 identity system prompt" in prompt
+node decision "需要工具？" type=decision
 ```
 
 **语法：**
 ```
-node <节点ID> "<节点标签>" [in <组ID>]
+node <节点ID> "<节点标签>" [in <组ID>] [type=<节点类型>]
 ```
 
 - **节点ID**：字母、数字、连字符或下划线
 - **节点标签**：用双引号包裹的显示文本
 - **`in <组ID>`**：可选，将节点归属到指定分组
+- **`type=<节点类型>`**：可选，目前 `decision` 会渲染为决策菱形；不写时使用默认矩形
 
 > **重复 ID 处理：** 如果同一个节点 ID 被多次定义，只有第一次生效，后续定义会被静默忽略。
 

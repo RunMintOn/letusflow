@@ -54,3 +54,17 @@ test('parses groups, grouped nodes, and dashed edges', () => {
     { from: 'R1', to: 'D3', label: 'tests / injected runner', style: 'dashed' },
   ])
 })
+
+test('parses optional node type attributes', () => {
+  const graph = parseDiagram([
+    'dir TD',
+    '',
+    'node decision "需要工具?" type=decision',
+    'node grouped "分组决策" in prompt type=decision',
+  ].join('\n'))
+
+  assert.deepEqual(graph.nodes, [
+    { id: 'decision', label: '需要工具?', type: 'decision' },
+    { id: 'grouped', label: '分组决策', groupId: 'prompt', type: 'decision' },
+  ])
+})

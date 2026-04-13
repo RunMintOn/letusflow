@@ -44,3 +44,21 @@ test('maps dashed graph edges to dashed XYFlow edges', () => {
   assert.equal(edges[0].animated, false)
   assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, strokeDasharray: '4 4' })
 })
+
+test('maps upstream edges to feedback smoothstep edges', () => {
+  const edges = toFlowEdges(
+    [{ from: 'append_result', to: 'build_ctx', label: undefined }],
+    {
+      nodes: {
+        build_ctx: { x: 120, y: 120, w: 132, h: 46 },
+        append_result: { x: 80, y: 560, w: 132, h: 46 },
+      },
+    },
+    'TD',
+  )
+
+  assert.equal(edges[0].type, 'smoothstep')
+  assert.equal(edges[0].className, 'diagram-flow-edge--feedback')
+  assert.deepEqual(edges[0].pathOptions, { borderRadius: 12, offset: 48 })
+  assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, opacity: 0.72 })
+})

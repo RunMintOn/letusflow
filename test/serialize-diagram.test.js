@@ -60,3 +60,28 @@ test('serializes groups, grouped nodes, and dashed edges', () => {
     ].join('\n'),
   )
 })
+
+test('serializes optional node type attributes', () => {
+  const graph = {
+    direction: 'TD',
+    groups: [{ id: 'prompt', label: 'Prompt Assembly' }],
+    nodes: [
+      { id: 'decision', label: '需要工具?', type: 'decision' },
+      { id: 'grouped', label: '分组决策', groupId: 'prompt', type: 'decision' },
+    ],
+    edges: [],
+  }
+
+  assert.equal(
+    serializeDiagram(graph),
+    [
+      'dir TD',
+      '',
+      'group prompt "Prompt Assembly"',
+      '',
+      'node decision "需要工具?" type=decision',
+      'node grouped "分组决策" in prompt type=decision',
+      '',
+    ].join('\n'),
+  )
+})

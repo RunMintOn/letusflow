@@ -3,7 +3,7 @@ dir TB
 node start "用户输入"
 node build_ctx "构建上下文"
 node call_llm "调用 LLM"
-node decision "需要工具?"
+node decision "需要工具?" type=decision
 node exec_tool "执行工具"
 node append_result "追加结果"
 node return_answer "返回回答"
