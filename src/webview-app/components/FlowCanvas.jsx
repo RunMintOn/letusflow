@@ -1,5 +1,14 @@
 import React from 'react'
-import { Background, Controls, ReactFlow, useNodesInitialized, useReactFlow } from '@xyflow/react'
+import {
+  Background,
+  BackgroundVariant,
+  Controls,
+  ReactFlow,
+  useNodesInitialized,
+  useReactFlow,
+} from '@xyflow/react'
+
+import { ObsidianDotGridBackground } from './ObsidianDotGridBackground.jsx'
 
 export function FlowCanvas({
   nodes,
@@ -32,6 +41,7 @@ export function FlowCanvas({
   const canvasClassName = isSpacingPreviewActive
     ? `flow-canvas ${canvasStyleClassName} flow-canvas--spacing-preview`
     : `flow-canvas ${canvasStyleClassName}`
+  const shouldRenderObsidianBackground = backgroundStyle === 'obsidian'
 
   React.useEffect(() => {
     if (!fitViewOnLoad || !fitViewRequestToken) {
@@ -68,7 +78,16 @@ export function FlowCanvas({
         onMoveEnd={(_event, nextViewport) => onViewportChange?.(nextViewport)}
         proOptions={{ hideAttribution: true }}
       >
-        <Background className="flow-background" gap={22} size={1.35} />
+        {shouldRenderObsidianBackground ? (
+          <ObsidianDotGridBackground />
+        ) : (
+          <Background
+            className="flow-background"
+            variant={BackgroundVariant.Dots}
+            gap={22}
+            size={1.35}
+          />
+        )}
         <Controls showInteractive={false} />
       </ReactFlow>
     </div>

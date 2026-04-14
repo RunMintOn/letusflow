@@ -197,11 +197,8 @@ body {
 }
 
 .flow-canvas--obsidian {
-  --canvas-base: #202224;
-  --canvas-glow: rgba(124, 108, 72, 0.08);
-  --canvas-sheen: rgba(255, 248, 223, 0.015);
-  --canvas-dot: rgba(209, 204, 191, 0.9);
-  --canvas-grid-opacity: 0.7;
+  --canvas-base: #1e1e1e;
+  background: var(--canvas-base);
 }
 
 body.vscode-dark .flow-canvas--paper,
@@ -224,11 +221,8 @@ body.vscode-high-contrast .flow-canvas--gradient {
 
 body.vscode-dark .flow-canvas--obsidian,
 body.vscode-high-contrast .flow-canvas--obsidian {
-  --canvas-base: #1f2123;
-  --canvas-glow: rgba(120, 104, 68, 0.09);
-  --canvas-sheen: rgba(255, 244, 216, 0.018);
-  --canvas-dot: rgba(214, 208, 194, 0.92);
-  --canvas-grid-opacity: 0.74;
+  --canvas-base: #1e1e1e;
+  background: var(--canvas-base);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -249,11 +243,8 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   }
 
   body:not(.vscode-light):not(.vscode-high-contrast-light) .flow-canvas--obsidian {
-    --canvas-base: #1f2123;
-    --canvas-glow: rgba(120, 104, 68, 0.09);
-    --canvas-sheen: rgba(255, 244, 216, 0.018);
-    --canvas-dot: rgba(214, 208, 194, 0.92);
-    --canvas-grid-opacity: 0.74;
+    --canvas-base: #1e1e1e;
+    background: var(--canvas-base);
   }
 }
 
@@ -277,6 +268,32 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 
 .flow-background rect {
   fill: transparent;
+}
+
+.flow-canvas--obsidian::before {
+  content: none;
+}
+
+.obsidian-dot-grid {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.obsidian-dot-grid__base {
+  fill: #1e1e1e;
+}
+
+.obsidian-dot-grid__pattern {
+  fill: url(#obsidian-dot-grid-pattern);
+}
+
+.obsidian-dot-grid__dot {
+  fill: #444444;
+  opacity: 0.72;
 }
 
 .react-flow__controls {

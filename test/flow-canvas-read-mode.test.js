@@ -44,3 +44,11 @@ test('flow canvas exposes background style class hooks', async () => {
   assert.match(source, /flow-canvas--obsidian/)
   assert.match(source, /flow-canvas--gradient/)
 })
+
+test('flow canvas uses a dedicated obsidian dot-grid layer', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /ObsidianDotGridBackground/)
+  assert.match(source, /backgroundStyle === 'obsidian'/)
+  assert.match(source, /variant=\{BackgroundVariant\.Dots\}/)
+})
