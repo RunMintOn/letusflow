@@ -3,12 +3,12 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 test('extension handles layout spacing as view state without persisting graph source', async () => {
-  const source = await readFile('src/extension.cjs', 'utf8')
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
 
   assert.match(source, /layoutSpacing\s*=\s*100/)
   assert.match(source, /autoLayoutCurrentGraph/)
   assert.match(source, /message\?\.type === 'setSpacing'/)
-  assert.match(source, /postHostDebug\(panel, `setSpacing applied:/)
+  assert.match(source, /postHostDebug\(webviewPanel, `setSpacing applied:/)
 
   const setSpacingBlock = source.match(/if \(message\?\.type === 'setSpacing'\) \{[\s\S]*?return\n      \}/)?.[0]
   assert.ok(setSpacingBlock)
@@ -18,7 +18,7 @@ test('extension handles layout spacing as view state without persisting graph so
 })
 
 test('extension stores viewport as view state without rerendering', async () => {
-  const source = await readFile('src/extension.cjs', 'utf8')
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
 
   assert.match(source, /message\?\.type === 'setViewport'/)
   assert.match(source, /viewport\s*=/)
@@ -50,7 +50,7 @@ test('webview app enables short-lived preview motion while spacing changes', asy
 })
 
 test('host preserves edge render mode across spacing rerenders', async () => {
-  const extensionSource = await readFile('src/extension.cjs', 'utf8')
+  const extensionSource = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
   const appSource = await readFile('src/webview-app/App.jsx', 'utf8')
 
   assert.match(extensionSource, /edgeRenderMode\s*=\s*'straight'/)
