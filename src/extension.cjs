@@ -33,7 +33,7 @@ async function resolveCustomTextEditor(document, webviewPanel) {
 
 function activate(context) {
   extensionContext = context
-  const providerRegistration = vscode.window.registerCustomTextEditorProvider(
+  const providerRegistration = vscode.window.registerCustomEditorProvider(
     'diagramEditor.flowEditor',
     { resolveCustomTextEditor },
     {

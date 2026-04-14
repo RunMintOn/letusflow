@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises'
 test('extension registers the .flow custom text editor provider', async () => {
   const source = await readFile('src/extension.cjs', 'utf8')
 
-  assert.match(source, /registerCustomTextEditorProvider/)
+  assert.match(source, /registerCustomEditorProvider/)
   assert.match(source, /diagramEditor\.flowEditor/)
   assert.match(source, /resolveCustomTextEditor/)
 })
