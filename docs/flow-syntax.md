@@ -180,10 +180,16 @@ node path "C:\\Users\\test"
 
 ## VS Code 集成
 
-在 VS Code 中打开 `.flow` 文件后，执行命令：
+在 VS Code 中打开 `.flow` 文件后，会默认使用自定义编辑器：
 
 ```
-Diagram Editor: Open Preview
+Flow Diagram Editor
 ```
 
-即可在右侧预览渲染后的流程图。
+如果当前文件是以普通文本方式打开，可执行：
+
+```
+Reopen Editor With...
+```
+
+然后选择 `Flow Diagram Editor`，即可切换到图形编辑视图。

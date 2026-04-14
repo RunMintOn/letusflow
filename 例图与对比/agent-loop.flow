@@ -16,4 +16,3 @@ edge decision -> exec_tool "是"
 edge exec_tool -> append_result
 edge append_result -> build_ctx
 edge decision -> return_answer "否"
-edge return_answer -> end

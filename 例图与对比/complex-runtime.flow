@@ -38,7 +38,6 @@ node S2 "persist events.jsonl"
 node S3 "persist artifacts/"
 node END3 "turn ends"
 node node-2 "新节点"
-node node "你好"
 
 edge U -> E1
 edge E1 -> R1
@@ -80,5 +79,3 @@ edge S1 -> S2
 edge S2 -> S3
 edge S3 -> END3
 edge P6 -> node-2
-edge D4 -> node
-edge node -> L2
