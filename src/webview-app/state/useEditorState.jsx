@@ -4,11 +4,16 @@ import { toFlowNodes } from '../mapping/toFlowNodes.js'
 import { toFlowEdges } from '../mapping/toFlowEdges.js'
 import { toEditorLayout } from './toEditorLayout.js'
 
-export function useEditorState(initialDocument, edgeRenderMode = 'straight', layoutSpacing) {
+export function useEditorState(
+  initialDocument,
+  edgeRenderMode = 'straight',
+  layoutSpacing,
+  isSpacingPreviewActive = false,
+) {
   const [documentModel, setDocumentModel] = React.useState(initialDocument)
   const activeLayout = React.useMemo(
-    () => toEditorLayout(documentModel, layoutSpacing),
-    [documentModel, layoutSpacing],
+    () => toEditorLayout(documentModel, layoutSpacing, isSpacingPreviewActive),
+    [documentModel, isSpacingPreviewActive, layoutSpacing],
   )
 
   const flowNodes = React.useMemo(

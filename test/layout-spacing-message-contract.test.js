@@ -13,8 +13,8 @@ test('extension handles layout spacing as view state without persisting graph so
   const setSpacingBlock = source.match(/if \(message\?\.type === 'setSpacing'\) \{[\s\S]*?return\n      \}/)?.[0]
   assert.ok(setSpacingBlock)
   assert.doesNotMatch(setSpacingBlock, /persistGraph\(\)/)
-  assert.doesNotMatch(setSpacingBlock, /documentModel\.layout\s*=/)
-  assert.doesNotMatch(setSpacingBlock, /await rerender\(\)/)
+  assert.match(setSpacingBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
+  assert.match(setSpacingBlock, /await rerender\(\)/)
 })
 
 test('extension stores viewport as view state without rerendering', async () => {
@@ -66,6 +66,27 @@ test('webview app posts viewport updates and fit requests separately', async () 
   assert.match(appSource, /type: 'setViewport'/)
   assert.match(appSource, /fitViewOnLoad/)
   assert.match(appSource, /fitViewRequestToken/)
+})
+
+test('webview app only previews spacing layouts while preview mode is active', async () => {
+  const stateSource = await readFile('src/webview-app/state/useEditorState.jsx', 'utf8')
+  const layoutSource = await readFile('src/webview-app/state/toEditorLayout.js', 'utf8')
+  const appSource = await readFile('src/webview-app/App.jsx', 'utf8')
+
+  assert.match(stateSource, /isSpacingPreviewActive/)
+  assert.match(layoutSource, /isSpacingPreviewActive/)
+  assert.match(appSource, /isSpacingPreviewActive/)
+})
+
+test('edge edits no longer recompute host layout automatically', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+  const deleteEdgeBlock = source.match(/if \(message\?\.type === 'deleteEdge' && message\.edge\) \{[\s\S]*?return\n      \}/)?.[0]
+  const createEdgeBlock = source.match(/if \(message\?\.type === 'createEdge' && message\.edge\) \{[\s\S]*?\n      \}/)?.[0]
+
+  assert.ok(deleteEdgeBlock)
+  assert.ok(createEdgeBlock)
+  assert.doesNotMatch(deleteEdgeBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
+  assert.doesNotMatch(createEdgeBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
 })
 
 test('webview app preserves background style and posts updates to host', async () => {

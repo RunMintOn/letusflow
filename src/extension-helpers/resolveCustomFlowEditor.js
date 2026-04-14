@@ -292,7 +292,9 @@ export async function resolveCustomFlowEditor({
 
       if (message?.type === 'setSpacing') {
         layoutSpacing = normalizeLayoutSpacing(message.value)
+        documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(webviewPanel, `setSpacing applied: ${layoutSpacing}`)
+        await rerender()
         return
       }
 
@@ -335,7 +337,6 @@ export async function resolveCustomFlowEditor({
 
       if (message?.type === 'deleteEdge' && message.edge) {
         documentModel.graph = deleteEdge(documentModel.graph, message.edge)
-        documentModel.layout = autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteEdge saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
@@ -384,7 +385,6 @@ export async function resolveCustomFlowEditor({
         }
 
         documentModel.graph = createEdge(documentModel.graph, { from, to, label })
-        documentModel.layout = autoLayoutCurrentGraph()
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createEdge saved via ${mode}: ${from} -> ${to}`)
         await rerender()

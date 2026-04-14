@@ -44,6 +44,7 @@ function AppInner() {
     initialDocument,
     edgeRenderMode,
     layoutSpacing,
+    isSpacingPreviewActive,
   )
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges)
