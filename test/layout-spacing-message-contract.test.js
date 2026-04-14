@@ -106,6 +106,15 @@ test('deleteNode preserves remaining layout instead of auto-layouting', async ()
   assert.match(block, /nodes:\s*Object\.fromEntries/)
 })
 
+test('createSuccessorNode uses local placement instead of host auto-layout', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+  const block = source.match(/if \(message\?\.type === 'createSuccessorNode' && message\.nodeId\) \{[\s\S]*?return\n      \}/)?.[0]
+
+  assert.ok(block)
+  assert.match(block, /placeSuccessorNode/)
+  assert.doesNotMatch(block, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
+})
+
 test('autoLayout no longer forces fitView during incremental sync', async () => {
   const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
   const block = source.match(/if \(message\?\.type === 'autoLayout'\) \{[\s\S]*?return\n      \}/)?.[0]

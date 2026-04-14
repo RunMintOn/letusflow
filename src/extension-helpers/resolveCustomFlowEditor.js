@@ -111,6 +111,7 @@ export async function resolveCustomFlowEditor({
     { deleteEdge },
     { renameEdgeLabel },
     { createSuccessorNode },
+    { placeSuccessorNode },
     { toWebviewSyncState },
   ] = await Promise.all([
     loadModule('./extension-helpers/createWebviewDocumentModel.js'),
@@ -127,6 +128,7 @@ export async function resolveCustomFlowEditor({
     loadModule('./model/deleteEdge.js'),
     loadModule('./model/renameEdgeLabel.js'),
     loadModule('./model/createSuccessorNode.js'),
+    loadModule('./model/placeSuccessorNode.js'),
     loadModule('./webview/toWebviewSyncState.js'),
   ])
 
@@ -295,9 +297,25 @@ export async function resolveCustomFlowEditor({
           ? message.label.trim()
           : '新节点'
         const nodeId = generateNodeId(documentModel.graph.nodes, 'node')
+        const newNode = { id: nodeId, label }
 
-        documentModel.graph = createSuccessorNode(documentModel.graph, message.nodeId, { id: nodeId, label })
-        documentModel.layout = autoLayoutCurrentGraph()
+        documentModel.graph = createSuccessorNode(documentModel.graph, message.nodeId, newNode)
+        const nextPlacement = placeSuccessorNode(
+          documentModel.graph,
+          documentModel.layout,
+          message.nodeId,
+          newNode,
+          layoutSpacing,
+        )
+        documentModel.layout = nextPlacement
+          ? {
+              ...documentModel.layout,
+              nodes: {
+                ...(documentModel.layout?.nodes ?? {}),
+                [nodeId]: nextPlacement,
+              },
+            }
+          : autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createSuccessorNode saved via ${mode}: ${message.nodeId} -> ${nodeId}`)

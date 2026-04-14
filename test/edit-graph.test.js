@@ -84,3 +84,32 @@ test('creates a successor node and edge from an existing node', () => {
     { from: 'start', to: 'node_1', label: undefined },
   ])
 })
+
+test('inserts a successor node immediately after its parent without reordering other nodes', () => {
+  const graph = {
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+      { id: 'done', label: '完成' },
+    ],
+    edges: [
+      { from: 'start', to: 'review', label: undefined },
+      { from: 'review', to: 'done', label: '通过' },
+    ],
+  }
+
+  const next = createSuccessorNode(graph, 'review', { id: 'node_1', label: '新节点' })
+
+  assert.deepEqual(next.nodes, [
+    { id: 'start', label: '开始' },
+    { id: 'review', label: '审批' },
+    { id: 'node_1', label: '新节点' },
+    { id: 'done', label: '完成' },
+  ])
+  assert.deepEqual(next.edges, [
+    { from: 'start', to: 'review', label: undefined },
+    { from: 'review', to: 'done', label: '通过' },
+    { from: 'review', to: 'node_1', label: undefined },
+  ])
+})

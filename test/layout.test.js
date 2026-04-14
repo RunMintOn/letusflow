@@ -6,6 +6,7 @@ import {
   toDagreEdgePriority,
   toDagreSpacing,
 } from '../src/model/layout.js'
+import { getNodeDimensions } from '../src/model/nodeDimensions.js'
 
 test('auto-layout places nodes by dependency depth for LR graphs', () => {
   const next = autoLayoutGraph({
@@ -57,6 +58,17 @@ test('auto-layout gives decision nodes a diamond-friendly footprint', () => {
 
   assert.equal(next.nodes.decision.w, 132)
   assert.equal(next.nodes.decision.h, 86)
+})
+
+test('shared node dimensions stay aligned with dagre layout sizing', () => {
+  assert.deepEqual(
+    getNodeDimensions({ id: 'start', label: '开始' }),
+    { w: 132, h: 46 },
+  )
+  assert.deepEqual(
+    getNodeDimensions({ id: 'decision', label: '需要工具?', type: 'decision' }),
+    { w: 132, h: 86 },
+  )
 })
 
 test('auto-layout treats TD as top-to-bottom direction', () => {
