@@ -17,6 +17,7 @@ export function FlowCanvas({
   onEdgesChange,
   onConnect,
   onNodeClick,
+  onNodeDoubleClick,
   onEdgeClick,
   onPaneClick,
   onNodeDragStop,
@@ -72,6 +73,7 @@ export function FlowCanvas({
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onNodeClick={onNodeClick}
+        onNodeDoubleClick={onNodeDoubleClick}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}

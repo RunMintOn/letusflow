@@ -2,9 +2,8 @@ import React from 'react'
 import { ReactFlowProvider, addEdge, useEdgesState, useNodesState } from '@xyflow/react'
 
 import { FlowCanvas } from './components/FlowCanvas.jsx'
-import { TopToolbar } from './components/TopToolbar.jsx'
-import { InspectorPanel } from './components/InspectorPanel.jsx'
-import { toInspectorLayoutClass } from './components/inspectorLayout.js'
+import { FloatingCanvasControls } from './components/FloatingCanvasControls.jsx'
+import { FloatingEdgeEditor } from './components/FloatingEdgeEditor.jsx'
 import { FeedbackEdge } from './components/edges/FeedbackEdge.jsx'
 import { NormalReadEdge } from './components/edges/NormalReadEdge.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
@@ -52,7 +51,10 @@ function AppInner() {
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges)
   const [selectedElement, setSelectedElement] = React.useState(null)
-  const [isInspectorCollapsed, setIsInspectorCollapsed] = React.useState(false)
+  const [editingNodeId, setEditingNodeId] = React.useState(null)
+  const [editingNodeLabel, setEditingNodeLabel] = React.useState('')
+  const editingNodeIdRef = React.useRef(null)
+  const editingNodeLabelRef = React.useRef('')
 
   React.useEffect(() => {
     const api = getVsCodeApi()
@@ -93,18 +95,19 @@ function AppInner() {
   }, [flowEdges, flowNodes])
 
   React.useEffect(() => {
+    editingNodeIdRef.current = editingNodeId
+  }, [editingNodeId])
+
+  React.useEffect(() => {
+    editingNodeLabelRef.current = editingNodeLabel
+  }, [editingNodeLabel])
+
+  React.useEffect(() => {
     return () => {
       window.clearTimeout(spacingMessageTimeoutRef.current)
       window.clearTimeout(spacingPreviewTimeoutRef.current)
     }
   }, [])
-
-  const selectedNode = React.useMemo(
-    () => selectedElement?.type === 'node'
-      ? nodes.find((node) => node.id === selectedElement.id) ?? null
-      : null,
-    [nodes, selectedElement],
-  )
 
   const selectedEdge = React.useMemo(
     () => selectedElement?.type === 'edge'
@@ -115,6 +118,14 @@ function AppInner() {
 
   const handleNodeClick = React.useCallback((_event, node) => {
     setSelectedElement({ type: 'node', id: node.id })
+  }, [])
+
+  const handleNodeDoubleClick = React.useCallback((_event, node) => {
+    setSelectedElement({ type: 'node', id: node.id })
+    editingNodeIdRef.current = node.id
+    editingNodeLabelRef.current = node.data.label ?? ''
+    setEditingNodeId(node.id)
+    setEditingNodeLabel(node.data.label ?? '')
   }, [])
 
   const handleEdgeClick = React.useCallback((_event, edge) => {
@@ -129,15 +140,15 @@ function AppInner() {
     setSelectedElement(null)
   }, [])
 
-  const handleRenameNode = React.useCallback((nextLabel) => {
+  const handleRenameNode = React.useCallback((nodeId, nextLabel) => {
     const trimmedLabel = nextLabel.trim()
-    if (selectedElement?.type !== 'node' || !trimmedLabel) {
+    if (!nodeId || !trimmedLabel) {
       return
     }
 
     setNodes((currentNodes) =>
       currentNodes.map((node) =>
-        node.id === selectedElement.id
+        node.id === nodeId
           ? {
               ...node,
               data: {
@@ -151,10 +162,10 @@ function AppInner() {
 
     postToHost({
       type: 'renameNode',
-      nodeId: selectedElement.id,
+      nodeId,
       label: trimmedLabel,
     })
-  }, [selectedElement, setNodes])
+  }, [setNodes])
 
   const handleRenameEdgeLabel = React.useCallback((nextLabel) => {
     if (selectedElement?.type !== 'edge') {
@@ -198,6 +209,47 @@ function AppInner() {
       label: trimmedLabel,
     })
   }, [selectedElement, setEdges])
+
+  const cancelNodeEditing = React.useCallback((nodeId) => {
+    if (editingNodeIdRef.current !== nodeId) {
+      return
+    }
+
+    editingNodeIdRef.current = null
+    editingNodeLabelRef.current = ''
+    setEditingNodeId(null)
+    setEditingNodeLabel('')
+  }, [])
+
+  const submitNodeEditing = React.useCallback((nodeId) => {
+    if (editingNodeIdRef.current !== nodeId) {
+      return
+    }
+
+    const nextLabel = editingNodeLabelRef.current
+    const trimmedLabel = nextLabel.trim()
+    const currentNode = nodes.find((node) => node.id === nodeId)
+
+    editingNodeIdRef.current = null
+    editingNodeLabelRef.current = ''
+    setEditingNodeId(null)
+    setEditingNodeLabel('')
+
+    if (!trimmedLabel || !currentNode || currentNode.data.label === trimmedLabel) {
+      return
+    }
+
+    handleRenameNode(nodeId, trimmedLabel)
+  }, [handleRenameNode, nodes])
+
+  const handleNodeEditChange = React.useCallback((nodeId, nextLabel) => {
+    if (editingNodeIdRef.current !== nodeId) {
+      return
+    }
+
+    editingNodeLabelRef.current = nextLabel
+    setEditingNodeLabel(nextLabel)
+  }, [])
 
   React.useEffect(() => {
     const handleKeyDown = (event) => {
@@ -315,8 +367,23 @@ function AppInner() {
   }, [setNodes])
 
   const interactiveNodes = React.useMemo(
-    () => withNodeActions(nodes, { onCreateSuccessor: handleCreateSuccessorNode }),
-    [handleCreateSuccessorNode, nodes],
+    () => withNodeActions(nodes, {
+      onCreateSuccessor: handleCreateSuccessorNode,
+      editingNodeId,
+      editingLabel: editingNodeLabel,
+      onEditChange: handleNodeEditChange,
+      onEditSubmit: submitNodeEditing,
+      onEditCancel: cancelNodeEditing,
+    }),
+    [
+      cancelNodeEditing,
+      editingNodeId,
+      editingNodeLabel,
+      handleCreateSuccessorNode,
+      handleNodeEditChange,
+      nodes,
+      submitNodeEditing,
+    ],
   )
 
   return (
@@ -328,18 +395,8 @@ function AppInner() {
           <span>当前仍显示上一次有效图。</span>
         </div>
       ) : null}
-      <TopToolbar
-        sourcePath={documentModel.sourcePath}
-        edgeRenderMode={edgeRenderMode}
-        layoutSpacing={layoutSpacing}
-        backgroundStyle={backgroundStyle}
-        onCreateNode={handleCreateNode}
-        onAutoLayout={handleAutoLayout}
-        onEdgeRenderModeChange={handleEdgeRenderModeChange}
-        onLayoutSpacingChange={handleLayoutSpacingChange}
-        onBackgroundStyleChange={handleBackgroundStyleChange}
-      />
-      <section className={toInspectorLayoutClass(isInspectorCollapsed)}>
+
+      <section className="app-canvas-stage">
         <FlowCanvas
           nodes={interactiveNodes}
           edges={edges}
@@ -347,6 +404,7 @@ function AppInner() {
           onEdgesChange={onEdgesChange}
           onConnect={handleConnect}
           onNodeClick={handleNodeClick}
+          onNodeDoubleClick={handleNodeDoubleClick}
           onEdgeClick={handleEdgeClick}
           onPaneClick={handlePaneClick}
           onNodeDragStop={handleNodeDragStop}
@@ -359,13 +417,28 @@ function AppInner() {
           fitViewRequestToken={documentModel.fitViewRequestToken}
           onViewportChange={handleViewportChange}
         />
-        <InspectorPanel
-          selectedNode={selectedNode}
+
+        <FloatingCanvasControls
+          edgeRenderMode={edgeRenderMode}
+          layoutSpacing={layoutSpacing}
+          backgroundStyle={backgroundStyle}
+          onAutoLayout={handleAutoLayout}
+          onEdgeRenderModeChange={handleEdgeRenderModeChange}
+          onLayoutSpacingChange={handleLayoutSpacingChange}
+          onBackgroundStyleChange={handleBackgroundStyleChange}
+        />
+
+        <button
+          type="button"
+          className="canvas-create-node"
+          onClick={handleCreateNode}
+        >
+          新增节点
+        </button>
+
+        <FloatingEdgeEditor
           selectedEdge={selectedEdge}
-          onRenameNode={handleRenameNode}
           onRenameEdgeLabel={handleRenameEdgeLabel}
-          isCollapsed={isInspectorCollapsed}
-          onToggleCollapsed={() => setIsInspectorCollapsed((current) => !current)}
         />
       </section>
     </main>
