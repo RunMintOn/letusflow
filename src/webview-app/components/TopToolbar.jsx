@@ -4,10 +4,12 @@ export function TopToolbar({
   sourcePath,
   edgeRenderMode,
   layoutSpacing,
+  backgroundStyle,
   onCreateNode,
   onAutoLayout,
   onEdgeRenderModeChange,
   onLayoutSpacingChange,
+  onBackgroundStyleChange,
 }) {
   return (
     <header className="app-toolbar">
@@ -17,6 +19,18 @@ export function TopToolbar({
         <div className="toolbar-hint">拖拽只临时调整视图；点击“整理布局”会恢复算法排版。</div>
       </div>
       <div className="toolbar-actions">
+        <label className="toolbar-select">
+          <span>背景</span>
+          <select
+            value={backgroundStyle}
+            onChange={(event) => onBackgroundStyleChange(event.target.value)}
+            aria-label="背景样式"
+          >
+            <option value="paper">纸面</option>
+            <option value="obsidian">点阵</option>
+            <option value="gradient">渐变</option>
+          </select>
+        </label>
         <label className="toolbar-select">
           <span>连线</span>
           <select

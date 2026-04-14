@@ -35,6 +35,7 @@ function AppInner() {
 
   const [edgeRenderMode, setEdgeRenderMode] = React.useState(initialDocument.edgeRenderMode ?? 'straight')
   const [layoutSpacing, setLayoutSpacing] = React.useState(initialDocument.layoutSpacing ?? 100)
+  const [backgroundStyle, setBackgroundStyle] = React.useState(initialDocument.backgroundStyle ?? 'paper')
   const spacingMessageTimeoutRef = React.useRef(null)
   const spacingPreviewTimeoutRef = React.useRef(null)
   const [isSpacingPreviewActive, setIsSpacingPreviewActive] = React.useState(false)
@@ -240,6 +241,14 @@ function AppInner() {
     })
   }, [])
 
+  const handleBackgroundStyleChange = React.useCallback((nextBackgroundStyle) => {
+    setBackgroundStyle(nextBackgroundStyle)
+    postToHost({
+      type: 'setBackgroundStyle',
+      value: nextBackgroundStyle,
+    })
+  }, [])
+
   const handleViewportChange = React.useCallback((nextViewport) => {
     postToHost({
       type: 'setViewport',
@@ -290,10 +299,12 @@ function AppInner() {
         sourcePath={documentModel.sourcePath}
         edgeRenderMode={edgeRenderMode}
         layoutSpacing={layoutSpacing}
+        backgroundStyle={backgroundStyle}
         onCreateNode={handleCreateNode}
         onAutoLayout={handleAutoLayout}
         onEdgeRenderModeChange={handleEdgeRenderModeChange}
         onLayoutSpacingChange={handleLayoutSpacingChange}
+        onBackgroundStyleChange={handleBackgroundStyleChange}
       />
       <section className={toInspectorLayoutClass(isInspectorCollapsed)}>
         <FlowCanvas

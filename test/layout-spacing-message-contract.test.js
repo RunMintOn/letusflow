@@ -67,3 +67,11 @@ test('webview app posts viewport updates and fit requests separately', async () 
   assert.match(appSource, /fitViewOnLoad/)
   assert.match(appSource, /fitViewRequestToken/)
 })
+
+test('webview app preserves background style and posts updates to host', async () => {
+  const source = await readFile('src/webview-app/App.jsx', 'utf8')
+
+  assert.match(source, /initialDocument\.backgroundStyle/)
+  assert.match(source, /setBackgroundStyle/)
+  assert.match(source, /type: 'setBackgroundStyle'/)
+})

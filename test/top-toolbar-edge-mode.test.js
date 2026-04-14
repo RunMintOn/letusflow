@@ -33,3 +33,17 @@ test('top toolbar updates layout spacing continuously while dragging', async () 
   assert.doesNotMatch(source, /onPointerUp=/)
   assert.doesNotMatch(source, /onBlur=/)
 })
+
+test('top toolbar exposes canvas background style choices', async () => {
+  const source = await readFile('src/webview-app/components/TopToolbar.jsx', 'utf8')
+
+  assert.match(source, /backgroundStyle/)
+  assert.match(source, /onBackgroundStyleChange/)
+  assert.match(source, /背景/)
+  assert.match(source, /value="paper"/)
+  assert.match(source, /纸面/)
+  assert.match(source, /value="obsidian"/)
+  assert.match(source, /点阵/)
+  assert.match(source, /value="gradient"/)
+  assert.match(source, /渐变/)
+})
