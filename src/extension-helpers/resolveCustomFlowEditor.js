@@ -63,6 +63,22 @@ function postHostDebug(webviewPanel, text) {
   })
 }
 
+function createEmptyDocumentModel(sourcePath, sourceText = '') {
+  return {
+    sourcePath,
+    sourceText,
+    graph: {
+      direction: 'LR',
+      groups: [],
+      nodes: [],
+      edges: [],
+    },
+    layout: {
+      nodes: {},
+    },
+  }
+}
+
 export async function resolveCustomFlowEditor({
   document,
   webviewPanel,
@@ -111,7 +127,18 @@ export async function resolveCustomFlowEditor({
   ])
 
   const fsLike = createTextDocumentFsLike(document)
-  let documentModel = await loadDiagramDocumentFromSource(document.uri.fsPath, await fsLike.readFile())
+  const initialSourceText = await fsLike.readFile()
+  let documentModel
+  let initialDocumentError = null
+
+  try {
+    documentModel = await loadDiagramDocumentFromSource(document.uri.fsPath, initialSourceText)
+  } catch (error) {
+    initialDocumentError = error?.message ?? String(error)
+    documentModel = createEmptyDocumentModel(document.uri.fsPath, initialSourceText)
+  }
+
+  let lastValidDocumentModel = documentModel
   let layoutSpacing = 100
   let edgeRenderMode = 'straight'
   let backgroundStyle = normalizeBackgroundStyle(
@@ -165,9 +192,18 @@ export async function resolveCustomFlowEditor({
   const refreshFromDocument = async () => {
     try {
       documentModel = await loadDiagramDocumentFromSource(document.uri.fsPath, document.getText())
-      await rerender(documentModel)
+      lastValidDocumentModel = documentModel
+      await rerender({
+        ...documentModel,
+        documentError: null,
+      })
     } catch (error) {
+      const documentError = error?.message ?? String(error)
       outputChannel.appendLine(`[document-refresh] failed: ${error?.stack ?? error}`)
+      await rerender({
+        ...lastValidDocumentModel,
+        documentError,
+      })
     }
   }
 
@@ -364,6 +400,17 @@ export async function resolveCustomFlowEditor({
   })
 
   fitViewRequestToken += 1
-  await rerender(documentModel, { fitViewOnLoad: true })
+  await rerender(
+    initialDocumentError
+      ? {
+          ...documentModel,
+          documentError: initialDocumentError,
+        }
+      : {
+          ...documentModel,
+          documentError: null,
+        },
+    { fitViewOnLoad: true },
+  )
   postHostDebug(webviewPanel, 'host ready')
 }

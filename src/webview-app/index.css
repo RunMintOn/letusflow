@@ -72,6 +72,21 @@ body {
   min-height: 100vh;
 }
 
+.app-document-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(146, 48, 32, 0.12);
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.app-document-error strong {
+  font-weight: 700;
+}
+
 .app-toolbar {
   display: flex;
   justify-content: space-between;

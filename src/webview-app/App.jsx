@@ -36,6 +36,7 @@ function AppInner() {
   const [edgeRenderMode, setEdgeRenderMode] = React.useState(initialDocument.edgeRenderMode ?? 'straight')
   const [layoutSpacing, setLayoutSpacing] = React.useState(initialDocument.layoutSpacing ?? 100)
   const [backgroundStyle, setBackgroundStyle] = React.useState(initialDocument.backgroundStyle ?? 'paper')
+  const documentError = initialDocument.documentError ?? null
   const spacingMessageTimeoutRef = React.useRef(null)
   const spacingPreviewTimeoutRef = React.useRef(null)
   const [isSpacingPreviewActive, setIsSpacingPreviewActive] = React.useState(false)
@@ -295,6 +296,13 @@ function AppInner() {
 
   return (
     <main className="app-shell">
+      {documentError ? (
+        <div className="app-document-error" role="alert">
+          <strong>DSL 解析失败</strong>
+          <span>{documentError}</span>
+          <span>当前仍显示上一次有效图。</span>
+        </div>
+      ) : null}
       <TopToolbar
         sourcePath={documentModel.sourcePath}
         edgeRenderMode={edgeRenderMode}

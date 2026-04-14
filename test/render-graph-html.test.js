@@ -66,6 +66,17 @@ test('preserves background style in the webview payload', () => {
   assert.match(html, /"backgroundStyle":"obsidian"/)
 })
 
+test('preserves document error state in the webview payload', () => {
+  const html = renderGraphHtml({
+    sourcePath: '/workspace/example.flow',
+    graph: { direction: 'LR', nodes: [], edges: [] },
+    layout: { nodes: {} },
+    documentError: 'Invalid edge line: edge start ->',
+  })
+
+  assert.match(html, /"documentError":"Invalid edge line: edge start ->"/)
+})
+
 test('ignores benign ResizeObserver loop warnings in boot status handling', () => {
   assert.equal(
     isIgnorableBootErrorMessage('ResizeObserver loop completed with undelivered notifications.'),
