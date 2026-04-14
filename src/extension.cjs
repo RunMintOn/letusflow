@@ -5,6 +5,7 @@ const vscode = require('vscode')
 
 const outputChannel = vscode.window.createOutputChannel('Diagram Editor MVP')
 let extensionContext = null
+const DEFAULT_BACKGROUND_STYLE = 'paper'
 
 function loadModule(relativePath) {
   return import(pathToFileURL(path.join(__dirname, relativePath)).href)
@@ -19,6 +20,14 @@ function createFsLike() {
       await fs.writeFile(targetPath, content, 'utf8')
     },
   }
+}
+
+function toBackgroundStyleStorageKey(sourcePath) {
+  return `diagramEditor.backgroundStyle:${sourcePath}`
+}
+
+function normalizeBackgroundStyle(value) {
+  return value === 'obsidian' || value === 'gradient' ? value : DEFAULT_BACKGROUND_STYLE
 }
 
 async function openPreview() {
@@ -72,6 +81,9 @@ async function openPreview() {
   const documentModel = await loadDiagramDocument(fsLike, sourcePath)
   let layoutSpacing = 100
   let edgeRenderMode = 'straight'
+  let backgroundStyle = normalizeBackgroundStyle(
+    extensionContext.workspaceState.get(toBackgroundStyleStorageKey(sourcePath)),
+  )
   let viewport = null
   let fitViewRequestToken = 0
   const panel = vscode.window.createWebviewPanel(
@@ -94,6 +106,7 @@ async function openPreview() {
           ...nextModel,
           layoutSpacing,
           edgeRenderMode,
+          backgroundStyle,
           viewport,
           fitViewOnLoad: options.fitViewOnLoad ?? false,
           fitViewRequestToken,
@@ -185,6 +198,17 @@ async function openPreview() {
       if (message?.type === 'setEdgeRenderMode') {
         edgeRenderMode = message.value === 'default' ? 'default' : 'straight'
         postHostDebug(panel, `setEdgeRenderMode applied: ${edgeRenderMode}`)
+        return
+      }
+
+      if (message?.type === 'setBackgroundStyle') {
+        backgroundStyle = normalizeBackgroundStyle(message.value)
+        await extensionContext.workspaceState.update(
+          toBackgroundStyleStorageKey(documentModel.sourcePath),
+          backgroundStyle,
+        )
+        postHostDebug(panel, `setBackgroundStyle applied: ${backgroundStyle}`)
+        await rerender()
         return
       }
 

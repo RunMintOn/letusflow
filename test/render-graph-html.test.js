@@ -55,6 +55,17 @@ test('preserves view-only spacing, edge mode, and viewport state in the webview 
   assert.match(html, /"fitViewOnLoad":true/)
 })
 
+test('preserves background style in the webview payload', () => {
+  const html = renderGraphHtml({
+    sourcePath: '/workspace/example.flow',
+    graph: { direction: 'LR', nodes: [], edges: [] },
+    layout: { nodes: {} },
+    backgroundStyle: 'obsidian',
+  })
+
+  assert.match(html, /"backgroundStyle":"obsidian"/)
+})
+
 test('ignores benign ResizeObserver loop warnings in boot status handling', () => {
   assert.equal(
     isIgnorableBootErrorMessage('ResizeObserver loop completed with undelivered notifications.'),
