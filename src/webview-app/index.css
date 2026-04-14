@@ -244,8 +244,17 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   opacity: 0.72;
 }
 
-.react-flow__controls {
+.react-flow__panel.react-flow__controls {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  bottom: auto;
+  left: auto;
+  z-index: 9;
+  transform: translateY(-50%);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   border: 1px solid var(--border);
   border-radius: 10px;
   box-shadow: none;

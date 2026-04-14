@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Canvas First UI Preview</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #111315;
+        --panel: rgba(27, 31, 34, 0.82);
+        --panel-strong: rgba(31, 36, 39, 0.94);
+        --panel-border: rgba(214, 205, 180, 0.12);
+        --text: #ece4d3;
+        --muted: #9d978a;
+        --accent: #c8d57a;
+        --accent-soft: rgba(200, 213, 122, 0.14);
+        --line: #6f726a;
+        --node-fill: #2f3522;
+        --node-stroke: #8c9660;
+        --node-active: #d8e78b;
+        --shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        font-family: "Aptos", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at top, rgba(108, 123, 65, 0.14), transparent 22rem),
+          linear-gradient(180deg, #171a1c 0%, var(--bg) 18%, #101214 100%);
+        color: var(--text);
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .frame {
+        width: min(1360px, 100%);
+        min-height: 820px;
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 24px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.08) 1.1px, transparent 1.8px),
+          #16191b;
+        background-size: 22px 22px;
+        box-shadow: var(--shadow);
+        position: relative;
+      }
+
+      .canvas {
+        position: relative;
+        min-height: 820px;
+      }
+
+      .hud {
+        position: absolute;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--panel-border);
+        border-radius: 16px;
+        background: var(--panel);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.22);
+      }
+
+      .hud--left {
+        top: 18px;
+        left: 18px;
+      }
+
+      .hud--right {
+        top: 18px;
+        right: 18px;
+        padding: 8px;
+      }
+
+      .hud--bottom {
+        left: 50%;
+        bottom: 20px;
+        transform: translateX(-50%);
+        min-width: 380px;
+        justify-content: space-between;
+      }
+
+      .icon-button,
+      .ghost-button,
+      .chip {
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text);
+        font: inherit;
+      }
+
+      .icon-button {
+        width: 36px;
+        height: 36px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+      }
+
+      .ghost-button {
+        padding: 10px 14px;
+        font-size: 13px;
+      }
+
+      .chip {
+        padding: 8px 12px;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .chip strong {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 600;
+      }
+
+      .display-menu {
+        position: absolute;
+        top: 76px;
+        left: 18px;
+        z-index: 6;
+        width: 220px;
+        padding: 14px;
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        background: var(--panel-strong);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.26);
+      }
+
+      .menu-title {
+        margin: 0 0 10px;
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .menu-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      .menu-pill {
+        flex: 1;
+        padding: 8px 10px;
+        border: 1px solid var(--panel-border);
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        font-size: 12px;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .menu-pill.is-active {
+        border-color: rgba(200, 213, 122, 0.32);
+        background: var(--accent-soft);
+        color: var(--text);
+      }
+
+      .canvas-label {
+        position: absolute;
+        left: 26px;
+        bottom: 88px;
+        font-size: 12px;
+        color: var(--muted);
+        opacity: 0.9;
+      }
+
+      .slider-shell {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        width: 100%;
+      }
+
+      .slider-shell span {
+        white-space: nowrap;
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .slider {
+        position: relative;
+        flex: 1;
+        height: 6px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+      }
+
+      .slider::before {
+        content: "";
+        position: absolute;
+        inset: 0 42% 0 0;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #9fb56c, #d8e78b);
+      }
+
+      .slider::after {
+        content: "";
+        position: absolute;
+        right: 42%;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        border: 2px solid #202620;
+        border-radius: 50%;
+        background: var(--node-active);
+        transform: translate(50%, -50%);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+      }
+
+      .node {
+        position: absolute;
+        min-width: 160px;
+        min-height: 54px;
+        display: grid;
+        place-items: center;
+        padding: 0 18px;
+        border: 1.4px solid var(--node-stroke);
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(66, 73, 46, 0.86), var(--node-fill));
+        color: var(--text);
+        font-size: 14px;
+        box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+      }
+
+      .node--decision {
+        border-radius: 20px;
+        background: linear-gradient(180deg, rgba(50, 66, 56, 0.9), #24332b);
+      }
+
+      .node--editing {
+        border-color: var(--node-active);
+        box-shadow:
+          0 0 0 3px rgba(216, 231, 139, 0.12),
+          0 16px 32px rgba(0, 0, 0, 0.18);
+      }
+
+      .node--editing .node-input {
+        width: 100%;
+        min-width: 180px;
+        padding: 10px 12px;
+        border: 0;
+        outline: 0;
+        border-radius: 12px;
+        background: rgba(8, 10, 9, 0.38);
+        color: var(--text);
+        font: inherit;
+        text-align: center;
+      }
+
+      .node-tag {
+        position: absolute;
+        top: -11px;
+        left: 14px;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(13, 15, 16, 0.75);
+        border: 1px solid var(--panel-border);
+        color: var(--muted);
+        font-size: 11px;
+      }
+
+      .annotation {
+        position: absolute;
+        z-index: 4;
+        max-width: 220px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(200, 213, 122, 0.18);
+        background: rgba(25, 29, 28, 0.92);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
+      }
+
+      .toast {
+        position: absolute;
+        right: 18px;
+        bottom: 20px;
+        z-index: 5;
+        padding: 10px 12px;
+        border: 1px solid var(--panel-border);
+        border-radius: 14px;
+        background: var(--panel);
+        color: var(--muted);
+        font-size: 12px;
+        backdrop-filter: blur(12px);
+      }
+
+      svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .edge {
+        fill: none;
+        stroke: var(--line);
+        stroke-width: 2;
+        stroke-linecap: round;
+      }
+
+      .edge--accent {
+        stroke: rgba(184, 196, 108, 0.68);
+      }
+
+      .edge-label {
+        fill: var(--muted);
+        font-size: 11px;
+      }
+
+      .legend {
+        position: absolute;
+        top: 118px;
+        right: 18px;
+        z-index: 5;
+        width: 220px;
+        padding: 14px;
+        border: 1px solid var(--panel-border);
+        border-radius: 18px;
+        background: rgba(23, 27, 29, 0.72);
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+        backdrop-filter: blur(12px);
+      }
+
+      .legend strong {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--text);
+        font-size: 13px;
+      }
+
+      @media (max-width: 1100px) {
+        .frame {
+          min-height: 760px;
+        }
+
+        .hud--bottom {
+          min-width: 320px;
+          max-width: calc(100% - 36px);
+        }
+
+        .legend,
+        .display-menu {
+          width: 190px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <div class="canvas">
+        <div class="hud hud--left">
+          <button class="icon-button" aria-label="菜单">≡</button>
+          <div class="chip"><strong>Display</strong> 点阵 / 直线</div>
+        </div>
+
+        <div class="display-menu">
+          <p class="menu-title">Display</p>
+          <div class="menu-row">
+            <div class="menu-pill is-active">点阵</div>
+            <div class="menu-pill">纸面</div>
+            <div class="menu-pill">渐变</div>
+          </div>
+          <div class="menu-row">
+            <div class="menu-pill is-active">直线</div>
+            <div class="menu-pill">曲线</div>
+          </div>
+        </div>
+
+        <div class="hud hud--right">
+          <button class="ghost-button">整理布局</button>
+        </div>
+
+        <div class="legend">
+          <strong>这次改造的重点</strong>
+          顶部信息条和右侧属性栏都不再常驻。编辑动作尽量贴近节点本身，控制项变成轻量悬浮层，把空间还给图。
+        </div>
+
+        <svg viewBox="0 0 1360 820" aria-hidden="true">
+          <path class="edge" d="M 238 382 C 320 382, 350 382, 420 382" />
+          <path class="edge" d="M 590 382 C 680 300, 740 260, 824 246" />
+          <path class="edge" d="M 590 382 C 688 382, 736 382, 824 382" />
+          <path class="edge edge--accent" d="M 590 382 C 674 460, 730 518, 824 538" />
+          <text class="edge-label" x="690" y="345">answer</text>
+          <text class="edge-label" x="694" y="374">clarify</text>
+          <text class="edge-label" x="676" y="500">execute</text>
+        </svg>
+
+        <div class="node" style="left: 110px; top: 354px;">User Input</div>
+
+        <div class="node node--decision node--editing" style="left: 420px; top: 345px; min-width: 170px;">
+          <div class="node-tag">双击后原地编辑</div>
+          <input class="node-input" value="Stage 1 Router" />
+        </div>
+
+        <div class="node" style="left: 824px; top: 220px;">answer</div>
+        <div class="node" style="left: 824px; top: 355px;">clarify</div>
+        <div class="node" style="left: 824px; top: 510px;">execute / task_mode</div>
+
+        <div class="annotation" style="left: 472px; top: 454px;">
+          Enter 保存，Esc 取消。<br />
+          不再把“编辑文本”这件事绕到右侧面板里。
+        </div>
+
+        <div class="annotation" style="left: 26px; top: 108px;">
+          左上只保留轻量入口。<br />
+          背景、连线样式收进小菜单。
+        </div>
+
+        <div class="annotation" style="right: 46px; top: 70px; width: 170px;">
+          常用动作单独浮出。<br />
+          “整理布局”不需要占整条顶栏。
+        </div>
+
+        <div class="hud hud--bottom">
+          <div class="slider-shell">
+            <span>间距 90%</span>
+            <div class="slider"></div>
+          </div>
+        </div>
+
+        <div class="canvas-label">Canvas First Preview · full-screen graph first, controls second</div>
+        <div class="toast">auto save after Enter</div>
+      </div>
+    </div>
+  </body>
+</html>
