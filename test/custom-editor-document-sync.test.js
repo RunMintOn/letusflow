@@ -25,3 +25,19 @@ test('custom flow editor no longer relies on active text editor lookup', async (
   assert.doesNotMatch(source, /activeTextEditor/)
   assert.doesNotMatch(source, /createWebviewPanel/)
 })
+
+test('custom flow editor falls back to fs writes without using throw-driven control flow', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+
+  assert.match(source, /const applied = await vscode\.workspace\.applyEdit\(edit\)/)
+  assert.match(source, /if \(applied\) \{/)
+  assert.match(source, /await saveDiagramSource\(fsLike, sourcePath, sourceText\)/)
+  assert.doesNotMatch(source, /throw new Error\('applyEdit failed'\)/)
+})
+
+test('custom flow editor surfaces unexpected host errors to the user', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+
+  assert.match(source, /showErrorMessage/)
+  assert.match(source, /Diagram editor failed:/)
+})

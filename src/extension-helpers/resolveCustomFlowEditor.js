@@ -24,11 +24,13 @@ async function persistSourceText(sourcePath, sourceText, fsLike, saveDiagramSour
     )
     edit.replace(uri, fullRange, sourceText)
     const applied = await vscode.workspace.applyEdit(edit)
-    if (!applied) {
-      throw new Error('applyEdit failed')
+    if (applied) {
+      await document.save()
+      return 'workspaceEdit'
     }
-    await document.save()
-    return 'workspaceEdit'
+
+    await saveDiagramSource(fsLike, sourcePath, sourceText)
+    return 'fsWrite'
   } catch (error) {
     await saveDiagramSource(fsLike, sourcePath, sourceText)
     return 'fsWrite'
@@ -390,6 +392,7 @@ export async function resolveCustomFlowEditor({
     } catch (error) {
       outputChannel.appendLine(`[message-handler] failed: ${error?.stack ?? error}`)
       postHostDebug(webviewPanel, `handler failed: ${error?.message ?? String(error)}`)
+      void vscode.window.showErrorMessage(`Diagram editor failed: ${error?.message ?? String(error)}`)
     }
   })
 
