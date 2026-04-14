@@ -3,6 +3,7 @@ const GROUP_PREFIX = 'group '
 const NODE_PREFIX = 'node '
 const EDGE_PREFIX = 'edge '
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9_-]+$/
+const IDENTIFIER_OR_HEX_PATTERN = /^(#[0-9A-Fa-f]{3,8}|[A-Za-z][A-Za-z0-9_-]*)$/
 const EDGE_STYLE_PATTERN = 'dashed|dotted|dashdot'
 
 function parseQuotedValue(rawValue, line) {
@@ -93,6 +94,7 @@ export function parseDiagram(source) {
           label,
           ...(options.groupId ? { groupId: options.groupId } : {}),
           ...(options.type ? { type: options.type } : {}),
+          ...(options.color ? { color: options.color } : {}),
         })
         seenNodes.add(id)
       }
@@ -153,6 +155,16 @@ function parseNodeOptions(rawOptions, line) {
         throw new Error(`Invalid node line: ${line}`)
       }
       options.type = type
+      index += 1
+      continue
+    }
+
+    if (token.startsWith('color=') || token.startsWith('colour=')) {
+      const [, color] = token.split('=')
+      if (!color || !IDENTIFIER_OR_HEX_PATTERN.test(color) || options.color) {
+        throw new Error(`Invalid node line: ${line}`)
+      }
+      options.color = color
       index += 1
       continue
     }

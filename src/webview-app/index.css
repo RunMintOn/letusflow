@@ -5,9 +5,9 @@
   --panel-muted: rgba(255, 252, 244, 0.84);
   --ink: #343438;
   --muted-ink: #69695f;
-  --node-fill: #f3efe4;
-  --node-stroke: #b9ae8b;
-  --node-stroke-strong: #8d7f52;
+  --node-fill: #f2efe7;
+  --node-stroke: #b7b0a2;
+  --node-stroke-strong: #87807a;
   --edge: #706d64;
   --group-fill: rgba(194, 164, 84, 0.12);
   --group-stroke: rgba(161, 131, 58, 0.42);
@@ -23,9 +23,9 @@ body.vscode-high-contrast {
   --panel-muted: rgba(30, 34, 36, 0.88);
   --ink: #e8e2d2;
   --muted-ink: #b8b09d;
-  --node-fill: #2f3321;
-  --node-stroke: #8d9560;
-  --node-stroke-strong: #bcc97d;
+  --node-fill: #2b2a27;
+  --node-stroke: #57524a;
+  --node-stroke-strong: #87807a;
   --edge: #8f8d83;
   --group-fill: rgba(184, 142, 65, 0.1);
   --group-stroke: rgba(198, 159, 88, 0.34);
@@ -41,9 +41,9 @@ body.vscode-high-contrast {
     --panel-muted: rgba(30, 34, 36, 0.88);
     --ink: #e8e2d2;
     --muted-ink: #b8b09d;
-    --node-fill: #2f3321;
-    --node-stroke: #8d9560;
-    --node-stroke-strong: #bcc97d;
+    --node-fill: #2b2a27;
+    --node-stroke: #57524a;
+    --node-stroke-strong: #87807a;
     --edge: #8f8d83;
     --group-fill: rgba(184, 142, 65, 0.1);
     --group-stroke: rgba(198, 159, 88, 0.34);
@@ -438,36 +438,78 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 }
 
 .diagram-node {
+  --node-accent-fill: var(--node-fill);
+  --node-accent-stroke: var(--node-stroke);
+  --node-accent-stroke-strong: var(--node-stroke-strong);
   position: relative;
   min-width: 132px;
   min-height: 46px;
   display: grid;
   place-items: center;
   border-radius: 14px;
-  border: 1.4px solid var(--node-stroke);
-  background: var(--node-fill);
+  border: 1.4px solid var(--node-accent-stroke);
+  background: var(--node-accent-fill);
   box-sizing: border-box;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-.diagram-node--decision {
+.diagram-node--type-default {}
+
+.diagram-node--type-decision {
   min-height: 86px;
   border: 0;
   background: transparent;
   box-shadow: none;
+  --node-accent-fill: #f3e2b6;
+  --node-accent-stroke: #d0a215;
+  --node-accent-stroke-strong: #ad8301;
 }
 
-.diagram-node--decision::before {
+.diagram-node--type-decision::before {
   content: "";
   position: absolute;
   left: 50%;
   top: 50%;
   width: 64px;
   height: 64px;
-  border: 1.4px solid var(--node-stroke);
+  border: 1.4px solid var(--node-accent-stroke);
   border-radius: 14px;
-  background: var(--node-fill);
+  background: var(--node-accent-fill);
   transform: translate(-50%, -50%) rotate(45deg);
+  box-sizing: border-box;
+}
+
+.diagram-node--type-start {
+  border-radius: 16px;
+  --node-accent-fill: #dde7c7;
+  --node-accent-stroke: #879a39;
+  --node-accent-stroke-strong: #66800b;
+}
+
+.diagram-node--type-end {
+  border-radius: 999px;
+  --node-accent-fill: #f0d0e0;
+  --node-accent-stroke: #d14d8b;
+  --node-accent-stroke-strong: #a02f6f;
+}
+
+.diagram-node--type-input {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  --node-accent-fill: #d9e5f2;
+  --node-accent-stroke: #4385be;
+  --node-accent-stroke-strong: #205ea6;
+}
+
+.diagram-node--type-input::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1.4px solid var(--node-accent-stroke);
+  border-radius: 12px;
+  background: var(--node-accent-fill);
+  transform: skewX(-16deg);
   box-sizing: border-box;
 }
 
@@ -488,7 +530,7 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   position: relative;
   z-index: 2;
   width: calc(100% - 18px);
-  border: 1px solid var(--node-stroke-strong);
+  border: 1px solid var(--node-accent-stroke-strong);
   border-radius: 10px;
   padding: 8px 10px;
   background: rgba(15, 17, 15, 0.22);
@@ -504,10 +546,10 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   transform: translateY(-50%);
   width: 20px;
   height: 20px;
-  border: 1px solid var(--node-stroke-strong);
+  border: 1px solid var(--node-accent-stroke-strong);
   border-radius: 999px;
   background: var(--panel);
-  color: var(--node-stroke-strong);
+  color: var(--node-accent-stroke-strong);
   font-size: 15px;
   line-height: 18px;
   padding: 0;
@@ -523,18 +565,21 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 
 .react-flow__node.selected .diagram-node,
 .diagram-node--editing {
-  border-color: var(--node-stroke-strong);
-  box-shadow: 0 0 0 2px rgba(188, 201, 125, 0.14);
+  border-color: var(--node-accent-stroke-strong);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--node-accent-stroke-strong) 20%, transparent);
 }
 
-.react-flow__node.selected .diagram-node--decision {
+.react-flow__node.selected .diagram-node--type-decision,
+.react-flow__node.selected .diagram-node--type-input {
   box-shadow: none;
 }
 
-.react-flow__node.selected .diagram-node--decision::before,
-.diagram-node--editing.diagram-node--decision::before {
-  border-color: var(--node-stroke-strong);
-  box-shadow: 0 0 0 2px rgba(188, 201, 125, 0.14);
+.react-flow__node.selected .diagram-node--type-decision::before,
+.diagram-node--editing.diagram-node--type-decision::before,
+.react-flow__node.selected .diagram-node--type-input::before,
+.diagram-node--editing.diagram-node--type-input::before {
+  border-color: var(--node-accent-stroke-strong);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--node-accent-stroke-strong) 20%, transparent);
 }
 
 .group-node {
@@ -558,10 +603,64 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 .diagram-node .react-flow__handle {
   width: 8px;
   height: 8px;
-  border: 1px solid var(--node-stroke-strong);
+  border: 1px solid var(--node-accent-stroke-strong);
   background: var(--panel);
   opacity: 0;
   transition: opacity 120ms ease;
+}
+
+body.vscode-dark .diagram-node--type-decision,
+body.vscode-high-contrast .diagram-node--type-decision {
+  --node-accent-fill: #4b3d24;
+  --node-accent-stroke: #d0a215;
+  --node-accent-stroke-strong: #f6b72f;
+}
+
+body.vscode-dark .diagram-node--type-start,
+body.vscode-high-contrast .diagram-node--type-start {
+  --node-accent-fill: #354231;
+  --node-accent-stroke: #879a39;
+  --node-accent-stroke-strong: #a0af54;
+}
+
+body.vscode-dark .diagram-node--type-end,
+body.vscode-high-contrast .diagram-node--type-end {
+  --node-accent-fill: #4a2e42;
+  --node-accent-stroke: #d14d8b;
+  --node-accent-stroke-strong: #f08cbb;
+}
+
+body.vscode-dark .diagram-node--type-input,
+body.vscode-high-contrast .diagram-node--type-input {
+  --node-accent-fill: #25354a;
+  --node-accent-stroke: #4385be;
+  --node-accent-stroke-strong: #66a0c8;
+}
+
+@media (prefers-color-scheme: dark) {
+  body:not(.vscode-light):not(.vscode-high-contrast-light) .diagram-node--type-decision {
+    --node-accent-fill: #4b3d24;
+    --node-accent-stroke: #d0a215;
+    --node-accent-stroke-strong: #f6b72f;
+  }
+
+  body:not(.vscode-light):not(.vscode-high-contrast-light) .diagram-node--type-start {
+    --node-accent-fill: #354231;
+    --node-accent-stroke: #879a39;
+    --node-accent-stroke-strong: #a0af54;
+  }
+
+  body:not(.vscode-light):not(.vscode-high-contrast-light) .diagram-node--type-end {
+    --node-accent-fill: #4a2e42;
+    --node-accent-stroke: #d14d8b;
+    --node-accent-stroke-strong: #f08cbb;
+  }
+
+  body:not(.vscode-light):not(.vscode-high-contrast-light) .diagram-node--type-input {
+    --node-accent-fill: #25354a;
+    --node-accent-stroke: #4385be;
+    --node-accent-stroke-strong: #66a0c8;
+  }
 }
 
 .react-flow__node:hover .diagram-node .react-flow__handle,

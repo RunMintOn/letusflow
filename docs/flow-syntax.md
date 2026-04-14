@@ -68,17 +68,27 @@ node start "开始"
 node U "User Input"
 node A1 "A1 identity system prompt" in prompt
 node decision "需要工具？" type=decision
+node answer "结束" type=end colour=#d14d8b
 ```
 
 **语法：**
 ```
-node <节点ID> "<节点标签>" [in <组ID>] [type=<节点类型>]
+node <节点ID> "<节点标签>" [in <组ID>] [type=<节点类型>] [color=<颜色名或#hex>]
 ```
 
 - **节点ID**：字母、数字、连字符或下划线
 - **节点标签**：用双引号包裹的显示文本
 - **`in <组ID>`**：可选，将节点归属到指定分组
-- **`type=<节点类型>`**：可选，目前 `decision` 会渲染为决策菱形；不写时使用默认矩形
+- **`type=<节点类型>`**：可选，决定节点的形状和默认主题色
+- **`color=<颜色名或#hex>` / `colour=<颜色名或#hex>`**：可选，覆盖节点默认颜色；序列化时统一写回 `color=`
+
+**当前内置 `type` 预设：**
+
+- **`default`**：矩形
+- **`decision`**：菱形
+- **`start`**：圆角矩形
+- **`end`**：胶囊形
+- **`input`**：平行四边形
 
 > **重复 ID 处理：** 如果同一个节点 ID 被多次定义，只有第一次生效，后续定义会被静默忽略。
 
@@ -122,11 +132,11 @@ group assembly "Prompt Assembly"
 node start "用户输入"
 node build "构建上下文"
 node llm "调用 LLM"
-node decision "需要工具？"
-node tool "执行工具"
+node decision "需要工具？" type=decision
+node tool "执行工具" type=input
 node result "追加结果"
-node answer "返回回答"
-node end "结束"
+node answer "返回回答" color=blue
+node end "结束" type=end colour=#d14d8b
 
 node sys1 "系统提示词" in assembly
 node tools "工具列表提示" in assembly
@@ -181,6 +191,7 @@ node path "C:\\Users\\test"
 | 错误信息 | 原因 | 解决方法 |
 |----------|------|----------|
 | `Unknown line: ...` | 使用了不支持的关键字或写法 | 检查是否把样式写在标签前、或写了不支持的语法 |
+| `Invalid node line: ...` | `type` / `color` / `colour` 写法不合法 | 检查是否使用了无空格颜色名或 `#hex` |
 | `Invalid escape sequence` | 使用了不支持的转义序列 | 仅使用 `\"` 和 `\\` |
 | 节点/分组不显示 | 重复定义了相同的 ID | 确保每个节点/分组 ID 唯一 |
 

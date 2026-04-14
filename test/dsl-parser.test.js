@@ -69,6 +69,20 @@ test('parses optional node type attributes', () => {
   ])
 })
 
+test('parses node type presets with color and colour overrides', () => {
+  const graph = parseDiagram([
+    'node start "开始" type=start color=blue',
+    'node end "结束" type=end colour=#d14d8b',
+    'node input "输入" type=input',
+  ].join('\n'))
+
+  assert.deepEqual(graph.nodes, [
+    { id: 'start', label: '开始', type: 'start', color: 'blue' },
+    { id: 'end', label: '结束', type: 'end', color: '#d14d8b' },
+    { id: 'input', label: '输入', type: 'input' },
+  ])
+})
+
 test('ignores whole-line hash and slash comments', () => {
   const graph = parseDiagram([
     '  # section comment',

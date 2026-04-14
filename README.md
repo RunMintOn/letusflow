@@ -55,8 +55,8 @@ group tools "工具调用"       # 分组声明
 
 node start "开始"
 node decision "需要工具？" type=decision
-node call "调用工具" in tools
-node end "结束"
+node call "调用工具" in tools type=input
+node end "结束" type=end colour=#d14d8b
 
 edge start -> decision
 edge decision -> call "是"
@@ -72,7 +72,7 @@ edge call -> decision dashed
 |--------|------|
 | `dir LR\|TD\|TB` | 设置布局方向 |
 | `group <id> "标题"` | 声明分组 |
-| `node <id> "标签" [in <组>] [type=decision]` | 定义节点 |
+| `node <id> "标签" [in <组>] [type=<预设>] [color=<颜色名或#hex>]` | 定义节点 |
 | `edge <起点> -> <终点> ["标签"] [dashed\|dotted\|dashdot]` | 定义连线 |
 
 完整语法参考 → [`docs/flow-syntax.md`](docs/flow-syntax.md)

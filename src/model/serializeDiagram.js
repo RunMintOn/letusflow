@@ -18,7 +18,8 @@ export function serializeDiagram(graph) {
   for (const node of graph.nodes) {
     const groupPart = node.groupId ? ` in ${node.groupId}` : ''
     const typePart = node.type ? ` type=${node.type}` : ''
-    lines.push(`node ${node.id} "${escapeLabel(node.label)}"${groupPart}${typePart}`)
+    const colorPart = node.color ? ` color=${node.color}` : ''
+    lines.push(`node ${node.id} "${escapeLabel(node.label)}"${groupPart}${typePart}${colorPart}`)
   }
 
   lines.push('')

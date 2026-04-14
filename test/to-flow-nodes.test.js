@@ -15,7 +15,7 @@ test('maps graph nodes and layout entries to XYFlow nodes', () => {
       type: 'diagramNode',
       className: 'diagram-flow-node',
       position: { x: 80, y: 120 },
-      data: { label: '开始', targetPosition: 'left', sourcePosition: 'right' },
+      data: { label: '开始', nodeType: 'default', targetPosition: 'left', sourcePosition: 'right' },
       style: { width: 140, height: 56 },
     },
   ])
@@ -33,7 +33,7 @@ test('maps graph nodes with default layout when a layout entry is missing', () =
       type: 'diagramNode',
       className: 'diagram-flow-node',
       position: { x: 10, y: 20 },
-      data: { label: '开始', targetPosition: 'left', sourcePosition: 'right' },
+      data: { label: '开始', nodeType: 'default', targetPosition: 'left', sourcePosition: 'right' },
       style: { width: 140, height: 56 },
     },
   ])
@@ -90,6 +90,7 @@ test('diagram nodes use vertical handles for TD graphs', () => {
 
   assert.deepEqual(nodes[0].data, {
     label: 'User Input',
+    nodeType: 'default',
     targetPosition: 'top',
     sourcePosition: 'bottom',
   })
@@ -113,4 +114,50 @@ test('maps decision node type into diagram node data', () => {
     sourcePosition: 'bottom',
   })
   assert.deepEqual(nodes[0].style, { width: 132, height: 86 })
+})
+
+test('maps preset node types and color overrides into diagram node data', () => {
+  const nodes = toFlowNodes(
+    {
+      direction: 'LR',
+      groups: [],
+      nodes: [
+        { id: 'start', label: '开始', type: 'start', color: 'blue' },
+        { id: 'end', label: '结束', type: 'end' },
+      ],
+    },
+    {
+      nodes: {
+        start: { x: 80, y: 120, w: 132, h: 46 },
+        end: { x: 280, y: 120, w: 132, h: 46 },
+      },
+    },
+  )
+
+  assert.deepEqual(nodes[0].data, {
+    label: '开始',
+    nodeType: 'start',
+    nodeColor: 'blue',
+    targetPosition: 'left',
+    sourcePosition: 'right',
+  })
+  assert.deepEqual(nodes[1].data, {
+    label: '结束',
+    nodeType: 'end',
+    targetPosition: 'left',
+    sourcePosition: 'right',
+  })
+})
+
+test('defaults diagram nodes to the default preset when type is omitted', () => {
+  const nodes = toFlowNodes(
+    {
+      direction: 'LR',
+      groups: [],
+      nodes: [{ id: 'plain', label: '普通节点' }],
+    },
+    { nodes: { plain: { x: 80, y: 120, w: 132, h: 46 } } },
+  )
+
+  assert.equal(nodes[0].data.nodeType, 'default')
 })

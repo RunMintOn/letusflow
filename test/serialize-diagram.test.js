@@ -86,6 +86,29 @@ test('serializes optional node type attributes', () => {
   )
 })
 
+test('serializes node color overrides canonically with color=', () => {
+  const graph = {
+    direction: 'LR',
+    groups: [],
+    nodes: [
+      { id: 'start', label: '开始', type: 'start', color: 'blue' },
+      { id: 'end', label: '结束', type: 'end', color: '#d14d8b' },
+    ],
+    edges: [],
+  }
+
+  assert.equal(
+    serializeDiagram(graph),
+    [
+      'dir LR',
+      '',
+      'node start "开始" type=start color=blue',
+      'node end "结束" type=end color=#d14d8b',
+      '',
+    ].join('\n'),
+  )
+})
+
 test('serializes dotted and dashdot edges', () => {
   const graph = {
     direction: 'LR',

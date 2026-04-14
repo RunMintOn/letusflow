@@ -3,11 +3,19 @@ import { Handle, Position } from '@xyflow/react'
 
 export function DiagramNode({ id, data, selected }) {
   const inputRef = React.useRef(null)
+  const nodeType = data.nodeType ?? 'default'
   const nodeClassName = [
     'diagram-node',
-    data.nodeType === 'decision' ? 'diagram-node--decision' : '',
+    `diagram-node--type-${nodeType}`,
     data.isEditing ? 'diagram-node--editing' : '',
   ].filter(Boolean).join(' ')
+  const nodeStyle = data.nodeColor
+    ? {
+        '--node-accent-fill': data.nodeColor,
+        '--node-accent-stroke': data.nodeColor,
+        '--node-accent-stroke-strong': data.nodeColor,
+      }
+    : undefined
 
   React.useEffect(() => {
     if (!data.isEditing || !inputRef.current) {
@@ -19,7 +27,7 @@ export function DiagramNode({ id, data, selected }) {
   }, [data.isEditing])
 
   return (
-    <div className={nodeClassName}>
+    <div className={nodeClassName} style={nodeStyle}>
       <Handle type="target" position={data.targetPosition ?? Position.Left} />
       {data.isEditing ? (
         <input
