@@ -53,6 +53,7 @@ function AppInner() {
   const [selectedElement, setSelectedElement] = React.useState(null)
   const [editingNodeId, setEditingNodeId] = React.useState(null)
   const [editingNodeLabel, setEditingNodeLabel] = React.useState('')
+  const [isNodeDraggingEnabled, setIsNodeDraggingEnabled] = React.useState(false)
   const editingNodeIdRef = React.useRef(null)
   const editingNodeLabelRef = React.useRef('')
 
@@ -334,6 +335,10 @@ function AppInner() {
     })
   }, [])
 
+  const handleNodeDraggingToggle = React.useCallback(() => {
+    setIsNodeDraggingEnabled((current) => !current)
+  }, [])
+
   const handleConnect = React.useCallback((connection) => {
     if (!connection?.source || !connection?.target) {
       return
@@ -369,6 +374,7 @@ function AppInner() {
   const interactiveNodes = React.useMemo(
     () => withNodeActions(nodes, {
       onCreateSuccessor: handleCreateSuccessorNode,
+      isNodeDraggingEnabled,
       editingNodeId,
       editingLabel: editingNodeLabel,
       onEditChange: handleNodeEditChange,
@@ -381,6 +387,7 @@ function AppInner() {
       editingNodeLabel,
       handleCreateSuccessorNode,
       handleNodeEditChange,
+      isNodeDraggingEnabled,
       nodes,
       submitNodeEditing,
     ],
@@ -408,6 +415,7 @@ function AppInner() {
           onEdgeClick={handleEdgeClick}
           onPaneClick={handlePaneClick}
           onNodeDragStop={handleNodeDragStop}
+          nodesDraggable={isNodeDraggingEnabled}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           isSpacingPreviewActive={isSpacingPreviewActive}
@@ -422,19 +430,14 @@ function AppInner() {
           edgeRenderMode={edgeRenderMode}
           layoutSpacing={layoutSpacing}
           backgroundStyle={backgroundStyle}
+          isNodeDraggingEnabled={isNodeDraggingEnabled}
           onAutoLayout={handleAutoLayout}
+          onCreateNode={handleCreateNode}
           onEdgeRenderModeChange={handleEdgeRenderModeChange}
           onLayoutSpacingChange={handleLayoutSpacingChange}
+          onNodeDraggingToggle={handleNodeDraggingToggle}
           onBackgroundStyleChange={handleBackgroundStyleChange}
         />
-
-        <button
-          type="button"
-          className="canvas-create-node"
-          onClick={handleCreateNode}
-        >
-          新增节点
-        </button>
 
         <FloatingEdgeEditor
           selectedEdge={selectedEdge}

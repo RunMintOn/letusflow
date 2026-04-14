@@ -21,6 +21,7 @@ export function FlowCanvas({
   onEdgeClick,
   onPaneClick,
   onNodeDragStop,
+  nodesDraggable = true,
   nodeTypes,
   edgeTypes,
   isSpacingPreviewActive,
@@ -77,6 +78,7 @@ export function FlowCanvas({
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         onNodeDragStop={onNodeDragStop}
+        nodesDraggable={nodesDraggable}
         onMoveEnd={(_event, nextViewport) => onViewportChange?.(nextViewport)}
         proOptions={{ hideAttribution: true }}
       >

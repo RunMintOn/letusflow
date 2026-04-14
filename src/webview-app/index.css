@@ -305,11 +305,26 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   transform: translateX(-50%);
 }
 
+.canvas-hud--right {
+  top: 64px;
+  right: 16px;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  min-width: 72px;
+  padding: 10px 10px 12px;
+  border-radius: 14px;
+}
+
+.canvas-hud--actions {
+  top: 208px;
+  gap: 10px;
+}
+
 .canvas-hud__icon,
 .canvas-hud__button,
 .canvas-hud__chip,
 .canvas-display-menu__option,
-.canvas-create-node,
 .floating-edge-editor button {
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -338,6 +353,30 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   font-weight: 600;
 }
 
+.canvas-hud__button--full {
+  width: 100%;
+}
+
+.canvas-hud__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+}
+
+.canvas-hud__toggle.is-active {
+  border-color: var(--node-stroke-strong);
+  background: color-mix(in srgb, var(--node-stroke-strong) 12%, var(--panel));
+}
+
 .canvas-slider {
   display: inline-flex;
   align-items: center;
@@ -348,6 +387,58 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 
 .canvas-slider input {
   width: min(220px, 42vw);
+}
+
+.canvas-slider--vertical {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.canvas-slider__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.canvas-slider__input-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  align-self: center;
+  height: 112px;
+}
+
+.canvas-slider--vertical input {
+  width: 112px;
+  height: 20px;
+  background: transparent;
+  -webkit-appearance: none;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.canvas-slider--vertical input::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+}
+
+.canvas-slider--vertical input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--panel);
+  border: 1.5px solid var(--node-stroke-strong);
+  border-radius: 50%;
+  margin-top: -4px;
+  cursor: pointer;
 }
 
 .canvas-display-menu {
@@ -389,7 +480,6 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   background: rgba(188, 201, 125, 0.12);
 }
 
-.canvas-create-node,
 .floating-edge-editor {
   position: absolute;
   z-index: 10;
@@ -397,13 +487,6 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   background: var(--panel-muted);
   backdrop-filter: blur(12px);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
-}
-
-.canvas-create-node {
-  left: 16px;
-  bottom: 18px;
-  border-radius: 14px;
-  padding: 10px 14px;
 }
 
 .floating-edge-editor {
@@ -673,15 +756,34 @@ body.vscode-high-contrast .diagram-node--type-input {
 }
 
 @media (max-width: 900px) {
-  .canvas-hud--bottom {
+  .canvas-hud--bottom,
+  .canvas-hud--right,
+  .canvas-hud--actions {
+    left: 50%;
+    right: auto;
+    top: auto;
     max-width: calc(100vw - 32px);
+    bottom: 18px;
+    transform: translateX(-50%);
+  }
+
+  .canvas-slider--vertical {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .canvas-slider__input-wrap {
+    width: auto;
+    height: auto;
+  }
+
+  .canvas-slider--vertical input {
+    width: min(220px, 42vw);
+    height: auto;
+    transform: none;
   }
 
   .floating-edge-editor {
     width: min(220px, calc(100vw - 32px));
-  }
-
-  .canvas-create-node {
-    bottom: 84px;
   }
 }

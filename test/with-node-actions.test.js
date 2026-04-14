@@ -30,3 +30,43 @@ test('adds successor action to diagram nodes only', () => {
   assert.equal(next[1].data.onEditSubmit, onEditSubmit)
   assert.equal(next[1].data.onEditCancel, onEditCancel)
 })
+
+test('diagram nodes are only draggable when dragging is enabled and the node is not being edited', () => {
+  const nodes = [
+    { id: 'start', type: 'diagramNode', data: { label: '开始' } },
+  ]
+
+  const disabled = withNodeActions(nodes, {
+    onCreateSuccessor: () => {},
+    isNodeDraggingEnabled: false,
+    editingNodeId: null,
+    editingLabel: '',
+    onEditChange: () => {},
+    onEditSubmit: () => {},
+    onEditCancel: () => {},
+  })
+
+  const enabled = withNodeActions(nodes, {
+    onCreateSuccessor: () => {},
+    isNodeDraggingEnabled: true,
+    editingNodeId: null,
+    editingLabel: '',
+    onEditChange: () => {},
+    onEditSubmit: () => {},
+    onEditCancel: () => {},
+  })
+
+  const editing = withNodeActions(nodes, {
+    onCreateSuccessor: () => {},
+    isNodeDraggingEnabled: true,
+    editingNodeId: 'start',
+    editingLabel: '编辑中',
+    onEditChange: () => {},
+    onEditSubmit: () => {},
+    onEditCancel: () => {},
+  })
+
+  assert.equal(disabled[0].draggable, false)
+  assert.equal(enabled[0].draggable, true)
+  assert.equal(editing[0].draggable, false)
+})

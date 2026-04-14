@@ -8,7 +8,7 @@ export function withNodeActions(nodes, actions) {
 
     return {
       ...node,
-      draggable: !isEditing,
+      draggable: Boolean(actions.isNodeDraggingEnabled) && !isEditing,
       data: {
         ...node.data,
         onCreateSuccessor: actions.onCreateSuccessor,

@@ -23,6 +23,21 @@ test('floating canvas controls keep the layout spacing slider visible', async ()
   assert.match(source, /max="150"/)
   assert.match(source, /step="5"/)
   assert.match(source, /间距/)
+  assert.match(source, /canvas-hud--right/)
+  assert.match(source, /canvas-slider--vertical/)
+  assert.match(source, /canvas-slider__header/)
+  assert.match(source, /canvas-slider__input-wrap/)
+})
+
+test('floating canvas controls expose create-node and drag toggle actions in the right-side stack', async () => {
+  const source = await readFile('src/webview-app/components/FloatingCanvasControls.jsx', 'utf8')
+
+  assert.match(source, /onCreateNode/)
+  assert.match(source, /onNodeDraggingToggle/)
+  assert.match(source, /isNodeDraggingEnabled/)
+  assert.match(source, /新增节点/)
+  assert.match(source, /拖拽/)
+  assert.match(source, /canvas-hud--actions/)
 })
 
 test('floating canvas controls expose background style choices', async () => {
@@ -40,7 +55,8 @@ test('app renders floating controls instead of the old toolbar and inspector', a
 
   assert.match(source, /FloatingCanvasControls/)
   assert.match(source, /FloatingEdgeEditor/)
-  assert.match(source, /canvas-create-node/)
+  assert.match(source, /isNodeDraggingEnabled/)
+  assert.match(source, /handleNodeDraggingToggle/)
   assert.doesNotMatch(source, /TopToolbar/)
   assert.doesNotMatch(source, /InspectorPanel/)
 })
