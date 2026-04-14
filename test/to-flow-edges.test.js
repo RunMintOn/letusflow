@@ -66,6 +66,24 @@ test('maps dashed graph edges to dashed XYFlow edges', () => {
   assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, strokeDasharray: '4 4' })
 })
 
+test('maps dotted and dashdot graph edges to styled XYFlow edges', () => {
+  const edges = toFlowEdges([
+    { from: 'review', to: 'retry', label: '重试', style: 'dotted' },
+    { from: 'review', to: 'fallback', label: '降级', style: 'dashdot' },
+  ])
+
+  assert.deepEqual(edges[0].style, {
+    stroke: '#6f6f78',
+    strokeWidth: 1.2,
+    strokeDasharray: '1 4',
+  })
+  assert.deepEqual(edges[1].style, {
+    stroke: '#6f6f78',
+    strokeWidth: 1.2,
+    strokeDasharray: '4 2 1 2',
+  })
+})
+
 test('fans in converging edges with symmetric offsets on the same target side', () => {
   const edges = toFlowEdges(
     [

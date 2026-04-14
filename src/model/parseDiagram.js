@@ -3,6 +3,7 @@ const GROUP_PREFIX = 'group '
 const NODE_PREFIX = 'node '
 const EDGE_PREFIX = 'edge '
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9_-]+$/
+const EDGE_STYLE_PATTERN = 'dashed|dotted|dashdot'
 
 function parseQuotedValue(rawValue, line) {
   if (!rawValue.startsWith('"') || !rawValue.endsWith('"')) {
@@ -53,6 +54,10 @@ export function parseDiagram(source) {
       continue
     }
 
+    if (line.startsWith('#') || line.startsWith('//')) {
+      continue
+    }
+
     if (line.startsWith(DIRECTION_PREFIX)) {
       graph.direction = line.slice(DIRECTION_PREFIX.length).trim() || 'LR'
       continue
@@ -95,7 +100,9 @@ export function parseDiagram(source) {
     }
 
     if (line.startsWith(EDGE_PREFIX)) {
-      const match = line.match(/^edge\s+([A-Za-z0-9_-]+)\s+->\s+([A-Za-z0-9_-]+)(?:\s+("(?:(?:\\.)|[^"])*"))?(?:\s+(dashed))?$/)
+      const match = line.match(new RegExp(
+        `^edge\\s+([A-Za-z0-9_-]+)\\s+->\\s+([A-Za-z0-9_-]+)(?:\\s+("(?:(?:\\\\.)|[^"])*"))?(?:\\s+(${EDGE_STYLE_PATTERN}))?$`,
+      ))
       if (!match) {
         throw new Error(`Invalid edge line: ${line}`)
       }

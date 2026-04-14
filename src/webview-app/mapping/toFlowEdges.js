@@ -21,6 +21,11 @@ const READ_EDGE_MARKER = {
   type: 'arrowclosed',
   color: '#6f6f78',
 }
+const EDGE_STYLE_MAP = {
+  dashed: { strokeDasharray: '4 4' },
+  dotted: { strokeDasharray: '1 4' },
+  dashdot: { strokeDasharray: '4 2 1 2' },
+}
 
 export function toFlowEdges(graphEdges, layout, direction = 'LR', edgeRenderMode = 'straight') {
   const feedbackRoutes = toFeedbackRoutes(graphEdges, layout, direction)
@@ -61,9 +66,9 @@ export function toFlowEdges(graphEdges, layout, direction = 'LR', edgeRenderMode
       flowEdge.data.feedbackRoute = feedbackRoute
     }
 
-    if (edge.style === 'dashed') {
+    if (edge.style && EDGE_STYLE_MAP[edge.style]) {
       flowEdge.animated = false
-      flowEdge.style = { ...flowEdge.style, strokeDasharray: '4 4' }
+      flowEdge.style = { ...flowEdge.style, ...EDGE_STYLE_MAP[edge.style] }
     }
 
     return flowEdge

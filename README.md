@@ -62,6 +62,8 @@ edge start -> decision
 edge decision -> call "是"
 edge decision -> end "否"
 edge call -> decision dashed
+# 注释也支持：
+# edge call -> end "跳过"
 ```
 
 **关键字一览：**
@@ -71,7 +73,7 @@ edge call -> decision dashed
 | `dir LR\|TD\|TB` | 设置布局方向 |
 | `group <id> "标题"` | 声明分组 |
 | `node <id> "标签" [in <组>] [type=decision]` | 定义节点 |
-| `edge <起点> -> <终点> ["标签"] [dashed]` | 定义连线 |
+| `edge <起点> -> <终点> ["标签"] [dashed\|dotted\|dashdot]` | 定义连线 |
 
 完整语法参考 → [`docs/flow-syntax.md`](docs/flow-syntax.md)
 

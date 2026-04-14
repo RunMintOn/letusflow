@@ -68,3 +68,44 @@ test('parses optional node type attributes', () => {
     { id: 'grouped', label: '分组决策', groupId: 'prompt', type: 'decision' },
   ])
 })
+
+test('ignores whole-line hash and slash comments', () => {
+  const graph = parseDiagram([
+    '  # section comment',
+    '// another comment',
+    'dir TD',
+    '',
+    'node start "开始"',
+    '  // between entries',
+    'edge start -> done "通过" dotted',
+    'node done "结束"',
+  ].join('\n'))
+
+  assert.equal(graph.direction, 'TD')
+  assert.deepEqual(graph.nodes, [
+    { id: 'start', label: '开始' },
+    { id: 'done', label: '结束' },
+  ])
+  assert.deepEqual(graph.edges, [
+    { from: 'start', to: 'done', label: '通过', style: 'dotted' },
+  ])
+})
+
+test('parses additional edge styles', () => {
+  const graph = parseDiagram([
+    'edge review -> retry "重试" dotted',
+    'edge review -> fallback "降级" dashdot',
+  ].join('\n'))
+
+  assert.deepEqual(graph.edges, [
+    { from: 'review', to: 'retry', label: '重试', style: 'dotted' },
+    { from: 'review', to: 'fallback', label: '降级', style: 'dashdot' },
+  ])
+})
+
+test('rejects edge style before label', () => {
+  assert.throws(
+    () => parseDiagram('edge review -> fallback dashed "降级"'),
+    /Invalid edge line/,
+  )
+})

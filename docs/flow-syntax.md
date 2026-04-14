@@ -9,13 +9,15 @@
 一个 `.flow` 文件由四个部分组成（可选，顺序可变）：
 
 ```
-dir LR                    # 方向配置（仅示意，实际不支持 # 注释）
-group prompt "Prompt Assembly"   # 分组声明
-node start "开始"         # 节点定义
-edge start -> end "完成"  # 连线定义
+dir LR
+# 分组声明
+group prompt "Prompt Assembly"
+// 节点定义
+node start "开始"
+edge start -> end "完成"
 ```
 
-> **注意：** `.flow` 语法**不支持注释**（`#` 或 `//` 会导致解析错误）。上述代码块中的注释仅为说明用途，实际文件中请删除。空行会被自动忽略。
+> **注意：** 仅支持**整行注释**。去掉前导空白后，以 `#` 或 `//` 开头的整行会被忽略；暂不支持行尾注释。空行也会被自动忽略。
 
 ---
 
@@ -90,19 +92,23 @@ node <节点ID> "<节点标签>" [in <组ID>] [type=<节点类型>]
 edge start -> end
 edge review -> done "通过"
 edge review -> revise "驳回" dashed
-edge A -> B dashed        # 无标签，仅虚线
+edge review -> retry "重试" dotted
+edge review -> fallback "降级" dashdot
+edge A -> B dashed
 ```
 
 **语法：**
 ```
-edge <起点ID> -> <终点ID> ["<连线标签>"] [dashed]
+edge <起点ID> -> <终点ID> ["<连线标签>"] [dashed|dotted|dashdot]
 ```
 
 - **`->`**：箭头符号，表示方向
 - **`"<连线标签>"`**：可选，显示在连线上的文字
 - **`dashed`**：可选，将连线渲染为虚线
+- **`dotted`**：可选，将连线渲染为点线
+- **`dashdot`**：可选，将连线渲染为点划线
 
-> **注意：** 目前仅支持 `dashed` 一种边样式，不支持 `solid`、`dotted` 等其他样式。
+> **注意：** 当前样式关键字必须放在标签后面；`edge A -> B dashed "说明"` 仍然是非法语法。
 
 ---
 
@@ -163,6 +169,8 @@ node path "C:\\Users\\test"
 | 节点定义 | 显式 `node` 声明 | 隐式（在连线中首次出现） |
 | 连线标签 | `edge A -> B "label"` | `A -->|label| B` |
 | 虚线 | `edge A -> B dashed` | `A -.-> B` |
+| 点线 | `edge A -> B "label" dotted` | 不直接支持 |
+| 点划线 | `edge A -> B "label" dashdot` | 不直接支持 |
 | 分组 | `group` 声明 + `in` 引用 | `subgraph...end` 嵌套 |
 | 手动布局 | 不需要（自动排版） | 不需要（自动排版） |
 
@@ -172,7 +180,7 @@ node path "C:\\Users\\test"
 
 | 错误信息 | 原因 | 解决方法 |
 |----------|------|----------|
-| `Unknown line: ...` | 使用了不支持的语法（如 `#` 注释） | 删除注释行 |
+| `Unknown line: ...` | 使用了不支持的关键字或写法 | 检查是否把样式写在标签前、或写了不支持的语法 |
 | `Invalid escape sequence` | 使用了不支持的转义序列 | 仅使用 `\"` 和 `\\` |
 | 节点/分组不显示 | 重复定义了相同的 ID | 确保每个节点/分组 ID 唯一 |
 

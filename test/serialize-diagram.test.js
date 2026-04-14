@@ -85,3 +85,26 @@ test('serializes optional node type attributes', () => {
     ].join('\n'),
   )
 })
+
+test('serializes dotted and dashdot edges', () => {
+  const graph = {
+    direction: 'LR',
+    groups: [],
+    nodes: [],
+    edges: [
+      { from: 'review', to: 'retry', label: '重试', style: 'dotted' },
+      { from: 'review', to: 'fallback', label: '降级', style: 'dashdot' },
+    ],
+  }
+
+  assert.equal(
+    serializeDiagram(graph),
+    [
+      'dir LR',
+      '',
+      '',
+      'edge review -> retry "重试" dotted',
+      'edge review -> fallback "降级" dashdot',
+    ].join('\n'),
+  )
+})
