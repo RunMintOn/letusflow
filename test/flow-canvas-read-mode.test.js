@@ -35,3 +35,12 @@ test('flow canvas falls back to a safe default viewport when none is provided', 
   assert.match(source, /resolvedInitialViewport/)
   assert.match(source, /initialViewport \?\? \{ x: 0, y: 0, zoom: 1 \}/)
 })
+
+test('flow canvas exposes background style class hooks', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /backgroundStyle/)
+  assert.match(source, /flow-canvas--paper/)
+  assert.match(source, /flow-canvas--obsidian/)
+  assert.match(source, /flow-canvas--gradient/)
+})

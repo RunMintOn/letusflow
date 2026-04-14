@@ -320,6 +320,7 @@ function AppInner() {
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           isSpacingPreviewActive={isSpacingPreviewActive}
+          backgroundStyle={backgroundStyle}
           initialViewport={initialDocument.viewport}
           fitViewOnLoad={initialDocument.fitViewOnLoad}
           fitViewRequestToken={initialDocument.fitViewRequestToken}

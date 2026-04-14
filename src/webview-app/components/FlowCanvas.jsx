@@ -14,6 +14,7 @@ export function FlowCanvas({
   nodeTypes,
   edgeTypes,
   isSpacingPreviewActive,
+  backgroundStyle = 'paper',
   initialViewport,
   fitViewOnLoad,
   fitViewRequestToken,
@@ -23,6 +24,14 @@ export function FlowCanvas({
   const nodesInitialized = useNodesInitialized()
   const lastAppliedFitViewRequestRef = React.useRef(0)
   const resolvedInitialViewport = initialViewport ?? { x: 0, y: 0, zoom: 1 }
+  const canvasStyleClassName = backgroundStyle === 'obsidian'
+    ? 'flow-canvas--obsidian'
+    : backgroundStyle === 'gradient'
+      ? 'flow-canvas--gradient'
+      : 'flow-canvas--paper'
+  const canvasClassName = isSpacingPreviewActive
+    ? `flow-canvas ${canvasStyleClassName} flow-canvas--spacing-preview`
+    : `flow-canvas ${canvasStyleClassName}`
 
   React.useEffect(() => {
     if (!fitViewOnLoad || !fitViewRequestToken) {
@@ -42,7 +51,7 @@ export function FlowCanvas({
   }, [fitViewOnLoad, fitViewRequestToken, nodesInitialized, onViewportChange, reactFlow])
 
   return (
-    <div className={isSpacingPreviewActive ? 'flow-canvas flow-canvas--spacing-preview' : 'flow-canvas'}>
+    <div className={canvasClassName}>
       <ReactFlow
         defaultViewport={resolvedInitialViewport}
         nodes={nodes}
@@ -59,7 +68,7 @@ export function FlowCanvas({
         onMoveEnd={(_event, nextViewport) => onViewportChange?.(nextViewport)}
         proOptions={{ hideAttribution: true }}
       >
-        <Background className="flow-background" gap={24} size={1} />
+        <Background className="flow-background" gap={22} size={1.35} />
         <Controls showInteractive={false} />
       </ReactFlow>
     </div>
