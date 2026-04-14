@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 
-import { loadDiagramDocument } from '../src/workspace/loadDiagramDocument.js'
+import { loadDiagramDocument, loadDiagramDocumentFromSource } from '../src/workspace/loadDiagramDocument.js'
 
 test('loads diagram source and derives layout from graph instead of old sidecar positions', async () => {
   const files = new Map([
@@ -43,4 +43,16 @@ test('loads diagram source and derives layout from graph instead of old sidecar 
   assert.equal(doc.layout.nodes.start.w, 132)
   assert.equal(doc.layout.nodes.start.h, 46)
   assert.ok(doc.layout.nodes.start.x < doc.layout.nodes.review.x)
+})
+
+test('loads a diagram document directly from source text', async () => {
+  const model = await loadDiagramDocumentFromSource(
+    '/workspace/example.flow',
+    'dir LR\nnode start "开始"\n',
+  )
+
+  assert.equal(model.sourcePath, '/workspace/example.flow')
+  assert.equal(model.sourceText, 'dir LR\nnode start "开始"\n')
+  assert.equal(model.graph.nodes.length, 1)
+  assert.ok(model.layout.nodes.start)
 })
