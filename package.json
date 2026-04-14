@@ -13,13 +13,19 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:diagramEditor.openPreview"
+    "onCustomEditor:diagramEditor.flowEditor"
   ],
   "contributes": {
-    "commands": [
+    "customEditors": [
       {
-        "command": "diagramEditor.openPreview",
-        "title": "Diagram Editor: Open Preview"
+        "viewType": "diagramEditor.flowEditor",
+        "displayName": "Flow Diagram Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.flow"
+          }
+        ],
+        "priority": "default"
       }
     ]
   },
