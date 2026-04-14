@@ -111,6 +111,7 @@ export async function resolveCustomFlowEditor({
     { deleteEdge },
     { renameEdgeLabel },
     { createSuccessorNode },
+    { toWebviewSyncState },
   ] = await Promise.all([
     loadModule('./extension-helpers/createWebviewDocumentModel.js'),
     loadModule('./model/renameNodeLabel.js'),
@@ -126,6 +127,7 @@ export async function resolveCustomFlowEditor({
     loadModule('./model/deleteEdge.js'),
     loadModule('./model/renameEdgeLabel.js'),
     loadModule('./model/createSuccessorNode.js'),
+    loadModule('./webview/toWebviewSyncState.js'),
   ])
 
   const fsLike = createTextDocumentFsLike(document)
@@ -172,6 +174,27 @@ export async function resolveCustomFlowEditor({
         vscode.Uri.joinPath,
       ),
     )
+  }
+
+  const postSyncState = async (nextModel = documentModel, options = {}) => {
+    const payload = toWebviewSyncState(
+      nextModel,
+      {
+        layoutSpacing,
+        edgeRenderMode,
+        backgroundStyle,
+        viewport,
+      },
+      {
+        fitViewOnLoad: options.fitViewOnLoad ?? false,
+        fitViewRequestToken: options.fitViewRequestToken ?? fitViewRequestToken,
+      },
+    )
+
+    await webviewPanel.webview.postMessage({
+      type: 'syncState',
+      payload,
+    })
   }
 
   const persistGraph = async () => {
@@ -243,7 +266,7 @@ export async function resolveCustomFlowEditor({
         const mode = await persistGraph()
         outputChannel.appendLine(`[renameNode] persisted via ${mode}`)
         postHostDebug(webviewPanel, `renameNode saved via ${mode}: ${message.nodeId} -> ${nextLabel}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -258,7 +281,7 @@ export async function resolveCustomFlowEditor({
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createNode saved via ${mode}: ${nodeId}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -278,15 +301,14 @@ export async function resolveCustomFlowEditor({
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createSuccessorNode saved via ${mode}: ${message.nodeId} -> ${nodeId}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
       if (message?.type === 'autoLayout') {
         documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(webviewPanel, 'autoLayout applied')
-        fitViewRequestToken += 1
-        await rerender(documentModel, { fitViewOnLoad: true })
+        await postSyncState()
         return
       }
 
@@ -294,7 +316,7 @@ export async function resolveCustomFlowEditor({
         layoutSpacing = normalizeLayoutSpacing(message.value)
         documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(webviewPanel, `setSpacing applied: ${layoutSpacing}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -311,7 +333,7 @@ export async function resolveCustomFlowEditor({
           backgroundStyle,
         )
         postHostDebug(webviewPanel, `setBackgroundStyle applied: ${backgroundStyle}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -327,11 +349,16 @@ export async function resolveCustomFlowEditor({
 
       if (message?.type === 'deleteNode' && message.nodeId) {
         documentModel.graph = deleteNode(documentModel.graph, message.nodeId)
-        documentModel.layout = autoLayoutCurrentGraph()
+        documentModel.layout = {
+          ...documentModel.layout,
+          nodes: Object.fromEntries(
+            Object.entries(documentModel.layout.nodes ?? {}).filter(([nodeId]) => nodeId !== message.nodeId),
+          ),
+        }
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteNode saved via ${mode}: ${message.nodeId}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -340,7 +367,7 @@ export async function resolveCustomFlowEditor({
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteEdge saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -362,7 +389,7 @@ export async function resolveCustomFlowEditor({
         documentModel.graph = renameEdgeLabel(documentModel.graph, message.edge, nextLabel)
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `renameEdgeLabel saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
-        await rerender()
+        await postSyncState()
         return
       }
 
@@ -387,7 +414,7 @@ export async function resolveCustomFlowEditor({
         documentModel.graph = createEdge(documentModel.graph, { from, to, label })
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createEdge saved via ${mode}: ${from} -> ${to}`)
-        await rerender()
+        await postSyncState()
       }
     } catch (error) {
       outputChannel.appendLine(`[message-handler] failed: ${error?.stack ?? error}`)

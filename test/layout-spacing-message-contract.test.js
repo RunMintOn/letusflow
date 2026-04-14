@@ -14,7 +14,7 @@ test('extension handles layout spacing as view state without persisting graph so
   assert.ok(setSpacingBlock)
   assert.doesNotMatch(setSpacingBlock, /persistGraph\(\)/)
   assert.match(setSpacingBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
-  assert.match(setSpacingBlock, /await rerender\(\)/)
+  assert.match(setSpacingBlock, /await postSyncState\(\)/)
 })
 
 test('extension stores viewport as view state without rerendering', async () => {
@@ -68,6 +68,14 @@ test('webview app posts viewport updates and fit requests separately', async () 
   assert.match(appSource, /fitViewRequestToken/)
 })
 
+test('webview app listens for syncState and updates live state', async () => {
+  const source = await readFile('src/webview-app/App.jsx', 'utf8')
+
+  assert.match(source, /window\.addEventListener\('message'/)
+  assert.match(source, /syncState/)
+  assert.match(source, /setDocumentModel\(message\.payload\)/)
+})
+
 test('webview app only previews spacing layouts while preview mode is active', async () => {
   const stateSource = await readFile('src/webview-app/state/useEditorState.jsx', 'utf8')
   const layoutSource = await readFile('src/webview-app/state/toEditorLayout.js', 'utf8')
@@ -87,6 +95,25 @@ test('edge edits no longer recompute host layout automatically', async () => {
   assert.ok(createEdgeBlock)
   assert.doesNotMatch(deleteEdgeBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
   assert.doesNotMatch(createEdgeBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
+})
+
+test('deleteNode preserves remaining layout instead of auto-layouting', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+  const block = source.match(/if \(message\?\.type === 'deleteNode' && message\.nodeId\) \{[\s\S]*?return\n      \}/)?.[0]
+
+  assert.ok(block)
+  assert.doesNotMatch(block, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
+  assert.match(block, /nodes:\s*Object\.fromEntries/)
+})
+
+test('autoLayout no longer forces fitView during incremental sync', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+  const block = source.match(/if \(message\?\.type === 'autoLayout'\) \{[\s\S]*?return\n      \}/)?.[0]
+
+  assert.ok(block)
+  assert.doesNotMatch(block, /fitViewRequestToken \+= 1/)
+  assert.doesNotMatch(block, /fitViewOnLoad:\s*true/)
+  assert.match(block, /postSyncState\(/)
 })
 
 test('webview app preserves background style and posts updates to host', async () => {

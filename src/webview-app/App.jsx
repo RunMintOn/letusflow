@@ -11,6 +11,7 @@ import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
 import { fromConnectParams } from './mapping/fromConnectParams.js'
 import { useEditorState } from './state/useEditorState.jsx'
+import { reconcileSelectedElement } from './state/reconcileSelectedElement.js'
 import { resetFlowLayout } from './actions/resetFlowLayout.js'
 import { deleteSelectedElement } from './actions/deleteSelectedElement.js'
 import { withNodeActions } from './actions/withNodeActions.js'
@@ -36,16 +37,16 @@ function AppInner() {
   const [edgeRenderMode, setEdgeRenderMode] = React.useState(initialDocument.edgeRenderMode ?? 'straight')
   const [layoutSpacing, setLayoutSpacing] = React.useState(initialDocument.layoutSpacing ?? 100)
   const [backgroundStyle, setBackgroundStyle] = React.useState(initialDocument.backgroundStyle ?? 'paper')
-  const documentError = initialDocument.documentError ?? null
   const spacingMessageTimeoutRef = React.useRef(null)
   const spacingPreviewTimeoutRef = React.useRef(null)
   const [isSpacingPreviewActive, setIsSpacingPreviewActive] = React.useState(false)
-  const { documentModel, flowNodes, flowEdges } = useEditorState(
+  const { documentModel, setDocumentModel, flowNodes, flowEdges } = useEditorState(
     initialDocument,
     edgeRenderMode,
     layoutSpacing,
     isSpacingPreviewActive,
   )
+  const documentError = documentModel.documentError ?? null
   const [nodes, setNodes, onNodesChange] = useNodesState(flowNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowEdges)
   const [selectedElement, setSelectedElement] = React.useState(null)
@@ -61,12 +62,33 @@ function AppInner() {
   }, [])
 
   React.useEffect(() => {
+    const handleMessage = (event) => {
+      const message = event.data
+      if (message?.type !== 'syncState' || !message.payload) {
+        return
+      }
+
+      setDocumentModel(message.payload)
+      setEdgeRenderMode(message.payload.edgeRenderMode ?? 'straight')
+      setLayoutSpacing(message.payload.layoutSpacing ?? 100)
+      setBackgroundStyle(message.payload.backgroundStyle ?? 'paper')
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [setDocumentModel])
+
+  React.useEffect(() => {
     setNodes(flowNodes)
   }, [flowNodes, setNodes])
 
   React.useEffect(() => {
     setEdges(flowEdges)
   }, [flowEdges, setEdges])
+
+  React.useEffect(() => {
+    setSelectedElement((current) => reconcileSelectedElement(current, flowNodes, flowEdges))
+  }, [flowEdges, flowNodes])
 
   React.useEffect(() => {
     return () => {
@@ -330,9 +352,9 @@ function AppInner() {
           edgeTypes={edgeTypes}
           isSpacingPreviewActive={isSpacingPreviewActive}
           backgroundStyle={backgroundStyle}
-          initialViewport={initialDocument.viewport}
-          fitViewOnLoad={initialDocument.fitViewOnLoad}
-          fitViewRequestToken={initialDocument.fitViewRequestToken}
+          initialViewport={documentModel.viewport}
+          fitViewOnLoad={documentModel.fitViewOnLoad}
+          fitViewRequestToken={documentModel.fitViewRequestToken}
           onViewportChange={handleViewportChange}
         />
         <InspectorPanel

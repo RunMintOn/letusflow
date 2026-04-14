@@ -41,3 +41,19 @@ test('custom flow editor surfaces unexpected host errors to the user', async () 
   assert.match(source, /showErrorMessage/)
   assert.match(source, /Diagram editor failed:/)
 })
+
+test('custom flow editor posts incremental sync messages for structure edits', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+
+  assert.match(source, /type:\s*'syncState'/)
+  assert.match(source, /postSyncState/)
+})
+
+test('external text refreshes still use full rerender', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+
+  const refreshBlock = source.match(/const refreshFromDocument = async \(\) => \{[\s\S]*?\n  \}/)?.[0]
+  assert.ok(refreshBlock)
+  assert.match(refreshBlock, /await rerender\(/)
+  assert.doesNotMatch(refreshBlock, /postSyncState\(/)
+})

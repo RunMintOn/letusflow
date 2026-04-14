@@ -1,0 +1,24 @@
+export function reconcileSelectedElement(selectedElement, nodes, edges) {
+  if (!selectedElement) {
+    return null
+  }
+
+  if (selectedElement.type === 'node') {
+    return nodes.some((node) => node.id === selectedElement.id) ? selectedElement : null
+  }
+
+  if (selectedElement.type === 'edge') {
+    const nextEdge = edges.find((edge) => edge.id === selectedElement.id)
+    if (!nextEdge) {
+      return null
+    }
+
+    return {
+      type: 'edge',
+      id: nextEdge.id,
+      edgeRef: nextEdge.data.edgeRef,
+    }
+  }
+
+  return null
+}
