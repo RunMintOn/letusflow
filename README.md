@@ -5,7 +5,17 @@
 使用 `.flow` 声明式语法描述图结构，自动计算布局并实时预览，无需手动拖拽排布节点。
 
 ---
+## 例子1
+![alt text](image.png)
+在一个简单的agent loop例子里面  
+ .canvas 是 .flow 的约 **5.8 倍**，是 Mermaid 的约 **12 倍**
+ 至于.excalidraw  ,那更是复杂
 
+## 例子2
+![alt text](ee79615dda75e93724aee9823e9a4ef3.png)
+而在.canvas上要 **700+行** ,可见其复杂度
+
+---
 ## 特性
 
 - **简洁的 DSL** — 4 个关键字（`dir` / `group` / `node` / `edge`），5 分钟上手
@@ -31,7 +41,8 @@ npm run build
 1. 在 VS Code 中打开本项目目录
 2. 按 `F5` 启动 Extension Host
 3. 在新窗口中打开 `example.flow` 或任意 `.flow` 文件
-4. 执行命令 `Diagram Editor: Open Preview`
+4. `.flow` 文件会默认使用自定义编辑器 **Flow Diagram Editor** 打开
+5. 如果当前文件以普通文本方式打开，执行 `Reopen Editor With...`，然后选择 **Flow Diagram Editor**
 
 ---
 
