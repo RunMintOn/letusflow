@@ -6,6 +6,7 @@ import { TopToolbar } from './components/TopToolbar.jsx'
 import { InspectorPanel } from './components/InspectorPanel.jsx'
 import { toInspectorLayoutClass } from './components/inspectorLayout.js'
 import { FeedbackEdge } from './components/edges/FeedbackEdge.jsx'
+import { NormalReadEdge } from './components/edges/NormalReadEdge.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
 import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
@@ -22,6 +23,7 @@ const nodeTypes = {
 }
 
 const edgeTypes = {
+  readEdge: NormalReadEdge,
   feedbackEdge: FeedbackEdge,
 }
 
