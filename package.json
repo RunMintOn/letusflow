@@ -3,13 +3,18 @@
   "displayName": "LetusFlow",
   "description": "A VS Code extension for editing and previewing flow diagram DSL with automatic layout.",
   "version": "0.0.1",
-  "private": true,
+  "license": "MIT",
   "type": "module",
+  "author": "RunMintOn",
   "main": "./src/extension.cjs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/example/letusflow"
+    "url": "git+https://github.com/RunMintOn/letusflow.git"
   },
+  "bugs": {
+    "url": "https://github.com/RunMintOn/letusflow/issues"
+  },
+  "homepage": "https://github.com/RunMintOn/letusflow#readme",
   "engines": {
     "vscode": "^1.90.0"
   },
