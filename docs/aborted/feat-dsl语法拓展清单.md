@@ -252,3 +252,26 @@ node "用户输入"    → 自动分配 node_1
        是的，完全正确。type 是一个打包预设。你写 type=decision，系统就自动应用“菱形 +
     黄色边框”；写 type=error 就自动应用“矩形 +
     红色边框”。形状和颜色是强绑定的，你不需要、也不能分开指定。
+
+
+    这份改动单里，真正还没做的核心是两块：
+
+  - # / // 行注释支持，见 docs/feat-dsl语法拓展清单.md:22
+  - 边样式从仅 dashed 扩到 dotted / dashdot，见 docs/feat-dsl语法拓展清单.md:66
+
+  type= 这一块文档写成“待实现”，但代码里其实已经通了大半：
+
+  - parser 已支持 type=xxx，见 src/model/parseDiagram.js:76
+  - serializer 也会写回 type=，见 src/model/serializeDiagram.js:17
+  - toFlowNodes 会把 node.type 传到前端，见 src/webview-app/mapping/toFlowNodes.js:28
+  - 但前端现在只对 decision 做了专门样式，见 src/webview-app/components/nodes/DiagramNode.jsx:6
+
+  所以如果你下一步按这份文档推进，最合理的理解是：
+
+  我还看到两个实现时必须先定清的点：
+
+  - 注释最好先只支持“整行注释”，不要顺手做行尾注释。因为当前 DSL 有引号字符串，行尾 # / // 一旦进
+    来，解析很容易和标签文本冲突。
+  - 文档里的示例同时出现了 edge A -> B "进入" dashed 和 edge review -> fallback dashed "降级" 两种
+    顺序，但当前解析器只支持“标签在前、样式在后”，见 src/model/parseDiagram.js:97。下一步如果要
+    改，最好先决定是否要支持两种写法；这是语法边界，不是小细节。

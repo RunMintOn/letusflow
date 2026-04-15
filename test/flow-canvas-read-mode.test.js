@@ -52,3 +52,12 @@ test('flow canvas uses a dedicated obsidian dot-grid layer', async () => {
   assert.match(source, /backgroundStyle === 'obsidian'/)
   assert.match(source, /variant=\{BackgroundVariant\.Dots\}/)
 })
+
+test('flow canvas disables double-click zoom and limits panning to right-drag', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /zoomOnDoubleClick=\{false\}/)
+  assert.match(source, /zoomOnPinch=\{false\}/)
+  assert.match(source, /panOnDrag=\{\[2\]\}/)
+  assert.match(source, /onPaneContextMenu=\{\(event\) => event\.preventDefault\(\)\}/)
+})

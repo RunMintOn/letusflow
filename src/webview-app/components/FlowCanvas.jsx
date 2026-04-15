@@ -77,8 +77,12 @@ export function FlowCanvas({
         onNodeDoubleClick={onNodeDoubleClick}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
+        onPaneContextMenu={(event) => event.preventDefault()}
         onNodeDragStop={onNodeDragStop}
         nodesDraggable={nodesDraggable}
+        zoomOnDoubleClick={false}
+        zoomOnPinch={false}
+        panOnDrag={[2]}
         onMoveEnd={(_event, nextViewport) => onViewportChange?.(nextViewport)}
         proOptions={{ hideAttribution: true }}
       >

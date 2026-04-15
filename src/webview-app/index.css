@@ -761,32 +761,14 @@ body.vscode-high-contrast .diagram-node--type-input {
   left: -5px;
 }
 
-@media (max-width: 900px) {
-  .canvas-hud--bottom,
-  .canvas-hud--right,
-  .canvas-hud--actions {
+@media (max-width: 640px) {
+  .canvas-hud--bottom {
     left: 50%;
     right: auto;
     top: auto;
     max-width: calc(100vw - 32px);
     bottom: 18px;
     transform: translateX(-50%);
-  }
-
-  .canvas-slider--vertical {
-    flex-direction: row;
-    gap: 10px;
-  }
-
-  .canvas-slider__input-wrap {
-    width: auto;
-    height: auto;
-  }
-
-  .canvas-slider--vertical input {
-    width: min(220px, 42vw);
-    height: auto;
-    transform: none;
   }
 
   .floating-edge-editor {

@@ -19,3 +19,18 @@ test('layout spacing slider sits under the auto-layout button as a compact top-r
   assert.ok(wrapBlock, 'expected a .canvas-slider__input-wrap CSS block')
   assert.match(wrapBlock, /height:\s*112px;/)
 })
+
+test('narrow-width layout no longer collapses the right rail and action stack into one bottom slot', async () => {
+  const source = await readFile('src/webview-app/index.css', 'utf8')
+
+  assert.doesNotMatch(
+    source,
+    /@media \(max-width: 900px\)\s*\{\s*\.canvas-hud--bottom,\s*\.canvas-hud--right,\s*\.canvas-hud--actions/,
+  )
+  assert.match(source, /@media \(max-width: 640px\)/)
+  assert.match(source, /@media \(max-width: 640px\)\s*\{\s*\.canvas-hud--bottom\s*\{/)
+  assert.doesNotMatch(
+    source,
+    /@media \(max-width: 640px\)\s*\{\s*\.canvas-hud--bottom,\s*\.canvas-hud--right,\s*\.canvas-hud--actions/,
+  )
+})
