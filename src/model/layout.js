@@ -1,3 +1,4 @@
+import { applyGroupMargins } from './applyGroupMargins.js'
 import dagre from 'dagre'
 import { derivePrimaryFlow } from './derivePrimaryFlow.js'
 import { getNodeDimensions } from './nodeDimensions.js'
@@ -59,8 +60,9 @@ export function autoLayoutGraph(graph, options = {}) {
   }
 
   const primaryFlowScores = derivePrimaryFlow(graph)
+  const postLayout = postLayoutRanks(graph, layout, spacing, primaryFlowScores)
 
-  return postLayoutRanks(graph, layout, spacing, primaryFlowScores)
+  return applyGroupMargins(graph, postLayout)
 }
 export function toDagreEdgePriority(edge, nodeOrder) {
   const sourceOrder = nodeOrder.get(edge.from)

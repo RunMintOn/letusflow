@@ -237,3 +237,24 @@ test('auto-layout reorders TD same-rank siblings without breaking vertical layer
   assert.ok(next.nodes.task.x < next.nodes.reply.x)
   assert.ok(next.nodes.reply.x < next.nodes.clarify.x)
 })
+
+test('auto-layout keeps grouped stage-2 nodes visually tighter without changing main layering', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    groups: [{ id: 'stage2', label: 'Stage 2' }],
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'task_entry', label: '任务模式', groupId: 'stage2' },
+      { id: 'planner', label: '执行规划', groupId: 'stage2' },
+      { id: 'tool_exec', label: '工具执行器', groupId: 'stage2' },
+    ],
+    edges: [
+      { from: 'start', to: 'task_entry' },
+      { from: 'task_entry', to: 'planner' },
+      { from: 'planner', to: 'tool_exec' },
+    ],
+  })
+
+  assert.ok(next.nodes.start.y < next.nodes.task_entry.y)
+  assert.ok(next.nodes.task_entry.x <= next.nodes.planner.x)
+})
