@@ -259,6 +259,23 @@ test('auto-layout keeps grouped stage-2 nodes visually tighter without changing 
   assert.ok(next.nodes.task_entry.x <= next.nodes.planner.x)
 })
 
+test('auto-layout returns edge label boxes for labeled edges without exposing dummy nodes', () => {
+  const next = autoLayoutGraph({
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+    ],
+    edges: [
+      { from: 'start', to: 'review', label: '通过' },
+    ],
+  })
+
+  assert.deepEqual(Object.keys(next.nodes), ['start', 'review'])
+  assert.deepEqual(Object.keys(next.edgeLabels), ['start->review#通过'])
+  assert.ok(next.edgeLabels['start->review#通过'].w >= 52)
+})
+
 test('auto-layout keeps the accorda overview stage-2 group compact after post-layout', async () => {
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
