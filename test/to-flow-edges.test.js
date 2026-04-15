@@ -150,3 +150,21 @@ test('maps endpoint node metadata needed for decision boundary clipping', () => 
     },
   })
 })
+
+test('passes edge label layout geometry into edge data when layout provides it', () => {
+  const edges = toFlowEdges(
+    [{ from: 'start', to: 'review', label: '通过' }],
+    [{ id: 'start', label: '开始' }, { id: 'review', label: '审批' }],
+    {
+      nodes: {
+        start: { x: 80, y: 120, w: 132, h: 46 },
+        review: { x: 280, y: 120, w: 132, h: 46 },
+      },
+      edgeLabels: {
+        'start->review#通过': { x: 180, y: 96, w: 52, h: 24 },
+      },
+    },
+  )
+
+  assert.deepEqual(edges[0].data.labelLayout, { x: 180, y: 96, w: 52, h: 24 })
+})

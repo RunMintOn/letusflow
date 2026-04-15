@@ -25,6 +25,9 @@ export function NormalReadEdge({
     sourceNode: data?.sourceNode,
     targetNode: data?.targetNode,
   })
+  const labelLayout = data?.labelLayout
+  const resolvedLabelX = labelLayout ? Math.round(labelLayout.x + labelLayout.w / 2) : geometry.label.x
+  const resolvedLabelY = labelLayout ? Math.round(labelLayout.y + labelLayout.h / 2) : geometry.label.y
 
   return (
     <BaseEdge
@@ -33,8 +36,8 @@ export function NormalReadEdge({
       markerEnd={markerEnd}
       style={style}
       label={label}
-      labelX={geometry.label.x}
-      labelY={geometry.label.y}
+      labelX={resolvedLabelX}
+      labelY={resolvedLabelY}
       labelStyle={labelStyle}
       labelBgPadding={labelBgPadding}
       labelBgBorderRadius={labelBgBorderRadius}
