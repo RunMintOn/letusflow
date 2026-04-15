@@ -1,11 +1,15 @@
 {
   "name": "diagram-editor-mvp",
-  "displayName": "Diagram Editor MVP",
-  "description": "VS Code MVP for a custom diagram DSL with algorithmic layout.",
+  "displayName": "LetusFlow",
+  "description": "A VS Code extension for editing and previewing flow diagram DSL with automatic layout.",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "main": "./src/extension.cjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/example/letusflow"
+  },
   "engines": {
     "vscode": "^1.90.0"
   },

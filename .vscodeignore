@@ -1,3 +1,9 @@
 docs/**
 superpowers/**
 test/**
+node_modules/**
+.eslintrc*
+.gitignore
+*.md
+.png/**
+!example.flow

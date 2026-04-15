@@ -1,0 +1,67 @@
+# 双层工具循环 - 大模型视角
+
+dir TB
+
+# ==================== 节点定义 ====================
+
+# 用户输入
+node user_input "User Input" type=input
+
+# 路由判断
+node stage1_llm "Router LLM" type=decision
+node decision_answer "answer"
+node decision_execute "execute"
+node decision_clarify "clarify"
+node decision_task "task_mode"
+
+# 执行循环
+node stage2_llm "Executor LLM" type=decision
+node plan "制定计划"
+node choose_tool "选择工具"
+node call_tool "调用工具"
+node observe "观察结果"
+node decide "判断是否完成" type=decision
+node final_answer "最终回答" type=end
+
+# Prompt 组成
+node tools "Tools: ls, read, glob..."
+node identity "You are Accorda..."
+node policy "Response Policy"
+
+# ==================== 连线定义 ====================
+
+# 用户输入 → Router
+edge user_input -> stage1_llm
+
+# Router 决策分支
+edge stage1_llm -> decision_answer "简单清晰"
+edge stage1_llm -> decision_clarify "信息不足"
+edge stage1_llm -> decision_execute "需执行只读操作"
+edge stage1_llm -> decision_task "需多步执行"
+
+# answer → 最终回答
+edge decision_answer -> final_answer
+
+# clarify → 最终回答（追问）
+edge decision_clarify -> final_answer "追问问题"
+
+# execute/task → Executor
+edge decision_execute -> stage2_llm
+edge decision_task -> stage2_llm
+
+# 第二层执行循环
+edge stage2_llm -> plan
+edge plan -> choose_tool
+edge choose_tool -> call_tool
+edge call_tool -> observe
+edge observe -> decide
+edge decide -> stage2_llm "未完成，继续"
+edge decide -> final_answer "已完成"
+
+# Prompt 组成（注入到两层）
+edge identity -> stage1_llm
+edge identity -> stage2_llm
+edge tools -> stage1_llm
+edge tools -> stage2_llm
+edge policy -> stage1_llm
+edge policy -> stage2_llm

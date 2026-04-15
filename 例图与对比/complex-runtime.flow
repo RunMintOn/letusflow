@@ -2,42 +2,42 @@ dir TD
 
 group prompt "Prompt Assembly"
 
-node U "User Input"
-node E1 "append user_message event"
-node R1 "Stage 1: defaultControlDecision"
-node D1 "decision = execute"
-node D2 "decision = answer"
-node D3 "decision = clarify"
-node D4 "decision = task_mode"
-node L1 "append runtime_decision"
-node L2 "append system_status routing"
-node C1 "append assistant_text question"
-node CS1 "persist context snapshot if needed"
-node END1 "turn ends"
-node T1 "append assistant_text Task Mode selected ..."
-node CS2 "persist context snapshot if needed"
-node END2 "turn ends"
-node X1 "parseReadOnlyToolRequest again"
-node X2 "run read-only tool"
-node X3 "append tool_call"
-node X4 "append tool_result"
-node P0 "assemble provider messages"
-node A1 "A1 identity system prompt" in prompt
-node A2 "A2 tools visibility system prompt" in prompt
-node A3 "A3 response policy prompt" in prompt
-node A4 "A4 projected history events" in prompt
-node B "provider messages" in prompt
-node P1 "record model_call_started + write request artifact"
-node P2 "call provider"
-node P3 "record model_call_finished + response artifact"
-node P4 "still close model_call_finished with error"
-node P5 "append system_status provider"
-node P6 "append assistant_text"
-node S1 "persist session.json updatedAt"
-node S2 "persist events.jsonl"
-node S3 "persist artifacts/"
-node END3 "turn ends"
-node node-2 "新节点"
+node U "User Input" type=info
+node E1 "append user_message event" type=action
+node R1 "Stage 1: defaultControlDecision" type=decision
+node D1 "decision = execute" type=decision
+node D2 "decision = answer" type=decision
+node D3 "decision = clarify" type=decision
+node D4 "decision = task_mode" type=decision
+node L1 "append runtime_decision" type=action
+node L2 "append system_status routing" type=action
+node C1 "append assistant_text question" type=action
+node CS1 "persist context snapshot if needed" type=action
+node END1 "turn ends" type=start
+node T1 "append assistant_text Task Mode selected ..." type=action
+node CS2 "persist context snapshot if needed" type=action
+node END2 "turn ends" type=start
+node X1 "parseReadOnlyToolRequest again" type=action
+node X2 "run read-only tool" type=action
+node X3 "append tool_call" type=action
+node X4 "append tool_result" type=action
+node P0 "assemble provider messages" type=action
+node A1 "A1 identity system prompt" in prompt type=info
+node A2 "A2 tools visibility system prompt" in prompt type=info
+node A3 "A3 response policy prompt" in prompt type=info
+node A4 "A4 projected history events" in prompt type=info
+node B "provider messages" in prompt type=info
+node P1 "record model_call_started + write request artifact" type=action
+node P2 "call provider" type=action
+node P3 "record model_call_finished + response artifact" type=action
+node P4 "still close model_call_finished with error" type=error
+node P5 "append system_status provider" type=action
+node P6 "append assistant_text" type=action
+node S1 "persist session.json updatedAt" type=action
+node S2 "persist events.jsonl" type=action
+node S3 "persist artifacts/" type=action
+node END3 "turn ends" type=start
+node node-2 "新节点" type=action
 
 edge U -> E1
 edge E1 -> R1
