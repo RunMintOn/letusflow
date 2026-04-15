@@ -87,7 +87,7 @@ test('webview app only previews spacing layouts while preview mode is active', a
 
 test('edge edits no longer recompute host layout automatically', async () => {
   const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
-  const deleteEdgeBlock = source.match(/if \(message\?\.type === 'deleteEdge' && message\.edge\) \{[\s\S]*?return\n      \}/)?.[0]
+  const deleteEdgeBlock = source.match(/if \(message\?\.type === 'deleteEdge'\) \{[\s\S]*?return\n      \}/)?.[0]
   const createEdgeBlock = source.match(/if \(message\?\.type === 'createEdge' && message\.edge\) \{[\s\S]*?\n      \}/)?.[0]
 
   assert.ok(deleteEdgeBlock)

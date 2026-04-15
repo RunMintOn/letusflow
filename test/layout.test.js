@@ -304,6 +304,25 @@ test('auto-layout returns edge label boxes for labeled edges without exposing du
   assert.ok(next.edgeLabels['start->review#通过'].w >= 52)
 })
 
+test('auto-layout preserves multiple labeled edges between the same endpoints', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    nodes: [
+      { id: 'control', label: '控制器' },
+      { id: 'stageTwo', label: '第二阶段' },
+    ],
+    edges: [
+      { id: 'edge_1', from: 'control', to: 'stageTwo', label: 'execute' },
+      { id: 'edge_2', from: 'control', to: 'stageTwo', label: 'clarify' },
+      { id: 'edge_3', from: 'control', to: 'stageTwo', label: 'task_mode' },
+    ],
+  })
+
+  assert.ok(next.edgeLabels.edge_1)
+  assert.ok(next.edgeLabels.edge_2)
+  assert.ok(next.edgeLabels.edge_3)
+})
+
 test('auto-layout keeps the accorda overview stage-2 group compact after post-layout', async () => {
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
