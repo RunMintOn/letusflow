@@ -129,6 +129,18 @@ test('auto-layout keeps the accorda overview graph within a readable TD footprin
   assert.ok(maxY > minY)
 })
 
+test('auto-layout keeps labeled edges in the accorda overview graph with stable edge label boxes', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const { parseDiagram } = await import('../src/model/parseDiagram.js')
+
+  const graph = parseDiagram(await readFile('例图与对比/accorda-full-overview.flow', 'utf8'))
+  const next = autoLayoutGraph(graph)
+
+  assert.ok(Object.keys(next.edgeLabels).length >= 8)
+  assert.ok(next.edgeLabels['user_cmd->event_store#1. 存入事件日志'])
+  assert.ok(next.edgeLabels['router->task_entry#复杂任务/读写文件'])
+})
+
 test('dagre edge priority favors edges that follow declaration order', () => {
   const nodeOrder = new Map([
     ['start', 0],
