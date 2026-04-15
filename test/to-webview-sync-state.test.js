@@ -13,7 +13,6 @@ test('builds a sync payload from graph, layout, and view state', () => {
     },
     {
       layoutSpacing: 135,
-      edgeRenderMode: 'default',
       backgroundStyle: 'obsidian',
       viewport: { x: 12, y: 24, zoom: 1.2 },
     },
@@ -28,7 +27,6 @@ test('builds a sync payload from graph, layout, and view state', () => {
     graph: { direction: 'LR', nodes: [], edges: [] },
     layout: { nodes: {} },
     layoutSpacing: 135,
-    edgeRenderMode: 'default',
     backgroundStyle: 'obsidian',
     viewport: { x: 12, y: 24, zoom: 1.2 },
     documentError: null,

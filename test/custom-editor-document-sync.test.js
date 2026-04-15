@@ -10,11 +10,11 @@ test('custom flow editor listens for text document changes', async () => {
   assert.match(source, /setTimeout/)
 })
 
-test('custom flow editor preserves view state when rerendering from text changes', async () => {
+test('custom flow editor preserves remaining view state when rerendering from text changes', async () => {
   const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
 
   assert.match(source, /layoutSpacing/)
-  assert.match(source, /edgeRenderMode/)
+  assert.doesNotMatch(source, /edgeRenderMode/)
   assert.match(source, /backgroundStyle/)
   assert.match(source, /viewport/)
 })

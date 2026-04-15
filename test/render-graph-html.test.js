@@ -38,19 +38,18 @@ test('does not expose layoutPath in the webview payload', () => {
   assert.doesNotMatch(html, /example\.flow\.layout\.json/)
 })
 
-test('preserves view-only spacing, edge mode, and viewport state in the webview payload', () => {
+test('preserves view-only spacing and viewport state in the webview payload', () => {
   const html = renderGraphHtml({
     sourcePath: '/workspace/example.flow',
     graph: { direction: 'LR', nodes: [], edges: [] },
     layout: { nodes: {} },
     layoutSpacing: 135,
-    edgeRenderMode: 'default',
     viewport: { x: 12, y: -18, zoom: 0.9 },
     fitViewOnLoad: true,
   })
 
   assert.match(html, /"layoutSpacing":135/)
-  assert.match(html, /"edgeRenderMode":"default"/)
+  assert.doesNotMatch(html, /"edgeRenderMode":/)
   assert.match(html, /"viewport":\{"x":12,"y":-18,"zoom":0\.9\}/)
   assert.match(html, /"fitViewOnLoad":true/)
 })

@@ -20,30 +20,9 @@ test('maps graph edges to stable readable XYFlow edges', () => {
       labelStyle: { fill: '#55555f', fontSize: 11, fontWeight: 400 },
       data: {
         edgeRef: { from: 'start', to: 'review', label: '通过' },
-        readRoute: {
-          renderMode: 'straight',
-          targetOffset: 0,
-          targetSide: 'left',
-        },
       },
     },
   ])
-})
-
-test('maps graph edges to optional bezier XYFlow edges', () => {
-  const edges = toFlowEdges(
-    [{ from: 'start', to: 'review', label: '通过' }],
-    undefined,
-    'LR',
-    'default',
-  )
-
-  assert.equal(edges[0].type, 'readEdge')
-  assert.deepEqual(edges[0].data.readRoute, {
-    renderMode: 'default',
-    targetOffset: 0,
-    targetSide: 'left',
-  })
 })
 
 test('keeps edge ids stable when another edge is inserted before it', () => {
@@ -84,68 +63,34 @@ test('maps dotted and dashdot graph edges to styled XYFlow edges', () => {
   })
 })
 
-test('fans in converging edges with symmetric offsets on the same target side', () => {
-  const edges = toFlowEdges(
-    [
-      { from: 'sourceC', to: 'target', label: 'C' },
-      { from: 'sourceA', to: 'target', label: 'A' },
-      { from: 'sourceB', to: 'target', label: 'B' },
-    ],
-    {
-      nodes: {
-        sourceA: { x: 80, y: 100, w: 120, h: 44 },
-        sourceB: { x: 80, y: 200, w: 120, h: 44 },
-        sourceC: { x: 80, y: 320, w: 120, h: 44 },
-        target: { x: 360, y: 200, w: 140, h: 44 },
-      },
-    },
-    'LR',
-  )
+test('maps all graph edges to one readable XYFlow edge type', () => {
+  const edges = toFlowEdges([
+    { from: 'start', to: 'review', label: '通过' },
+    { from: 'retry', to: 'review', label: '重试' },
+  ])
 
   assert.deepEqual(
     edges.map((edge) => ({
       id: edge.id,
-      targetSide: edge.data.readRoute.targetSide,
-      targetOffset: edge.data.readRoute.targetOffset,
+      type: edge.type,
+      data: edge.data,
     })),
     [
-      { id: 'sourceC->target#C', targetSide: 'left', targetOffset: 8 },
-      { id: 'sourceA->target#A', targetSide: 'left', targetOffset: -8 },
-      { id: 'sourceB->target#B', targetSide: 'left', targetOffset: 0 },
-    ],
-  )
-})
-
-test('fans in vertical converging edges by x-order for top target handles', () => {
-  const edges = toFlowEdges(
-    [
-      { from: 'sourceRight', to: 'target', label: 'R' },
-      { from: 'sourceLeft', to: 'target', label: 'L' },
-    ],
-    {
-      nodes: {
-        sourceLeft: { x: 80, y: 80, w: 120, h: 44 },
-        sourceRight: { x: 280, y: 80, w: 120, h: 44 },
-        target: { x: 180, y: 260, w: 140, h: 44 },
+      {
+        id: 'start->review#通过',
+        type: 'readEdge',
+        data: { edgeRef: { from: 'start', to: 'review', label: '通过' } },
       },
-    },
-    'TD',
-  )
-
-  assert.deepEqual(
-    edges.map((edge) => ({
-      id: edge.id,
-      targetSide: edge.data.readRoute.targetSide,
-      targetOffset: edge.data.readRoute.targetOffset,
-    })),
-    [
-      { id: 'sourceRight->target#R', targetSide: 'top', targetOffset: 4 },
-      { id: 'sourceLeft->target#L', targetSide: 'top', targetOffset: -4 },
+      {
+        id: 'retry->review#重试',
+        type: 'readEdge',
+        data: { edgeRef: { from: 'retry', to: 'review', label: '重试' } },
+      },
     ],
   )
 })
 
-test('maps upstream edges to feedback smoothstep edges', () => {
+test('does not create feedback routes or target offsets for back edges', () => {
   const edges = toFlowEdges(
     [{ from: 'append_result', to: 'build_ctx', label: undefined }],
     {
@@ -157,29 +102,51 @@ test('maps upstream edges to feedback smoothstep edges', () => {
     'TD',
   )
 
-  assert.equal(edges[0].type, 'feedbackEdge')
-  assert.equal(edges[0].className, 'diagram-flow-edge--feedback')
-  assert.deepEqual(edges[0].data.feedbackRoute, {
-    direction: 'TD',
-    laneX: 32,
-    sourceOffset: 24,
-    targetOffset: 24,
+  assert.equal(edges[0].type, 'readEdge')
+  assert.deepEqual(edges[0].data, {
+    edgeRef: {
+      from: 'append_result',
+      to: 'build_ctx',
+      label: undefined,
+    },
   })
-  assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, opacity: 0.72 })
+  assert.equal(edges[0].className, undefined)
 })
 
-test('keeps feedback edges custom when optional bezier mode is selected', () => {
+test('maps endpoint node metadata needed for decision boundary clipping', () => {
   const edges = toFlowEdges(
-    [{ from: 'append_result', to: 'build_ctx', label: undefined }],
+    [{ from: 'task_mode', to: 'executor', label: '执行' }],
+    [
+      { id: 'task_mode', label: 'task_mode', type: 'default' },
+      { id: 'executor', label: 'Executor LLM', type: 'decision' },
+    ],
     {
       nodes: {
-        build_ctx: { x: 120, y: 120, w: 132, h: 46 },
-        append_result: { x: 80, y: 560, w: 132, h: 46 },
+        task_mode: { x: 80, y: 120, w: 132, h: 46 },
+        executor: { x: 146, y: 303, w: 132, h: 86 },
       },
     },
-    'TD',
-    'default',
   )
 
-  assert.equal(edges[0].type, 'feedbackEdge')
+  assert.deepEqual(edges[0].data, {
+    edgeRef: {
+      from: 'task_mode',
+      to: 'executor',
+      label: '执行',
+    },
+    sourceNode: {
+      nodeType: 'default',
+      x: 80,
+      y: 120,
+      w: 132,
+      h: 46,
+    },
+    targetNode: {
+      nodeType: 'decision',
+      x: 146,
+      y: 303,
+      w: 132,
+      h: 86,
+    },
+  })
 })

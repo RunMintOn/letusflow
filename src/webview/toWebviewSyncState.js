@@ -4,7 +4,6 @@ export function toWebviewSyncState(documentModel, viewState = {}, options = {}) 
     graph: documentModel.graph,
     layout: documentModel.layout,
     layoutSpacing: viewState.layoutSpacing ?? documentModel.layoutSpacing ?? 100,
-    edgeRenderMode: viewState.edgeRenderMode ?? documentModel.edgeRenderMode ?? 'straight',
     backgroundStyle: viewState.backgroundStyle ?? documentModel.backgroundStyle ?? 'paper',
     viewport: viewState.viewport ?? documentModel.viewport ?? null,
     documentError: documentModel.documentError ?? null,

@@ -6,7 +6,6 @@ import { toEditorLayout } from './toEditorLayout.js'
 
 export function useEditorState(
   initialDocument,
-  edgeRenderMode = 'straight',
   layoutSpacing,
   isSpacingPreviewActive = false,
 ) {
@@ -24,11 +23,10 @@ export function useEditorState(
   const flowEdges = React.useMemo(
     () => toFlowEdges(
       documentModel.graph.edges,
+      documentModel.graph.nodes,
       activeLayout,
-      documentModel.graph.direction,
-      edgeRenderMode,
     ),
-    [activeLayout, documentModel.graph.direction, documentModel.graph.edges, edgeRenderMode],
+    [activeLayout, documentModel.graph.edges, documentModel.graph.nodes],
   )
 
   return {

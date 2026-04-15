@@ -23,7 +23,7 @@ test('places an LR successor to the right of the parent using spacing-derived ga
   )
 
   assert.deepEqual(placement, {
-    x: 306,
+    x: 296,
     y: 200,
     w: 132,
     h: 46,
@@ -51,7 +51,7 @@ test('places a TD successor below the parent using spacing-derived gap', () => {
 
   assert.deepEqual(placement, {
     x: 100,
-    y: 320,
+    y: 310,
     w: 132,
     h: 46,
   })
@@ -70,7 +70,7 @@ test('steps along the cross-axis until an LR successor slot is free', () => {
     {
       nodes: {
         parent: { x: 100, y: 200, w: 132, h: 46 },
-        occupied: { x: 306, y: 200, w: 132, h: 46 },
+        occupied: { x: 296, y: 200, w: 132, h: 46 },
       },
     },
     'parent',
@@ -79,8 +79,8 @@ test('steps along the cross-axis until an LR successor slot is free', () => {
   )
 
   assert.deepEqual(placement, {
-    x: 306,
-    y: 292,
+    x: 296,
+    y: 280,
     w: 132,
     h: 46,
   })

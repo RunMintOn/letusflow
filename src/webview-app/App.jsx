@@ -4,7 +4,6 @@ import { ReactFlowProvider, addEdge, useEdgesState, useNodesState } from '@xyflo
 import { FlowCanvas } from './components/FlowCanvas.jsx'
 import { FloatingCanvasControls } from './components/FloatingCanvasControls.jsx'
 import { FloatingEdgeEditor } from './components/FloatingEdgeEditor.jsx'
-import { FeedbackEdge } from './components/edges/FeedbackEdge.jsx'
 import { NormalReadEdge } from './components/edges/NormalReadEdge.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
 import { GroupNode } from './components/nodes/GroupNode.jsx'
@@ -23,7 +22,6 @@ const nodeTypes = {
 
 const edgeTypes = {
   readEdge: NormalReadEdge,
-  feedbackEdge: FeedbackEdge,
 }
 
 function AppInner() {
@@ -35,7 +33,6 @@ function AppInner() {
     fitViewRequestToken: 0,
   }
 
-  const [edgeRenderMode, setEdgeRenderMode] = React.useState(initialDocument.edgeRenderMode ?? 'straight')
   const [layoutSpacing, setLayoutSpacing] = React.useState(initialDocument.layoutSpacing ?? 100)
   const [backgroundStyle, setBackgroundStyle] = React.useState(initialDocument.backgroundStyle ?? 'paper')
   const spacingMessageTimeoutRef = React.useRef(null)
@@ -43,7 +40,6 @@ function AppInner() {
   const [isSpacingPreviewActive, setIsSpacingPreviewActive] = React.useState(false)
   const { documentModel, setDocumentModel, flowNodes, flowEdges } = useEditorState(
     initialDocument,
-    edgeRenderMode,
     layoutSpacing,
     isSpacingPreviewActive,
   )
@@ -74,7 +70,6 @@ function AppInner() {
       }
 
       setDocumentModel(message.payload)
-      setEdgeRenderMode(message.payload.edgeRenderMode ?? 'straight')
       setLayoutSpacing(message.payload.layoutSpacing ?? 100)
       setBackgroundStyle(message.payload.backgroundStyle ?? 'paper')
     }
@@ -312,14 +307,6 @@ function AppInner() {
     }, 200)
   }, [])
 
-  const handleEdgeRenderModeChange = React.useCallback((nextEdgeRenderMode) => {
-    setEdgeRenderMode(nextEdgeRenderMode)
-    postToHost({
-      type: 'setEdgeRenderMode',
-      value: nextEdgeRenderMode,
-    })
-  }, [])
-
   const handleBackgroundStyleChange = React.useCallback((nextBackgroundStyle) => {
     setBackgroundStyle(nextBackgroundStyle)
     postToHost({
@@ -349,7 +336,7 @@ function AppInner() {
         {
           source: connection.source,
           target: connection.target,
-          type: edgeRenderMode,
+          type: 'readEdge',
         },
         currentEdges,
       ),
@@ -359,7 +346,7 @@ function AppInner() {
       type: 'createEdge',
       edge: fromConnectParams(connection),
     })
-  }, [edgeRenderMode, setEdges])
+  }, [setEdges])
 
   const handleNodeDragStop = React.useCallback((_event, node) => {
     setNodes((currentNodes) =>
@@ -427,13 +414,11 @@ function AppInner() {
         />
 
         <FloatingCanvasControls
-          edgeRenderMode={edgeRenderMode}
           layoutSpacing={layoutSpacing}
           backgroundStyle={backgroundStyle}
           isNodeDraggingEnabled={isNodeDraggingEnabled}
           onAutoLayout={handleAutoLayout}
           onCreateNode={handleCreateNode}
-          onEdgeRenderModeChange={handleEdgeRenderModeChange}
           onLayoutSpacingChange={handleLayoutSpacingChange}
           onNodeDraggingToggle={handleNodeDraggingToggle}
           onBackgroundStyleChange={handleBackgroundStyleChange}

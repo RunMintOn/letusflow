@@ -2,14 +2,14 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-test('floating canvas controls expose edge mode choices through the display menu', async () => {
+test('floating canvas controls keep display controls focused on background only', async () => {
   const source = await readFile('src/webview-app/components/FloatingCanvasControls.jsx', 'utf8')
 
-  assert.match(source, /edgeRenderMode/)
-  assert.match(source, /onEdgeRenderModeChange/)
+  assert.doesNotMatch(source, /edgeRenderMode/)
+  assert.doesNotMatch(source, /onEdgeRenderModeChange/)
   assert.match(source, /Display/)
-  assert.match(source, /直线/)
-  assert.match(source, /曲线/)
+  assert.doesNotMatch(source, /直线/)
+  assert.doesNotMatch(source, /曲线/)
   assert.doesNotMatch(source, /<select/)
 })
 

@@ -692,6 +692,12 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   transition: opacity 120ms ease;
 }
 
+.diagram-node--type-decision .react-flow__handle {
+  opacity: 0 !important;
+  border-color: transparent;
+  background: transparent;
+}
+
 body.vscode-dark .diagram-node--type-decision,
 body.vscode-high-contrast .diagram-node--type-decision {
   --node-accent-fill: #4b3d24;

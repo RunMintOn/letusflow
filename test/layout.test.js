@@ -124,8 +124,8 @@ test('auto-layout keeps the complex runtime graph within a readable TD footprint
   const maxX = Math.max(...boxes.map((box) => box.x + box.w))
   const maxY = Math.max(...boxes.map((box) => box.y + box.h))
 
-  assert.ok(maxX - minX <= 2200)
-  assert.ok(maxY - minY <= 3000)
+  assert.ok(maxX - minX <= 1900)
+  assert.ok(maxY - minY <= 2700)
   assert.ok(maxY > minY)
 })
 
@@ -164,12 +164,12 @@ test('dagre edge priority stays neutral when an edge references unknown nodes', 
   )
 })
 
-test('auto-layout keeps default spacing compatible with old calls', () => {
-  assert.deepEqual(toDagreSpacing(), { ranksep: 74, nodesep: 46 })
+test('auto-layout keeps default spacing aligned with Mermaid-like density', () => {
+  assert.deepEqual(toDagreSpacing(), { ranksep: 64, nodesep: 34 })
 })
 
 test('auto-layout scales dagre spacing from a percentage option', () => {
-  assert.deepEqual(toDagreSpacing({ spacing: 150 }), { ranksep: 111, nodesep: 69 })
+  assert.deepEqual(toDagreSpacing({ spacing: 150 }), { ranksep: 96, nodesep: 51 })
 })
 
 test('auto-layout applies spacing options to node placement', () => {
@@ -189,7 +189,7 @@ test('auto-layout applies spacing options to node placement', () => {
 })
 
 test('auto-layout clamps invalid spacing options', () => {
-  assert.deepEqual(toDagreSpacing({ spacing: 10 }), { ranksep: 22, nodesep: 14 })
-  assert.deepEqual(toDagreSpacing({ spacing: 220 }), { ranksep: 111, nodesep: 69 })
-  assert.deepEqual(toDagreSpacing({ spacing: 'wide' }), { ranksep: 74, nodesep: 46 })
+  assert.deepEqual(toDagreSpacing({ spacing: 10 }), { ranksep: 19, nodesep: 10 })
+  assert.deepEqual(toDagreSpacing({ spacing: 220 }), { ranksep: 96, nodesep: 51 })
+  assert.deepEqual(toDagreSpacing({ spacing: 'wide' }), { ranksep: 64, nodesep: 34 })
 })

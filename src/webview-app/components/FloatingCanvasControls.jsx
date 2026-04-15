@@ -1,13 +1,11 @@
 import React from 'react'
 
 export function FloatingCanvasControls({
-  edgeRenderMode,
   layoutSpacing,
   backgroundStyle,
   isNodeDraggingEnabled,
   onAutoLayout,
   onCreateNode,
-  onEdgeRenderModeChange,
   onLayoutSpacingChange,
   onNodeDraggingToggle,
   onBackgroundStyleChange,
@@ -19,7 +17,6 @@ export function FloatingCanvasControls({
     : backgroundStyle === 'gradient'
       ? '渐变'
       : '纸面'
-  const edgeModeLabel = edgeRenderMode === 'default' ? '曲线' : '直线'
 
   return (
     <>
@@ -39,8 +36,6 @@ export function FloatingCanvasControls({
         >
           <span className="canvas-hud__chip-label">Display</span>
           <span>{backgroundLabel}</span>
-          <span>/</span>
-          <span>{edgeModeLabel}</span>
         </button>
       </div>
 
@@ -73,25 +68,6 @@ export function FloatingCanvasControls({
             </div>
           </div>
 
-          <div className="canvas-display-menu__section">
-            <div className="canvas-display-menu__title">连线</div>
-            <div className="canvas-display-menu__options">
-              <button
-                type="button"
-                className={edgeRenderMode === 'straight' ? 'canvas-display-menu__option is-active' : 'canvas-display-menu__option'}
-                onClick={() => onEdgeRenderModeChange('straight')}
-              >
-                直线
-              </button>
-              <button
-                type="button"
-                className={edgeRenderMode === 'default' ? 'canvas-display-menu__option is-active' : 'canvas-display-menu__option'}
-                onClick={() => onEdgeRenderModeChange('default')}
-              >
-                曲线
-              </button>
-            </div>
-          </div>
         </div>
       ) : null}
 

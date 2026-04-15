@@ -146,7 +146,6 @@ export async function resolveCustomFlowEditor({
 
   let lastValidDocumentModel = documentModel
   let layoutSpacing = 100
-  let edgeRenderMode = 'straight'
   let backgroundStyle = normalizeBackgroundStyle(
     extensionContext.workspaceState.get(toBackgroundStyleStorageKey(document.uri.fsPath)),
   )
@@ -166,7 +165,6 @@ export async function resolveCustomFlowEditor({
         {
           ...nextModel,
           layoutSpacing,
-          edgeRenderMode,
           backgroundStyle,
           viewport,
           fitViewOnLoad: options.fitViewOnLoad ?? false,
@@ -183,7 +181,6 @@ export async function resolveCustomFlowEditor({
       nextModel,
       {
         layoutSpacing,
-        edgeRenderMode,
         backgroundStyle,
         viewport,
       },
@@ -335,12 +332,6 @@ export async function resolveCustomFlowEditor({
         documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(webviewPanel, `setSpacing applied: ${layoutSpacing}`)
         await postSyncState()
-        return
-      }
-
-      if (message?.type === 'setEdgeRenderMode') {
-        edgeRenderMode = message.value === 'default' ? 'default' : 'straight'
-        postHostDebug(webviewPanel, `setEdgeRenderMode applied: ${edgeRenderMode}`)
         return
       }
 

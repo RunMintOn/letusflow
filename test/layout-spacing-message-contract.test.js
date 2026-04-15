@@ -49,15 +49,14 @@ test('webview app enables short-lived preview motion while spacing changes', asy
   assert.match(source, /setIsSpacingPreviewActive\(false\)/)
 })
 
-test('host preserves edge render mode across spacing rerenders', async () => {
+test('host no longer tracks edge render mode as a view state', async () => {
   const extensionSource = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
   const appSource = await readFile('src/webview-app/App.jsx', 'utf8')
 
-  assert.match(extensionSource, /edgeRenderMode\s*=\s*'straight'/)
-  assert.match(extensionSource, /edgeRenderMode,/)
-  assert.match(extensionSource, /message\?\.type === 'setEdgeRenderMode'/)
-  assert.match(appSource, /initialDocument\.edgeRenderMode/)
-  assert.match(appSource, /type: 'setEdgeRenderMode'/)
+  assert.doesNotMatch(extensionSource, /edgeRenderMode/)
+  assert.doesNotMatch(extensionSource, /setEdgeRenderMode/)
+  assert.doesNotMatch(appSource, /initialDocument\.edgeRenderMode/)
+  assert.doesNotMatch(appSource, /type: 'setEdgeRenderMode'/)
 })
 
 test('webview app posts viewport updates and fit requests separately', async () => {

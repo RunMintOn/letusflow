@@ -14,3 +14,12 @@ test('node stylesheet defines the preset type classes and color override variabl
   assert.match(source, /--node-accent-stroke:/)
   assert.match(source, /--node-accent-stroke-strong:/)
 })
+
+test('decision nodes hide their XYFlow handles visually', () => {
+  const source = readFileSync(new URL('../src/webview-app/index.css', import.meta.url), 'utf8')
+
+  assert.match(source, /\.diagram-node--type-decision\s+\.react-flow__handle\b/)
+  assert.match(source, /opacity:\s*0\s*!important/)
+  assert.match(source, /border-color:\s*transparent/)
+  assert.match(source, /background:\s*transparent/)
+})

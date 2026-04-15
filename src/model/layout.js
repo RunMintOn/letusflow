@@ -1,9 +1,9 @@
 import dagre from 'dagre'
 import { getNodeDimensions } from './nodeDimensions.js'
 
-const DAGRE_RANK_SEP = 74
-const DAGRE_NODE_SEP = 46
-const DAGRE_MARGIN = 48
+const DAGRE_RANK_SEP = 64
+const DAGRE_NODE_SEP = 34
+const DAGRE_MARGIN = 32
 const MIN_DAGRE_SPACING = 30
 const MAX_DAGRE_SPACING = 150
 const DEFAULT_DAGRE_SPACING = 100

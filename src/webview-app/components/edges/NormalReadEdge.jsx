@@ -11,20 +11,19 @@ export function NormalReadEdge({
   targetY,
   markerEnd,
   style,
-  data,
   label,
   labelStyle,
   labelBgPadding,
   labelBgBorderRadius,
+  data,
 }) {
   const geometry = toNormalReadEdgePath({
     sourceX,
     sourceY,
     targetX,
     targetY,
-    targetSide: data?.readRoute?.targetSide,
-    targetOffset: data?.readRoute?.targetOffset,
-    renderMode: data?.readRoute?.renderMode,
+    sourceNode: data?.sourceNode,
+    targetNode: data?.targetNode,
   })
 
   return (

@@ -1,120 +1,60 @@
-import { Position, getBezierPath, getStraightPath } from '@xyflow/react'
+import { getStraightPath } from '@xyflow/react'
+
+const DECISION_DIAMOND_SIDE = 64
+const DECISION_DIAMOND_RADIUS = DECISION_DIAMOND_SIDE * Math.SQRT2 / 2
 
 export function toNormalReadEdgePath({
   sourceX,
   sourceY,
   targetX,
   targetY,
-  targetSide = 'left',
-  targetOffset = 0,
-  renderMode = 'straight',
+  sourceNode,
+  targetNode,
 }) {
-  const adjustedTarget = toAdjustedTarget(targetX, targetY, targetSide, targetOffset)
-  if (renderMode === 'default') {
-    return toBezierGeometry({
-      sourceX,
-      sourceY,
-      targetX: adjustedTarget.x,
-      targetY: adjustedTarget.y,
-      sourcePosition: toSourcePosition(targetSide),
-      targetPosition: toPosition(targetSide),
-    })
-  }
-
-  return toStraightGeometry({
-    sourceX,
-    sourceY,
-    targetX: adjustedTarget.x,
-    targetY: adjustedTarget.y,
+  const clippedSource = isDecisionNode(sourceNode)
+    ? toDecisionBoundaryPoint(sourceNode, { x: targetX, y: targetY })
+    : { x: sourceX, y: sourceY }
+  const clippedTarget = isDecisionNode(targetNode)
+    ? toDecisionBoundaryPoint(targetNode, { x: sourceX, y: sourceY })
+    : { x: targetX, y: targetY }
+  const [path, labelX, labelY] = getStraightPath({
+    sourceX: clippedSource.x,
+    sourceY: clippedSource.y,
+    targetX: clippedTarget.x,
+    targetY: clippedTarget.y,
   })
+
+  return {
+    path,
+    label: {
+      x: Math.round(labelX),
+      y: Math.round(labelY),
+    },
+  }
 }
 
-function toAdjustedTarget(targetX, targetY, targetSide, targetOffset) {
-  if (targetSide === 'top' || targetSide === 'bottom') {
+function isDecisionNode(node) {
+  return node?.nodeType === 'decision'
+}
+
+function toDecisionBoundaryPoint(node, oppositePoint) {
+  const centerX = node.x + node.w / 2
+  const centerY = node.y + node.h / 2
+  const deltaX = oppositePoint.x - centerX
+  const deltaY = oppositePoint.y - centerY
+  const manhattan = Math.abs(deltaX) + Math.abs(deltaY)
+
+  if (!manhattan) {
     return {
-      x: targetX + targetOffset,
-      y: targetY,
+      x: Math.round(centerX),
+      y: Math.round(centerY),
     }
   }
 
-  return {
-    x: targetX,
-    y: targetY + targetOffset,
-  }
-}
-
-function toBezierGeometry({
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-  sourcePosition,
-  targetPosition,
-}) {
-  const [path, labelX, labelY] = getBezierPath({
-    sourceX,
-    sourceY,
-    sourcePosition,
-    targetX,
-    targetY,
-    targetPosition,
-  })
+  const scale = DECISION_DIAMOND_RADIUS / manhattan
 
   return {
-    path,
-    label: {
-      x: Math.round(labelX),
-      y: Math.round(labelY),
-    },
+    x: Math.round(centerX + deltaX * scale),
+    y: Math.round(centerY + deltaY * scale),
   }
-}
-
-function toStraightGeometry({
-  sourceX,
-  sourceY,
-  targetX,
-  targetY,
-}) {
-  const [path, labelX, labelY] = getStraightPath({
-    sourceX,
-    sourceY,
-    targetX,
-    targetY,
-  })
-
-  return {
-    path,
-    label: {
-      x: Math.round(labelX),
-      y: Math.round(labelY),
-    },
-  }
-}
-
-function toSourcePosition(targetSide) {
-  if (targetSide === 'top') {
-    return Position.Bottom
-  }
-  if (targetSide === 'bottom') {
-    return Position.Top
-  }
-  if (targetSide === 'right') {
-    return Position.Left
-  }
-
-  return Position.Right
-}
-
-function toPosition(side) {
-  if (side === 'top') {
-    return Position.Top
-  }
-  if (side === 'bottom') {
-    return Position.Bottom
-  }
-  if (side === 'right') {
-    return Position.Right
-  }
-
-  return Position.Left
 }

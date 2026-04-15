@@ -3,63 +3,64 @@ import assert from 'node:assert/strict'
 
 import { toNormalReadEdgePath } from '../src/webview-app/components/edges/normalReadEdgePath.js'
 
-test('keeps straight left-side fan-in visually close to the native straight edge', () => {
+test('builds a plain straight edge geometry from source to target', () => {
   const geometry = toNormalReadEdgePath({
     sourceX: 120,
     sourceY: 180,
     targetX: 360,
     targetY: 200,
-    targetSide: 'left',
-    targetOffset: 8,
-    renderMode: 'straight',
-  })
-
-  assert.equal(geometry.path, 'M 120,180L 360,208')
-  assert.deepEqual(geometry.label, { x: 240, y: 194 })
-})
-
-test('keeps straight top-side fan-in visually close to the native straight edge', () => {
-  const geometry = toNormalReadEdgePath({
-    sourceX: 180,
-    sourceY: 120,
-    targetX: 200,
-    targetY: 360,
-    targetSide: 'top',
-    targetOffset: -8,
-    renderMode: 'straight',
-  })
-
-  assert.equal(geometry.path, 'M 180,120L 192,360')
-  assert.deepEqual(geometry.label, { x: 186, y: 240 })
-})
-
-test('keeps zero-offset straight edges identical to the old native baseline', () => {
-  const geometry = toNormalReadEdgePath({
-    sourceX: 120,
-    sourceY: 180,
-    targetX: 360,
-    targetY: 200,
-    targetSide: 'left',
-    targetOffset: 0,
-    renderMode: 'straight',
   })
 
   assert.equal(geometry.path, 'M 120,180L 360,200')
   assert.deepEqual(geometry.label, { x: 240, y: 190 })
 })
 
-test('keeps default-mode paths curved while shifting the target anchor', () => {
+test('does not require route metadata for vertical edges', () => {
   const geometry = toNormalReadEdgePath({
-    sourceX: 120,
-    sourceY: 180,
-    targetX: 360,
-    targetY: 200,
-    targetSide: 'left',
-    targetOffset: 8,
-    renderMode: 'default',
+    sourceX: 180,
+    sourceY: 120,
+    targetX: 200,
+    targetY: 360,
   })
 
-  assert.match(geometry.path, /^M120,180 C/)
-  assert.match(geometry.path, /360,208$/)
-  assert.deepEqual(geometry.label, { x: 240, y: 194 })
+  assert.equal(geometry.path, 'M 180,120L 200,360')
+  assert.deepEqual(geometry.label, { x: 190, y: 240 })
+})
+
+test('clips a vertical incoming edge to the visible decision boundary', () => {
+  const geometry = toNormalReadEdgePath({
+    sourceX: 212,
+    sourceY: 120,
+    targetX: 212,
+    targetY: 303,
+    targetNode: {
+      nodeType: 'decision',
+      x: 146,
+      y: 303,
+      w: 132,
+      h: 86,
+    },
+  })
+
+  assert.equal(geometry.path, 'M 212,120L 212,301')
+  assert.deepEqual(geometry.label, { x: 212, y: 211 })
+})
+
+test('clips a horizontal outgoing edge to the visible decision boundary', () => {
+  const geometry = toNormalReadEdgePath({
+    sourceX: 278,
+    sourceY: 346,
+    targetX: 400,
+    targetY: 346,
+    sourceNode: {
+      nodeType: 'decision',
+      x: 146,
+      y: 303,
+      w: 132,
+      h: 86,
+    },
+  })
+
+  assert.equal(geometry.path, 'M 257,346L 400,346')
+  assert.deepEqual(geometry.label, { x: 329, y: 346 })
 })
