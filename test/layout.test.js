@@ -258,3 +258,18 @@ test('auto-layout keeps grouped stage-2 nodes visually tighter without changing 
   assert.ok(next.nodes.start.y < next.nodes.task_entry.y)
   assert.ok(next.nodes.task_entry.x <= next.nodes.planner.x)
 })
+
+test('auto-layout keeps the accorda overview stage-2 group compact after post-layout', async () => {
+  const { readFile } = await import('node:fs/promises')
+  const { parseDiagram } = await import('../src/model/parseDiagram.js')
+
+  const graph = parseDiagram(await readFile('例图与对比/accorda-full-overview.flow', 'utf8'))
+  const next = autoLayoutGraph(graph)
+
+  const stage2 = ['task_entry', 'planner', 'tool_exec'].map((id) => next.nodes[id]).filter(Boolean)
+  const stage2Xs = stage2.map((box) => box.x)
+  const stage2Ys = stage2.map((box) => box.y)
+
+  assert.ok(Math.max(...stage2Xs) - Math.min(...stage2Xs) <= 220)
+  assert.ok(Math.max(...stage2Ys) - Math.min(...stage2Ys) <= 180)
+})
