@@ -6,7 +6,7 @@ export function buildLabelAugmentedGraph(graph) {
   const edgeLabelMap = {}
 
   for (const edge of graph.edges) {
-    const edgeKey = toEdgeKey(edge)
+    const edgeKey = edge.id ?? toEdgeKey(edge)
     const hasLabel = typeof edge.label === 'string' && edge.label.trim().length > 0
 
     if (!hasLabel) {

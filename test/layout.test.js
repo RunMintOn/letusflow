@@ -141,6 +141,22 @@ test('auto-layout keeps labeled edges in the accorda overview graph with stable 
   assert.ok(next.edgeLabels['router->task_entry#复杂任务/读写文件'])
 })
 
+test('auto-layout keys edgeLabels by runtime edge id', () => {
+  const next = autoLayoutGraph({
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+    ],
+    edges: [
+      { id: 'edge_1', from: 'start', to: 'review', label: '通过' },
+    ],
+  })
+
+  assert.ok(next.edgeLabels.edge_1)
+  assert.equal(next.edgeLabels['start->review#通过'], undefined)
+})
+
 test('dagre edge priority favors edges that follow declaration order', () => {
   const nodeOrder = new Map([
     ['start', 0],

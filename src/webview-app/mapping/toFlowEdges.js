@@ -38,7 +38,7 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
 
     const sourceNode = toEdgeEndpointNode(nodesById.get(edge.from), layout?.nodes?.[edge.from])
     const targetNode = toEdgeEndpointNode(nodesById.get(edge.to), layout?.nodes?.[edge.to])
-    const edgeId = `${edge.from}->${edge.to}#${edge.label ?? ''}`
+    const edgeId = edge.id ?? `${edge.from}->${edge.to}#${edge.label ?? ''}`
     const flowEdge = {
       id: edgeId,
       source: edge.from,
@@ -51,6 +51,7 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
       labelBgBorderRadius: 2,
       labelStyle: READ_EDGE_LABEL_STYLE,
       data: {
+        edgeId,
         edgeRef,
         ...(sourceNode ? { sourceNode } : {}),
         ...(targetNode ? { targetNode } : {}),

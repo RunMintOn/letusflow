@@ -19,6 +19,7 @@ test('maps graph edges to stable readable XYFlow edges', () => {
       labelBgBorderRadius: 2,
       labelStyle: { fill: '#55555f', fontSize: 12, fontWeight: 500 },
       data: {
+        edgeId: 'start->review#通过',
         edgeRef: { from: 'start', to: 'review', label: '通过' },
       },
     },
@@ -79,12 +80,18 @@ test('maps all graph edges to one readable XYFlow edge type', () => {
       {
         id: 'start->review#通过',
         type: 'readEdge',
-        data: { edgeRef: { from: 'start', to: 'review', label: '通过' } },
+        data: {
+          edgeId: 'start->review#通过',
+          edgeRef: { from: 'start', to: 'review', label: '通过' },
+        },
       },
       {
         id: 'retry->review#重试',
         type: 'readEdge',
-        data: { edgeRef: { from: 'retry', to: 'review', label: '重试' } },
+        data: {
+          edgeId: 'retry->review#重试',
+          edgeRef: { from: 'retry', to: 'review', label: '重试' },
+        },
       },
     ],
   )
@@ -104,6 +111,7 @@ test('does not create feedback routes or target offsets for back edges', () => {
 
   assert.equal(edges[0].type, 'readEdge')
   assert.deepEqual(edges[0].data, {
+    edgeId: 'append_result->build_ctx#',
     edgeRef: {
       from: 'append_result',
       to: 'build_ctx',
@@ -129,6 +137,7 @@ test('maps endpoint node metadata needed for decision boundary clipping', () => 
   )
 
   assert.deepEqual(edges[0].data, {
+    edgeId: 'task_mode->executor#执行',
     edgeRef: {
       from: 'task_mode',
       to: 'executor',
@@ -166,5 +175,24 @@ test('passes edge label layout geometry into edge data when layout provides it',
     },
   )
 
+  assert.deepEqual(edges[0].data.labelLayout, { x: 180, y: 96, w: 52, h: 24 })
+})
+
+test('binds labelLayout by runtime edge id instead of from-to-label key', () => {
+  const edges = toFlowEdges(
+    [{ id: 'edge_2', from: 'start', to: 'review', label: '通过' }],
+    [{ id: 'start', label: '开始' }, { id: 'review', label: '审批' }],
+    {
+      nodes: {
+        start: { x: 80, y: 120, w: 132, h: 46 },
+        review: { x: 280, y: 120, w: 132, h: 46 },
+      },
+      edgeLabels: {
+        edge_2: { x: 180, y: 96, w: 52, h: 24 },
+      },
+    },
+  )
+
+  assert.equal(edges[0].id, 'edge_2')
   assert.deepEqual(edges[0].data.labelLayout, { x: 180, y: 96, w: 52, h: 24 })
 })
