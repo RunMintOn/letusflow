@@ -1,7 +1,8 @@
 export function derivePrimaryFlow(graph) {
-  const nodeOrder = new Map(graph.nodes.map((node, index) => [node.id, index]))
-  const incoming = new Map(graph.nodes.map((node) => [node.id, []]))
-  const outgoing = new Map(graph.nodes.map((node) => [node.id, []]))
+  const realNodes = graph.nodes.filter((node) => !node.isLabelNode)
+  const nodeOrder = new Map(realNodes.map((node, index) => [node.id, index]))
+  const incoming = new Map(realNodes.map((node) => [node.id, []]))
+  const outgoing = new Map(realNodes.map((node) => [node.id, []]))
 
   for (const edge of graph.edges) {
     incoming.get(edge.to)?.push(edge)
@@ -11,6 +12,10 @@ export function derivePrimaryFlow(graph) {
   const scores = {}
 
   for (const node of graph.nodes) {
+    if (node.isLabelNode) {
+      continue
+    }
+
     const incomingEdges = incoming.get(node.id) ?? []
     const outgoingEdges = outgoing.get(node.id) ?? []
 

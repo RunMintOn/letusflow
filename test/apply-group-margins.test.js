@@ -43,3 +43,29 @@ test('returns the original layout when the graph has no groups', () => {
     layout,
   )
 })
+
+test('preserves edge label boxes when group margin adjustments run', () => {
+  const next = applyGroupMargins(
+    {
+      direction: 'TD',
+      groups: [{ id: 'stage2', label: 'Stage 2' }],
+      nodes: [
+        { id: 'task_entry', label: '任务模式', groupId: 'stage2' },
+        { id: 'planner', label: '执行规划', groupId: 'stage2' },
+      ],
+    },
+    {
+      nodes: {
+        task_entry: { x: 200, y: 120, w: 132, h: 46 },
+        planner: { x: 420, y: 120, w: 132, h: 46 },
+      },
+      edgeLabels: {
+        'task_entry->planner#进入执行': { x: 320, y: 96, w: 66, h: 24 },
+      },
+    },
+  )
+
+  assert.deepEqual(next.edgeLabels, {
+    'task_entry->planner#进入执行': { x: 320, y: 96, w: 66, h: 24 },
+  })
+})

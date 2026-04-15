@@ -2,16 +2,25 @@ export function postLayoutRanks(graph, layout, spacing, primaryFlowScores) {
   const isVertical = graph.direction === 'TD' || graph.direction === 'TB'
   const primaryAxis = isVertical ? 'y' : 'x'
   const crossAxis = isVertical ? 'x' : 'y'
-  const nodeOrder = new Map(graph.nodes.map((node, index) => [node.id, index]))
+  const nodeOrder = new Map(
+    graph.nodes
+      .filter((node) => !node.isLabelNode)
+      .map((node, index) => [node.id, index]),
+  )
   const rankTolerance = Math.max(8, Math.round(spacing.ranksep * 0.25))
   const ranks = []
   const nextLayout = {
     nodes: Object.fromEntries(
       Object.entries(layout.nodes).map(([nodeId, box]) => [nodeId, { ...box }]),
     ),
+    ...(layout.edgeLabels ? { edgeLabels: { ...layout.edgeLabels } } : {}),
   }
 
   for (const node of graph.nodes) {
+    if (node.isLabelNode) {
+      continue
+    }
+
     const box = nextLayout.nodes[node.id]
     if (!box) {
       continue

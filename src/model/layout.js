@@ -1,5 +1,6 @@
 import { applyGroupMargins } from './applyGroupMargins.js'
 import dagre from 'dagre'
+import { buildLabelAugmentedGraph } from './buildLabelAugmentedGraph.js'
 import { derivePrimaryFlow } from './derivePrimaryFlow.js'
 import { getNodeDimensions } from './nodeDimensions.js'
 import { postLayoutRanks } from './postLayoutRanks.js'
@@ -16,6 +17,7 @@ const DAGRE_EDGE_MINLEN = 1
 
 export function autoLayoutGraph(graph, options = {}) {
   const spacing = toDagreSpacing(options)
+  const { graph: augmentedGraph, edgeLabelMap } = buildLabelAugmentedGraph(graph)
   const dagreGraph = new dagre.graphlib.Graph({ multigraph: true })
   dagreGraph.setGraph({
     rankdir: graph.direction === 'TB' || graph.direction === 'TD' ? 'TB' : 'LR',
@@ -26,8 +28,8 @@ export function autoLayoutGraph(graph, options = {}) {
   })
   dagreGraph.setDefaultEdgeLabel(() => ({}))
 
-  for (const node of graph.nodes) {
-    const dimensions = getNodeDimensions(node)
+  for (const node of augmentedGraph.nodes) {
+    const dimensions = node.isLabelNode ? node.labelDimensions : getNodeDimensions(node)
     dagreGraph.setNode(node.id, {
       width: dimensions.w,
       height: dimensions.h,
@@ -36,17 +38,21 @@ export function autoLayoutGraph(graph, options = {}) {
 
   const nodeOrder = new Map(graph.nodes.map((node, index) => [node.id, index]))
 
-  graph.edges.forEach((edge, index) => {
+  augmentedGraph.edges.forEach((edge, index) => {
+    const edgePriority = toDagreEdgePriority(edge, nodeOrder)
     dagreGraph.setEdge(
       edge.from,
       edge.to,
-      toDagreEdgePriority(edge, nodeOrder),
+      {
+        ...edgePriority,
+        minlen: edge.isLabelSegment ? 0 : edgePriority.minlen,
+      },
       `${edge.from}->${edge.to}#${index}`,
     )
   })
 
   dagre.layout(dagreGraph)
-  const layout = { nodes: {} }
+  const layout = { nodes: {}, edgeLabels: {} }
 
   for (const node of graph.nodes) {
     const dimensions = getNodeDimensions(node)
@@ -56,6 +62,20 @@ export function autoLayoutGraph(graph, options = {}) {
       y: Math.round(laidOutNode.y - dimensions.h / 2),
       w: dimensions.w,
       h: dimensions.h,
+    }
+  }
+
+  for (const [edgeKey, meta] of Object.entries(edgeLabelMap)) {
+    const laidOutNode = dagreGraph.node(meta.labelNodeId)
+    if (!laidOutNode) {
+      continue
+    }
+
+    layout.edgeLabels[edgeKey] = {
+      x: Math.round(laidOutNode.x - meta.labelDimensions.w / 2),
+      y: Math.round(laidOutNode.y - meta.labelDimensions.h / 2),
+      w: meta.labelDimensions.w,
+      h: meta.labelDimensions.h,
     }
   }
 
