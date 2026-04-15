@@ -4,7 +4,7 @@ import assert from 'node:assert/strict'
 import { createEdge } from '../src/model/createEdge.js'
 import { serializeDiagram } from '../src/model/serializeDiagram.js'
 
-test('creates a new edge and serializes it back to the DSL', () => {
+test('creates a new edge with a runtime id and serializes it back to the DSL', () => {
   const graph = {
     direction: 'LR',
     nodes: [
@@ -14,7 +14,9 @@ test('creates a new edge and serializes it back to the DSL', () => {
     edges: [],
   }
 
-  const next = createEdge(graph, { from: 'start', to: 'review' })
+  const next = createEdge(graph, { id: 'edge_1', from: 'start', to: 'review' })
 
+  assert.equal(next.edges[0].id, 'edge_1')
   assert.match(serializeDiagram(next), /edge start -> review/)
+  assert.doesNotMatch(serializeDiagram(next), /edge_1/)
 })

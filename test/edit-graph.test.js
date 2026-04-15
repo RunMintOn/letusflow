@@ -67,6 +67,35 @@ test('renames a matching edge label', () => {
   ])
 })
 
+test('renames and deletes edges by runtime id', () => {
+  const graph = {
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+    ],
+    edges: [
+      { id: 'edge_1', from: 'start', to: 'review', label: '通过' },
+      { id: 'edge_2', from: 'start', to: 'review', label: '澄清' },
+    ],
+  }
+
+  const renamed = renameEdgeLabel(graph, { edgeId: 'edge_2' }, '补充信息')
+  assert.deepEqual(
+    renamed.edges.map((edge) => ({ id: edge.id, label: edge.label })),
+    [
+      { id: 'edge_1', label: '通过' },
+      { id: 'edge_2', label: '补充信息' },
+    ],
+  )
+
+  const deleted = deleteEdge(renamed, { edgeId: 'edge_1' })
+  assert.deepEqual(
+    deleted.edges.map((edge) => edge.id),
+    ['edge_2'],
+  )
+})
+
 test('creates a successor node and edge from an existing node', () => {
   const graph = {
     direction: 'LR',
