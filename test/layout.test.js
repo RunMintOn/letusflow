@@ -111,11 +111,11 @@ test('auto-layout keeps back-edge cycles from collapsing into the root level', (
   )
 })
 
-test('auto-layout keeps the complex runtime graph within a readable TD footprint', async () => {
+test('auto-layout keeps the accorda overview graph within a readable TD footprint', async () => {
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
 
-  const graph = parseDiagram(await readFile('例图与对比/complex-runtime.flow', 'utf8'))
+  const graph = parseDiagram(await readFile('例图与对比/accorda-full-overview.flow', 'utf8'))
   const next = autoLayoutGraph(graph)
 
   const boxes = Object.values(next.nodes)
@@ -124,8 +124,8 @@ test('auto-layout keeps the complex runtime graph within a readable TD footprint
   const maxX = Math.max(...boxes.map((box) => box.x + box.w))
   const maxY = Math.max(...boxes.map((box) => box.y + box.h))
 
-  assert.ok(maxX - minX <= 1900)
-  assert.ok(maxY - minY <= 2700)
+  assert.ok(maxX - minX <= 900)
+  assert.ok(maxY - minY <= 1400)
   assert.ok(maxY > minY)
 })
 
@@ -192,4 +192,48 @@ test('auto-layout clamps invalid spacing options', () => {
   assert.deepEqual(toDagreSpacing({ spacing: 10 }), { ranksep: 19, nodesep: 10 })
   assert.deepEqual(toDagreSpacing({ spacing: 220 }), { ranksep: 96, nodesep: 51 })
   assert.deepEqual(toDagreSpacing({ spacing: 'wide' }), { ranksep: 64, nodesep: 34 })
+})
+
+test('auto-layout reorders LR same-rank siblings into a more readable main-flow order', () => {
+  const next = autoLayoutGraph({
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+      { id: 'revise', label: '补充信息' },
+      { id: 'done', label: '完成' },
+      { id: 'archive', label: '归档' },
+    ],
+    edges: [
+      { from: 'start', to: 'review' },
+      { from: 'review', to: 'done' },
+      { from: 'review', to: 'revise' },
+      { from: 'done', to: 'archive' },
+      { from: 'revise', to: 'review' },
+    ],
+  })
+
+  assert.ok(next.nodes.review.x < next.nodes.done.x)
+  assert.ok(next.nodes.done.y < next.nodes.revise.y)
+})
+
+test('auto-layout reorders TD same-rank siblings without breaking vertical layering', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'task', label: '任务模式' },
+      { id: 'reply', label: '直接响应' },
+      { id: 'clarify', label: '追问澄清' },
+    ],
+    edges: [
+      { from: 'start', to: 'task' },
+      { from: 'start', to: 'reply' },
+      { from: 'start', to: 'clarify' },
+    ],
+  })
+
+  assert.equal(next.nodes.task.y, next.nodes.reply.y)
+  assert.ok(next.nodes.task.x < next.nodes.reply.x)
+  assert.ok(next.nodes.reply.x < next.nodes.clarify.x)
 })

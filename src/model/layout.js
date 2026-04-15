@@ -1,5 +1,7 @@
 import dagre from 'dagre'
+import { derivePrimaryFlow } from './derivePrimaryFlow.js'
 import { getNodeDimensions } from './nodeDimensions.js'
+import { postLayoutRanks } from './postLayoutRanks.js'
 
 const DAGRE_RANK_SEP = 64
 const DAGRE_NODE_SEP = 34
@@ -56,7 +58,9 @@ export function autoLayoutGraph(graph, options = {}) {
     }
   }
 
-  return layout
+  const primaryFlowScores = derivePrimaryFlow(graph)
+
+  return postLayoutRanks(graph, layout, spacing, primaryFlowScores)
 }
 export function toDagreEdgePriority(edge, nodeOrder) {
   const sourceOrder = nodeOrder.get(edge.from)
