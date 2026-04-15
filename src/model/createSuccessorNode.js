@@ -1,6 +1,7 @@
 import { createEdge } from './createEdge.js'
+import { createEdgeId } from './withEdgeIds.js'
 
-export function createSuccessorNode(graph, fromNodeId, newNode) {
+export function createSuccessorNode(graph, fromNodeId, newNode, newEdgeId = createEdgeId(graph.edges)) {
   const parentIndex = graph.nodes.findIndex((node) => node.id === fromNodeId)
   const nextNodes = parentIndex === -1
     ? [...graph.nodes, newNode]
@@ -15,6 +16,6 @@ export function createSuccessorNode(graph, fromNodeId, newNode) {
       ...graph,
       nodes: nextNodes,
     },
-    { from: fromNodeId, to: newNode.id, label: undefined },
+    { id: newEdgeId, from: fromNodeId, to: newNode.id, label: undefined },
   )
 }

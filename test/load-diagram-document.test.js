@@ -56,3 +56,17 @@ test('loads a diagram document directly from source text', async () => {
   assert.equal(model.graph.nodes.length, 1)
   assert.ok(model.layout.nodes.start)
 })
+
+test('normalizes parsed edges with runtime ids before layout', async () => {
+  const model = await loadDiagramDocumentFromSource(
+    '/workspace/example.flow',
+    [
+      'dir LR',
+      'node start "开始"',
+      'node review "审批"',
+      'edge start -> review "通过"',
+    ].join('\n'),
+  )
+
+  assert.equal(model.graph.edges[0].id, 'edge_1')
+})
