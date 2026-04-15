@@ -1,9 +1,25 @@
+# 忽略开发文档和测试
 docs/**
-superpowers/**
 test/**
-node_modules/**
+superpowers/**
+例图与对比/**
+
+# 忽略开发配置
 .eslintrc*
 .gitignore
-*.md
-.png/**
+.vscode/**
+esbuild.webview.mjs
+package-lock.json
+
+# 忽略源代码（只保留构建产物）
+# 如果你的 extension.cjs 依赖 src 里的其他文件，这里要小心
+# 目前看起来 src/extension.cjs 是入口，如果你有用 esbuild 打包插件，可以忽略 src
+
+# 忽略 node_modules (vsce 会自动忽略，但显式写出来更安全)
+node_modules/**
+
+# 允许部分 markdown 和图片
+!README.md
+!LICENSE
+!image.png
 !example.flow

@@ -61,9 +61,9 @@ When serializing a `node`, attributes MUST follow this exact order:
 This is the core behavior for editors implementing `.flow`.
 
 ### 4.1 Coordinate Management (`pos`)
-- **Initialization**: If a `node` lacks a `pos` attribute, the editor MAY use an automatic layout engine (e.g., Dagre) to calculate positions.
-- **Persistence**: If a user manually drags a node in the UI, the editor MUST update (or inject) the `pos=x,y` attribute in the source text.
-- **Reset**: A "Reset Layout" action in the UI MUST remove all `pos` attributes from the source text to re-trigger automatic layout.
+- **Auto-layout Priority**: By default, the editor SHOULD use an automatic layout engine (e.g., Dagre) to position elements. This ensures the DSL remains clean and focused on logic.
+- **Optional Persistence**: The `pos=x,y` attribute is OPTIONAL. An editor MAY support it for manual overrides, but it MUST NOT be injected automatically unless explicitly requested by the user (e.g., via a "Pin Position" action).
+- **Reset**: A "Reset Layout" action MUST remove all `pos` attributes to return to full auto-layout mode.
 
 ### 4.2 Element Renaming
 - If a `node ID` is renamed via UI, the editor MUST update all corresponding `edge` statements (both `start` and `end` IDs) to maintain graph integrity.

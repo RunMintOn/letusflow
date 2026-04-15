@@ -3,10 +3,12 @@
   "displayName": "LetusFlow",
   "description": "A VS Code extension for editing and previewing flow diagram DSL with automatic layout.",
   "version": "0.0.1",
+  "publisher": "ziqian-li",
+  "icon": "image.png",
   "license": "MIT",
   "type": "module",
   "author": "RunMintOn",
-  "main": "./src/extension.cjs",
+  "main": "./src/extension.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RunMintOn/letusflow.git"
@@ -18,8 +20,17 @@
   "engines": {
     "vscode": "^1.90.0"
   },
+  "keywords": [
+    "flow",
+    "diagram",
+    "dsl",
+    "preview",
+    "mermaid",
+    "agent"
+  ],
   "categories": [
-    "Other"
+    "Visualization",
+    "Programming Languages"
   ],
   "activationEvents": [
     "onCustomEditor:diagramEditor.flowEditor"
