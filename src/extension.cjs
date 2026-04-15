@@ -2,7 +2,7 @@ const path = require('node:path')
 const { pathToFileURL } = require('node:url')
 const vscode = require('vscode')
 
-const outputChannel = vscode.window.createOutputChannel('Diagram Editor MVP')
+const outputChannel = vscode.window.createOutputChannel('LetusFlow')
 let extensionContext = null
 const DEFAULT_BACKGROUND_STYLE = 'paper'
 

@@ -1,5 +1,5 @@
 {
-  "name": "diagram-editor-mvp",
+  "name": "letusflow",
   "displayName": "LetusFlow",
   "description": "A VS Code extension for editing and previewing flow diagram DSL with automatic layout.",
   "version": "0.0.1",
