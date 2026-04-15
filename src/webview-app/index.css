@@ -599,7 +599,7 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 .diagram-node__label {
   position: relative;
   z-index: 1;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.25;
   color: var(--ink);

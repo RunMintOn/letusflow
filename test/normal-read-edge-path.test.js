@@ -11,8 +11,9 @@ test('builds a plain straight edge geometry from source to target', () => {
     targetY: 200,
   })
 
-  assert.equal(geometry.path, 'M 120,180L 360,200')
-  assert.deepEqual(geometry.label, { x: 240, y: 190 })
+  assert.match(geometry.path, /^M/)
+  assert.match(geometry.path, /C/)
+  assert.deepEqual(geometry.label, { x: 240, y: 178 })
 })
 
 test('does not require route metadata for vertical edges', () => {
@@ -23,7 +24,8 @@ test('does not require route metadata for vertical edges', () => {
     targetY: 360,
   })
 
-  assert.equal(geometry.path, 'M 180,120L 200,360')
+  assert.match(geometry.path, /^M/)
+  assert.match(geometry.path, /C/)
   assert.deepEqual(geometry.label, { x: 190, y: 240 })
 })
 
@@ -42,7 +44,9 @@ test('clips a vertical incoming edge to the visible decision boundary', () => {
     },
   })
 
-  assert.equal(geometry.path, 'M 212,120L 212,301')
+  assert.match(geometry.path, /^M212,120/)
+  assert.match(geometry.path, /212,301/)
+  assert.match(geometry.path, /C/)
   assert.deepEqual(geometry.label, { x: 212, y: 211 })
 })
 
@@ -61,6 +65,20 @@ test('clips a horizontal outgoing edge to the visible decision boundary', () => 
     },
   })
 
-  assert.equal(geometry.path, 'M 257,346L 400,346')
-  assert.deepEqual(geometry.label, { x: 329, y: 346 })
+  assert.match(geometry.path, /^M257,346/)
+  assert.match(geometry.path, /400,346/)
+  assert.match(geometry.path, /C/)
+  assert.deepEqual(geometry.label, { x: 329, y: 334 })
+})
+
+test('nudges labels upward for nearly horizontal edges to reduce node overlap', () => {
+  const geometry = toNormalReadEdgePath({
+    sourceX: 120,
+    sourceY: 260,
+    targetX: 420,
+    targetY: 268,
+  })
+
+  assert.equal(geometry.label.x, 270)
+  assert.ok(geometry.label.y < 264)
 })

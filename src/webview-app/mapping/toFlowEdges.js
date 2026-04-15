@@ -1,12 +1,12 @@
 const READ_EDGE_STYLE = {
   stroke: '#6f6f78',
-  strokeWidth: 1.2,
+  strokeWidth: 2,
 }
 
 const READ_EDGE_LABEL_STYLE = {
   fill: '#55555f',
-  fontSize: 11,
-  fontWeight: 400,
+  fontSize: 12,
+  fontWeight: 500,
 }
 
 const READ_EDGE_MARKER = {

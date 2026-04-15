@@ -14,10 +14,10 @@ test('maps graph edges to stable readable XYFlow edges', () => {
       label: '通过',
       type: 'readEdge',
       markerEnd: { type: 'arrowclosed', color: '#6f6f78' },
-      style: { stroke: '#6f6f78', strokeWidth: 1.2 },
+      style: { stroke: '#6f6f78', strokeWidth: 2 },
       labelBgPadding: [4, 2],
       labelBgBorderRadius: 2,
-      labelStyle: { fill: '#55555f', fontSize: 11, fontWeight: 400 },
+      labelStyle: { fill: '#55555f', fontSize: 12, fontWeight: 500 },
       data: {
         edgeRef: { from: 'start', to: 'review', label: '通过' },
       },
@@ -42,7 +42,7 @@ test('maps dashed graph edges to dashed XYFlow edges', () => {
   ])
 
   assert.equal(edges[0].animated, false)
-  assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 1.2, strokeDasharray: '4 4' })
+  assert.deepEqual(edges[0].style, { stroke: '#6f6f78', strokeWidth: 2, strokeDasharray: '4 4' })
 })
 
 test('maps dotted and dashdot graph edges to styled XYFlow edges', () => {
@@ -53,12 +53,12 @@ test('maps dotted and dashdot graph edges to styled XYFlow edges', () => {
 
   assert.deepEqual(edges[0].style, {
     stroke: '#6f6f78',
-    strokeWidth: 1.2,
+    strokeWidth: 2,
     strokeDasharray: '1 4',
   })
   assert.deepEqual(edges[1].style, {
     stroke: '#6f6f78',
-    strokeWidth: 1.2,
+    strokeWidth: 2,
     strokeDasharray: '4 2 1 2',
   })
 })
