@@ -371,33 +371,47 @@ export async function resolveCustomFlowEditor({
         return
       }
 
-      if (message?.type === 'deleteEdge' && message.edge) {
-        documentModel.graph = deleteEdge(documentModel.graph, message.edge)
+      if (message?.type === 'deleteEdge') {
+        const edgeIdentity = message?.edgeId ? { edgeId: message.edgeId } : message.edge
+        if (!edgeIdentity) {
+          return
+        }
+
+        documentModel.graph = deleteEdge(documentModel.graph, edgeIdentity)
 
         const mode = await persistGraph()
-        postHostDebug(webviewPanel, `deleteEdge saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
+        postHostDebug(webviewPanel, `deleteEdge saved via ${mode}`)
         await postSyncState()
         return
       }
 
-      if (message?.type === 'renameEdgeLabel' && message.edge) {
-        const nextLabel = typeof message.label === 'string' ? message.label.trim() : ''
-        const matchingNextLabelCount = documentModel.graph.edges.filter((edge) =>
-          edge.from === message.edge.from
-          && edge.to === message.edge.to
-          && (edge.label ?? '') === nextLabel
-          && (edge.style ?? '') === (message.edge.style ?? '')
-        ).length
-        const keepsCurrentLabel = (message.edge.label ?? '') === nextLabel
-        const duplicate = keepsCurrentLabel ? matchingNextLabelCount > 1 : matchingNextLabelCount > 0
-        if (duplicate) {
-          postHostDebug(webviewPanel, `renameEdgeLabel ignored: duplicate ${message.edge.from} -> ${message.edge.to}`)
+      if (message?.type === 'renameEdgeLabel') {
+        const edgeIdentity = message?.edgeId ? { edgeId: message.edgeId } : message.edge
+        if (!edgeIdentity) {
           return
         }
 
-        documentModel.graph = renameEdgeLabel(documentModel.graph, message.edge, nextLabel)
+        const nextLabel = typeof message.label === 'string' ? message.label.trim() : ''
+        const currentEdge = message.edge ?? documentModel.graph.edges.find((edge) => edge.id === message.edgeId)
+        if (!currentEdge) {
+          return
+        }
+        const matchingNextLabelCount = documentModel.graph.edges.filter((edge) =>
+          edge.from === currentEdge.from
+          && edge.to === currentEdge.to
+          && (edge.label ?? '') === nextLabel
+          && (edge.style ?? '') === (currentEdge.style ?? '')
+          && edge.id !== currentEdge.id
+        ).length
+        const duplicate = matchingNextLabelCount > 0
+        if (duplicate) {
+          postHostDebug(webviewPanel, `renameEdgeLabel ignored: duplicate ${currentEdge.from} -> ${currentEdge.to}`)
+          return
+        }
+
+        documentModel.graph = renameEdgeLabel(documentModel.graph, edgeIdentity, nextLabel)
         const mode = await persistGraph()
-        postHostDebug(webviewPanel, `renameEdgeLabel saved via ${mode}: ${message.edge.from} -> ${message.edge.to}`)
+        postHostDebug(webviewPanel, `renameEdgeLabel saved via ${mode}: ${currentEdge.from} -> ${currentEdge.to}`)
         await postSyncState()
         return
       }

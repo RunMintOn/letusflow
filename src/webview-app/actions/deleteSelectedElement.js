@@ -9,6 +9,10 @@ export function deleteSelectedElement({ selectedElement, postToHost }) {
   }
 
   if (selectedElement.type === 'edge') {
-    postToHost({ type: 'deleteEdge', edge: selectedElement.edgeRef })
+    postToHost({
+      type: 'deleteEdge',
+      edgeId: selectedElement.edgeId,
+      edge: selectedElement.edgeRef,
+    })
   }
 }

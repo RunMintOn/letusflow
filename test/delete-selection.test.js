@@ -14,16 +14,16 @@ test('sends deleteNode for a selected node', () => {
   assert.deepEqual(messages, [{ type: 'deleteNode', nodeId: 'review' }])
 })
 
-test('sends deleteEdge for a selected edge', () => {
+test('deletes a selected edge by edgeId', () => {
   const messages = []
   const edgeRef = { from: 'review', to: 'done', label: '通过' }
 
   deleteSelectedElement({
-    selectedElement: { type: 'edge', edgeRef },
+    selectedElement: { type: 'edge', edgeId: 'edge_2', edgeRef },
     postToHost: (message) => messages.push(message),
   })
 
-  assert.deepEqual(messages, [{ type: 'deleteEdge', edge: edgeRef }])
+  assert.deepEqual(messages, [{ type: 'deleteEdge', edgeId: 'edge_2', edge: edgeRef }])
 })
 
 test('ignores delete when nothing is selected', () => {

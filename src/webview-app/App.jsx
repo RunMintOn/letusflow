@@ -107,7 +107,7 @@ function AppInner() {
 
   const selectedEdge = React.useMemo(
     () => selectedElement?.type === 'edge'
-      ? edges.find((edge) => edge.id === selectedElement.id) ?? null
+      ? edges.find((edge) => (edge.data?.edgeId ?? edge.id) === selectedElement?.edgeId) ?? null
       : null,
     [edges, selectedElement],
   )
@@ -128,6 +128,7 @@ function AppInner() {
     setSelectedElement({
       type: 'edge',
       id: edge.id,
+      edgeId: edge.data?.edgeId ?? edge.id,
       edgeRef: edge.data.edgeRef,
     })
   }, [])
@@ -172,7 +173,7 @@ function AppInner() {
     const edgeRef = selectedElement.edgeRef
     setEdges((currentEdges) =>
       currentEdges.map((edge) =>
-        edge.id === selectedElement.id
+        (edge.data?.edgeId ?? edge.id) === selectedElement.edgeId
           ? {
               ...edge,
               label: trimmedLabel || undefined,
@@ -201,6 +202,7 @@ function AppInner() {
 
     postToHost({
       type: 'renameEdgeLabel',
+      edgeId: selectedElement.edgeId,
       edge: edgeRef,
       label: trimmedLabel,
     })

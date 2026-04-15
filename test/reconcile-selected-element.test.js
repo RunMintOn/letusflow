@@ -13,21 +13,22 @@ test('clears a selected node when incremental sync removes it', () => {
   assert.equal(next, null)
 })
 
-test('refreshes edgeRef from the synced edge when the selected edge still exists', () => {
+test('refreshes selected edge identity from the synced edge by edgeId', () => {
   const next = reconcileSelectedElement(
-    { type: 'edge', id: 'start->done#ok', edgeRef: { from: 'start', to: 'done', label: 'old' } },
+    { type: 'edge', id: 'edge_2', edgeId: 'edge_2', edgeRef: { from: 'start', to: 'done', label: 'old' } },
     [],
     [
       {
-        id: 'start->done#ok',
-        data: { edgeRef: { from: 'start', to: 'done', label: 'ok' } },
+        id: 'edge_2',
+        data: { edgeId: 'edge_2', edgeRef: { from: 'start', to: 'done', label: 'ok' } },
       },
     ],
   )
 
   assert.deepEqual(next, {
     type: 'edge',
-    id: 'start->done#ok',
+    id: 'edge_2',
+    edgeId: 'edge_2',
     edgeRef: { from: 'start', to: 'done', label: 'ok' },
   })
 })

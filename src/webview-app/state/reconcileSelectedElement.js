@@ -8,7 +8,7 @@ export function reconcileSelectedElement(selectedElement, nodes, edges) {
   }
 
   if (selectedElement.type === 'edge') {
-    const nextEdge = edges.find((edge) => edge.id === selectedElement.id)
+    const nextEdge = edges.find((edge) => edge.data?.edgeId === selectedElement.edgeId)
     if (!nextEdge) {
       return null
     }
@@ -16,6 +16,7 @@ export function reconcileSelectedElement(selectedElement, nodes, edges) {
     return {
       type: 'edge',
       id: nextEdge.id,
+      edgeId: nextEdge.data.edgeId,
       edgeRef: nextEdge.data.edgeRef,
     }
   }
