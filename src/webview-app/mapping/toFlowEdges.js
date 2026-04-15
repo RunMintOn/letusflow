@@ -20,10 +20,28 @@ const EDGE_STYLE_MAP = {
   dashdot: { strokeDasharray: '4 2 1 2' },
 }
 
+function buildParallelEdgeGroups(graphEdges) {
+  const groups = new Map()
+
+  for (const edge of graphEdges) {
+    const key = `${edge.from}=>${edge.to}`
+    const group = groups.get(key) ?? []
+    group.push(edge)
+    groups.set(key, group)
+  }
+
+  return groups
+}
+
+function toParallelIndex(index, count) {
+  return index - (count - 1) / 2
+}
+
 export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
   const graphNodes = Array.isArray(graphNodesOrLayout) ? graphNodesOrLayout : []
   const layout = Array.isArray(graphNodesOrLayout) ? layoutMaybe : graphNodesOrLayout
   const nodesById = new Map(graphNodes.map((node) => [node.id, node]))
+  const parallelGroups = buildParallelEdgeGroups(graphEdges)
 
   return graphEdges.map((edge) => {
     const edgeRef = {
@@ -39,6 +57,13 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
     const sourceNode = toEdgeEndpointNode(nodesById.get(edge.from), layout?.nodes?.[edge.from])
     const targetNode = toEdgeEndpointNode(nodesById.get(edge.to), layout?.nodes?.[edge.to])
     const edgeId = edge.id ?? `${edge.from}->${edge.to}#${edge.label ?? ''}`
+    const parallelGroup = parallelGroups.get(`${edge.from}=>${edge.to}`) ?? [edge]
+    const parallelPosition = parallelGroup.findIndex((candidate) => (candidate.id ?? candidate) === (edge.id ?? edge))
+    const parallelCount = parallelGroup.length
+    const parallelIndex = toParallelIndex(
+      parallelPosition === -1 ? 0 : parallelPosition,
+      parallelCount,
+    )
     const flowEdge = {
       id: edgeId,
       source: edge.from,
@@ -52,6 +77,8 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
       labelStyle: READ_EDGE_LABEL_STYLE,
       data: {
         edgeId,
+        parallelIndex,
+        parallelCount,
         edgeRef,
         ...(sourceNode ? { sourceNode } : {}),
         ...(targetNode ? { targetNode } : {}),

@@ -24,6 +24,8 @@ export function NormalReadEdge({
     targetY,
     sourceNode: data?.sourceNode,
     targetNode: data?.targetNode,
+    parallelIndex: data?.parallelIndex,
+    parallelCount: data?.parallelCount,
   })
   const labelLayout = data?.labelLayout
   const resolvedLabelX = labelLayout ? Math.round(labelLayout.x + labelLayout.w / 2) : geometry.label.x

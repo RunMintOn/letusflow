@@ -20,6 +20,8 @@ test('maps graph edges to stable readable XYFlow edges', () => {
       labelStyle: { fill: '#55555f', fontSize: 12, fontWeight: 500 },
       data: {
         edgeId: 'start->review#通过',
+        parallelIndex: 0,
+        parallelCount: 1,
         edgeRef: { from: 'start', to: 'review', label: '通过' },
       },
     },
@@ -82,6 +84,8 @@ test('maps all graph edges to one readable XYFlow edge type', () => {
         type: 'readEdge',
         data: {
           edgeId: 'start->review#通过',
+          parallelIndex: 0,
+          parallelCount: 1,
           edgeRef: { from: 'start', to: 'review', label: '通过' },
         },
       },
@@ -90,6 +94,8 @@ test('maps all graph edges to one readable XYFlow edge type', () => {
         type: 'readEdge',
         data: {
           edgeId: 'retry->review#重试',
+          parallelIndex: 0,
+          parallelCount: 1,
           edgeRef: { from: 'retry', to: 'review', label: '重试' },
         },
       },
@@ -112,6 +118,8 @@ test('does not create feedback routes or target offsets for back edges', () => {
   assert.equal(edges[0].type, 'readEdge')
   assert.deepEqual(edges[0].data, {
     edgeId: 'append_result->build_ctx#',
+    parallelIndex: 0,
+    parallelCount: 1,
     edgeRef: {
       from: 'append_result',
       to: 'build_ctx',
@@ -138,6 +146,8 @@ test('maps endpoint node metadata needed for decision boundary clipping', () => 
 
   assert.deepEqual(edges[0].data, {
     edgeId: 'task_mode->executor#执行',
+    parallelIndex: 0,
+    parallelCount: 1,
     edgeRef: {
       from: 'task_mode',
       to: 'executor',

@@ -2,6 +2,7 @@ import { getBezierPath } from '@xyflow/react'
 
 const DECISION_DIAMOND_SIDE = 64
 const DECISION_DIAMOND_RADIUS = DECISION_DIAMOND_SIDE * Math.SQRT2 / 2
+const PARALLEL_EDGE_OFFSET = 18
 
 export function toNormalReadEdgePath({
   sourceX,
@@ -10,6 +11,8 @@ export function toNormalReadEdgePath({
   targetY,
   sourceNode,
   targetNode,
+  parallelIndex = 0,
+  parallelCount = 1,
 }) {
   const clippedSource = isDecisionNode(sourceNode)
     ? toDecisionBoundaryPoint(sourceNode, { x: targetX, y: targetY })
@@ -17,17 +20,23 @@ export function toNormalReadEdgePath({
   const clippedTarget = isDecisionNode(targetNode)
     ? toDecisionBoundaryPoint(targetNode, { x: sourceX, y: sourceY })
     : { x: targetX, y: targetY }
-  const sourcePosition = resolveHandlePosition(clippedSource, clippedTarget)
-  const targetPosition = resolveHandlePosition(clippedTarget, clippedSource)
+  const { fromPoint: offsetSource, toPoint: offsetTarget } = applyParallelOffset(
+    clippedSource,
+    clippedTarget,
+    parallelIndex,
+    parallelCount,
+  )
+  const sourcePosition = resolveHandlePosition(offsetSource, offsetTarget)
+  const targetPosition = resolveHandlePosition(offsetTarget, offsetSource)
   const [path, labelX, labelY] = getBezierPath({
-    sourceX: clippedSource.x,
-    sourceY: clippedSource.y,
+    sourceX: offsetSource.x,
+    sourceY: offsetSource.y,
     sourcePosition,
-    targetX: clippedTarget.x,
-    targetY: clippedTarget.y,
+    targetX: offsetTarget.x,
+    targetY: offsetTarget.y,
     targetPosition,
   })
-  const labelOffsetY = Math.abs(clippedSource.y - clippedTarget.y) <= 24 ? -12 : 0
+  const labelOffsetY = Math.abs(offsetSource.y - offsetTarget.y) <= 24 ? -12 : 0
 
   return {
     path,
@@ -73,4 +82,27 @@ function resolveHandlePosition(fromPoint, toPoint) {
   }
 
   return deltaY >= 0 ? 'bottom' : 'top'
+}
+
+function applyParallelOffset(fromPoint, toPoint, parallelIndex, parallelCount) {
+  if (parallelCount <= 1 || parallelIndex === 0) {
+    return { fromPoint, toPoint }
+  }
+
+  const dx = toPoint.x - fromPoint.x
+  const dy = toPoint.y - fromPoint.y
+  const length = Math.hypot(dx, dy) || 1
+  const offsetX = (-dy / length) * parallelIndex * PARALLEL_EDGE_OFFSET
+  const offsetY = (dx / length) * parallelIndex * PARALLEL_EDGE_OFFSET
+
+  return {
+    fromPoint: {
+      x: Math.round(fromPoint.x + offsetX),
+      y: Math.round(fromPoint.y + offsetY),
+    },
+    toPoint: {
+      x: Math.round(toPoint.x + offsetX),
+      y: Math.round(toPoint.y + offsetY),
+    },
+  }
 }
