@@ -9,6 +9,14 @@ test('builds a sync payload from graph, layout, and view state', () => {
       sourcePath: '/workspace/example.flow',
       graph: { direction: 'LR', nodes: [], edges: [] },
       layout: { nodes: {} },
+      routeC: {
+        enabled: true,
+        viewModel: {
+          nodes: [],
+          groups: [],
+          edges: [],
+        },
+      },
       documentError: null,
     },
     {
@@ -26,6 +34,14 @@ test('builds a sync payload from graph, layout, and view state', () => {
     sourcePath: '/workspace/example.flow',
     graph: { direction: 'LR', nodes: [], edges: [] },
     layout: { nodes: {} },
+    routeC: {
+      enabled: true,
+      viewModel: {
+        nodes: [],
+        groups: [],
+        edges: [],
+      },
+    },
     layoutSpacing: 135,
     backgroundStyle: 'obsidian',
     viewport: { x: 12, y: 24, zoom: 1.2 },

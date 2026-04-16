@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { toEditorLayout } from '../src/webview-app/state/toEditorLayout.js'
+import { toFlowCollections } from '../src/webview-app/state/toFlowCollections.js'
 
 test('editor layout responds immediately to local spacing changes', () => {
   const documentModel = {
@@ -56,4 +57,35 @@ test('editor layout keeps document layout during normal renders even when spacin
   }
 
   assert.equal(toEditorLayout(documentModel, 150, false), documentModel.layout)
+})
+
+test('toFlowCollections prefers route-c view model when enabled', () => {
+  const documentModel = {
+    graph: {
+      direction: 'TD',
+      groups: [],
+      nodes: [{ id: 'router', label: 'Router' }],
+      edges: [],
+    },
+    routeC: {
+      enabled: true,
+      viewModel: {
+        nodes: [
+          {
+            id: 'router',
+            position: { x: 100, y: 200 },
+            data: { label: 'Router' },
+            style: { width: 132, height: 46 },
+          },
+        ],
+        groups: [],
+        edges: [],
+      },
+    },
+  }
+
+  const { flowNodes, flowEdges } = toFlowCollections(documentModel, { nodes: {} })
+
+  assert.equal(flowNodes[0].position.x, 100)
+  assert.deepEqual(flowEdges, [])
 })

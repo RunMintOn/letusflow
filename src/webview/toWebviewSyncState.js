@@ -3,6 +3,10 @@ export function toWebviewSyncState(documentModel, viewState = {}, options = {}) 
     sourcePath: documentModel.sourcePath,
     graph: documentModel.graph,
     layout: documentModel.layout,
+    routeC: documentModel.routeC ?? {
+      enabled: false,
+      viewModel: null,
+    },
     layoutSpacing: viewState.layoutSpacing ?? documentModel.layoutSpacing ?? 100,
     backgroundStyle: viewState.backgroundStyle ?? documentModel.backgroundStyle ?? 'paper',
     viewport: viewState.viewport ?? documentModel.viewport ?? null,

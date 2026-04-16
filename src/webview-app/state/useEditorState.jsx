@@ -1,8 +1,7 @@
 import React from 'react'
 
-import { toFlowNodes } from '../mapping/toFlowNodes.js'
-import { toFlowEdges } from '../mapping/toFlowEdges.js'
 import { toEditorLayout } from './toEditorLayout.js'
+import { toFlowCollections } from './toFlowCollections.js'
 
 export function useEditorState(
   initialDocument,
@@ -15,18 +14,9 @@ export function useEditorState(
     [documentModel, isSpacingPreviewActive, layoutSpacing],
   )
 
-  const flowNodes = React.useMemo(
-    () => toFlowNodes(documentModel.graph, activeLayout),
-    [activeLayout, documentModel.graph],
-  )
-
-  const flowEdges = React.useMemo(
-    () => toFlowEdges(
-      documentModel.graph.edges,
-      documentModel.graph.nodes,
-      activeLayout,
-    ),
-    [activeLayout, documentModel.graph.edges, documentModel.graph.nodes],
+  const { flowNodes, flowEdges } = React.useMemo(
+    () => toFlowCollections(documentModel, activeLayout),
+    [activeLayout, documentModel],
   )
 
   const activeViewModel = React.useMemo(
