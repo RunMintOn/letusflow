@@ -27,7 +27,8 @@ export function serializeDiagram(graph) {
   for (const edge of graph.edges) {
     const labelPart = edge.label ? ` "${escapeLabel(edge.label)}"` : ''
     const stylePart = edge.style ? ` ${edge.style}` : ''
-    lines.push(`edge ${edge.from} -> ${edge.to}${labelPart}${stylePart}`)
+    const idPart = edge.id ? ` id=${edge.id}` : ''
+    lines.push(`edge ${edge.from} -> ${edge.to}${labelPart}${stylePart}${idPart}`)
   }
 
   return lines.join('\n')

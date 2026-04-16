@@ -5,6 +5,7 @@ const EDGE_PREFIX = 'edge '
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9_-]+$/
 const IDENTIFIER_OR_HEX_PATTERN = /^(#[0-9A-Fa-f]{3,8}|[A-Za-z][A-Za-z0-9_-]*)$/
 const EDGE_STYLE_PATTERN = 'dashed|dotted|dashdot'
+const EDGE_STYLE_TOKEN_PATTERN = /^(dashed|dotted|dashdot)$/
 
 function parseQuotedValue(rawValue, line) {
   if (!rawValue.startsWith('"') || !rawValue.endsWith('"')) {
@@ -102,21 +103,21 @@ export function parseDiagram(source) {
     }
 
     if (line.startsWith(EDGE_PREFIX)) {
-      const match = line.match(new RegExp(
-        `^edge\\s+([A-Za-z0-9_-]+)\\s+->\\s+([A-Za-z0-9_-]+)(?:\\s+("(?:(?:\\\\.)|[^"])*"))?(?:\\s+(${EDGE_STYLE_PATTERN}))?$`,
-      ))
+      const match = line.match(
+        /^edge\s+([A-Za-z0-9_-]+)\s+->\s+([A-Za-z0-9_-]+)(?:\s+("(?:(?:\\.)|[^"])*"))?(.*)$/,
+      )
       if (!match) {
         throw new Error(`Invalid edge line: ${line}`)
       }
 
-      const [, from, to, rawLabel, style] = match
+      const [, from, to, rawLabel, rawOptions] = match
+      const options = parseEdgeOptions(rawOptions.trim(), line)
       const edge = {
         from,
         to,
         label: rawLabel ? parseQuotedValue(rawLabel, line) : undefined,
-      }
-      if (style) {
-        edge.style = style
+        ...(options.style ? { style: options.style } : {}),
+        ...(options.id ? { id: options.id } : {}),
       }
       graph.edges.push(edge)
       continue
@@ -170,6 +171,40 @@ function parseNodeOptions(rawOptions, line) {
     }
 
     throw new Error(`Invalid node line: ${line}`)
+  }
+
+  return options
+}
+
+function parseEdgeOptions(rawOptions, line) {
+  if (!rawOptions) {
+    return {}
+  }
+
+  const options = {}
+  const tokens = rawOptions.split(/\s+/)
+
+  for (const token of tokens) {
+    if (EDGE_STYLE_TOKEN_PATTERN.test(token)) {
+      if (options.style || options.id) {
+        throw new Error(`Invalid edge line: ${line}`)
+      }
+
+      options.style = token
+      continue
+    }
+
+    if (token.startsWith('id=')) {
+      const id = token.slice('id='.length)
+      if (!id || !IDENTIFIER_PATTERN.test(id) || options.id) {
+        throw new Error(`Invalid edge line: ${line}`)
+      }
+
+      options.id = id
+      continue
+    }
+
+    throw new Error(`Invalid edge line: ${line}`)
   }
 
   return options
