@@ -1,6 +1,9 @@
 export function withNodeActions(nodes, actions) {
   return nodes.map((node) => {
-    if (node.type !== 'diagramNode') {
+    const isGroupNode = node.type === 'groupNode'
+    const isDiagramNode = node.type === 'diagramNode'
+
+    if (!isDiagramNode && !isGroupNode) {
       return node
     }
 
@@ -11,7 +14,7 @@ export function withNodeActions(nodes, actions) {
       draggable: Boolean(actions.isNodeDraggingEnabled) && !isEditing,
       data: {
         ...node.data,
-        onCreateSuccessor: actions.onCreateSuccessor,
+        ...(isDiagramNode ? { onCreateSuccessor: actions.onCreateSuccessor } : {}),
         isEditing,
         editingLabel: isEditing ? actions.editingLabel : node.data.label,
         onEditChange: actions.onEditChange,

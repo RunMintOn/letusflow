@@ -26,6 +26,17 @@ test('deletes a selected edge by edgeId', () => {
   assert.deepEqual(messages, [{ type: 'deleteEdge', edgeId: 'edge_2', edge: edgeRef }])
 })
 
+test('sends deleteGroup for a selected group', () => {
+  const messages = []
+
+  deleteSelectedElement({
+    selectedElement: { type: 'group', groupId: 'prompt' },
+    postToHost: (message) => messages.push(message),
+  })
+
+  assert.deepEqual(messages, [{ type: 'deleteGroup', groupId: 'prompt' }])
+})
+
 test('ignores delete when nothing is selected', () => {
   const messages = []
 

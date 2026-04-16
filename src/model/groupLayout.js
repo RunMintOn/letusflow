@@ -26,3 +26,55 @@ export function deriveDefaultGroupBox(groupId, graphNodes, nodeLayouts) {
     h: maxY - minY + GROUP_PADDING_TOP + GROUP_PADDING_BOTTOM,
   })
 }
+
+export function shiftGroupWithChildren(layout, groupId, delta, graph) {
+  const nextLayout = {
+    ...layout,
+    nodes: { ...(layout.nodes ?? {}) },
+    groups: { ...(layout.groups ?? {}) },
+  }
+
+  const currentGroup = nextLayout.groups[groupId]
+  if (!currentGroup) {
+    return nextLayout
+  }
+
+  nextLayout.groups[groupId] = {
+    ...currentGroup,
+    x: currentGroup.x + delta.x,
+    y: currentGroup.y + delta.y,
+  }
+
+  for (const node of graph.nodes ?? []) {
+    if (node.groupId !== groupId) {
+      continue
+    }
+
+    const currentNode = nextLayout.nodes[node.id]
+    if (!currentNode) {
+      continue
+    }
+
+    nextLayout.nodes[node.id] = {
+      ...currentNode,
+      x: currentNode.x + delta.x,
+      y: currentNode.y + delta.y,
+    }
+  }
+
+  return nextLayout
+}
+
+export function canDropNodeIntoGroup(nodeBox, groupBox) {
+  const left = groupBox.x + 16
+  const right = groupBox.x + groupBox.w - 16
+  const top = groupBox.y + 40
+  const bottom = groupBox.y + groupBox.h - 16
+
+  return (
+    nodeBox.x >= left &&
+    nodeBox.y >= top &&
+    nodeBox.x + nodeBox.w <= right &&
+    nodeBox.y + nodeBox.h <= bottom
+  )
+}

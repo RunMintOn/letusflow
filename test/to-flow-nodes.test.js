@@ -39,7 +39,7 @@ test('maps graph nodes with default layout when a layout entry is missing', () =
   ])
 })
 
-test('adds non-draggable group nodes around grouped graph nodes', () => {
+test('maps persisted group layout boxes into group nodes', () => {
   const nodes = toFlowNodes(
     {
       groups: [{ id: 'prompt', label: 'Prompt Assembly' }],
@@ -49,6 +49,9 @@ test('adds non-draggable group nodes around grouped graph nodes', () => {
       ],
     },
     {
+      groups: {
+        prompt: { x: 76, y: 78, w: 488, h: 122 },
+      },
       nodes: {
         A1: { x: 100, y: 120, w: 180, h: 56 },
         B: { x: 360, y: 120, w: 180, h: 56 },
@@ -60,7 +63,6 @@ test('adds non-draggable group nodes around grouped graph nodes', () => {
   assert.equal(nodes[0].type, 'groupNode')
   assert.equal(nodes[0].className, 'diagram-flow-group')
   assert.equal(nodes[0].data.label, 'Prompt Assembly')
-  assert.equal(nodes[0].draggable, false)
   assert.deepEqual(nodes[0].position, { x: 76, y: 78 })
   assert.deepEqual(nodes[0].style, { width: 488, height: 122 })
 })

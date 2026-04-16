@@ -115,7 +115,9 @@ export async function resolveCustomFlowEditor({
 
   const [
     { createWebviewDocumentModel },
+    { createDefaultGroupLayout },
     { renameNodeLabel },
+    { shiftGroupWithChildren },
     { reconcileLayout },
     { serializeDiagram },
     { loadDiagramDocument, loadDiagramDocumentFromSource },
@@ -124,17 +126,23 @@ export async function resolveCustomFlowEditor({
     { saveLayoutDocument },
     { autoLayoutGraph },
     { createNode },
+    { createGroup },
     { createEdge },
     { generateNodeId },
     { deleteNode },
+    { deleteGroup },
     { deleteEdge },
+    { moveNodeToGroup },
+    { renameGroupLabel },
     { renameEdgeLabel },
     { createSuccessorNode },
     { placeSuccessorNode },
     { toWebviewSyncState },
   ] = await Promise.all([
     loadModule('./extension-helpers/createWebviewDocumentModel.js'),
+    loadModule('./model/layoutSchema.js'),
     loadModule('./model/renameNodeLabel.js'),
+    loadModule('./model/groupLayout.js'),
     loadModule('./model/reconcileLayout.js'),
     loadModule('./model/serializeDiagram.js'),
     loadModule('./workspace/loadDiagramDocument.js'),
@@ -143,10 +151,14 @@ export async function resolveCustomFlowEditor({
     loadModule('./workspace/saveLayoutDocument.js'),
     loadModule('./model/layout.js'),
     loadModule('./model/createNode.js'),
+    loadModule('./model/createGroup.js'),
     loadModule('./model/createEdge.js'),
     loadModule('./model/generateNodeId.js'),
     loadModule('./model/deleteNode.js'),
+    loadModule('./model/deleteGroup.js'),
     loadModule('./model/deleteEdge.js'),
+    loadModule('./model/moveNodeToGroup.js'),
+    loadModule('./model/renameGroupLabel.js'),
     loadModule('./model/renameEdgeLabel.js'),
     loadModule('./model/createSuccessorNode.js'),
     loadModule('./model/placeSuccessorNode.js'),
@@ -312,6 +324,23 @@ export async function resolveCustomFlowEditor({
         return
       }
 
+      if (message?.type === 'createGroup' && message.group) {
+        documentModel.graph = createGroup(documentModel.graph, message.group)
+        documentModel.layout = {
+          ...documentModel.layout,
+          groups: {
+            ...(documentModel.layout.groups ?? {}),
+            [message.group.id]: createDefaultGroupLayout(message.layout),
+          },
+        }
+
+        const mode = await persistGraph()
+        await persistLayout()
+        postHostDebug(webviewPanel, `createGroup saved via ${mode}: ${message.group.id}`)
+        await postSyncState()
+        return
+      }
+
       if (message?.type === 'createSuccessorNode' && message.nodeId) {
         if (!documentModel.graph.nodes.some((node) => node.id === message.nodeId)) {
           postHostDebug(webviewPanel, `createSuccessorNode ignored: missing node ${message.nodeId}`)
@@ -388,6 +417,18 @@ export async function resolveCustomFlowEditor({
         return
       }
 
+      if (message?.type === 'dragGroup' && message.groupId && message.delta) {
+        documentModel.layout = shiftGroupWithChildren(
+          documentModel.layout,
+          message.groupId,
+          message.delta,
+          documentModel.graph,
+        )
+        await persistLayout()
+        await postSyncState()
+        return
+      }
+
       if (message?.type === 'deleteNode' && message.nodeId) {
         documentModel.graph = deleteNode(documentModel.graph, message.nodeId)
         documentModel.layout = {
@@ -399,6 +440,22 @@ export async function resolveCustomFlowEditor({
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteNode saved via ${mode}: ${message.nodeId}`)
+        await postSyncState()
+        return
+      }
+
+      if (message?.type === 'deleteGroup' && message.groupId) {
+        documentModel.graph = deleteGroup(documentModel.graph, message.groupId)
+        documentModel.layout = reconcileLayout(documentModel.graph, {
+          ...documentModel.layout,
+          groups: Object.fromEntries(
+            Object.entries(documentModel.layout.groups ?? {}).filter(([groupId]) => groupId !== message.groupId),
+          ),
+        })
+
+        const mode = await persistGraph()
+        await persistLayout()
+        postHostDebug(webviewPanel, `deleteGroup saved via ${mode}: ${message.groupId}`)
         await postSyncState()
         return
       }
@@ -444,6 +501,19 @@ export async function resolveCustomFlowEditor({
         documentModel.graph = renameEdgeLabel(documentModel.graph, edgeIdentity, nextLabel)
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `renameEdgeLabel saved via ${mode}: ${currentEdge.from} -> ${currentEdge.to}`)
+        await postSyncState()
+        return
+      }
+
+      if (message?.type === 'renameGroup' && message.groupId && typeof message.label === 'string') {
+        const nextLabel = message.label.trim()
+        if (!nextLabel) {
+          return
+        }
+
+        documentModel.graph = renameGroupLabel(documentModel.graph, message.groupId, nextLabel)
+        const mode = await persistGraph()
+        postHostDebug(webviewPanel, `renameGroup saved via ${mode}: ${message.groupId}`)
         await postSyncState()
         return
       }
@@ -496,6 +566,16 @@ export async function resolveCustomFlowEditor({
           },
         }
         await persistLayout()
+        await postSyncState()
+        return
+      }
+
+      if (message?.type === 'moveNodeToGroup' && message.nodeId) {
+        documentModel.graph = moveNodeToGroup(documentModel.graph, message.nodeId, message.groupId ?? null)
+        documentModel.layout = reconcileLayout(documentModel.graph, documentModel.layout)
+        const mode = await persistGraph()
+        await persistLayout()
+        postHostDebug(webviewPanel, `moveNodeToGroup saved via ${mode}: ${message.nodeId}`)
         await postSyncState()
       }
     } catch (error) {

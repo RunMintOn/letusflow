@@ -22,6 +22,7 @@ test('adds successor action to diagram nodes only', () => {
     onEditCancel,
   })
 
+  assert.equal(next[0].draggable, false)
   assert.equal(next[0].data.onCreateSuccessor, undefined)
   assert.equal(next[1].data.onCreateSuccessor, onCreateSuccessor)
   assert.equal(next[1].data.isEditing, true)
@@ -33,6 +34,7 @@ test('adds successor action to diagram nodes only', () => {
 
 test('diagram nodes are only draggable when dragging is enabled and the node is not being edited', () => {
   const nodes = [
+    { id: 'group:prompt', type: 'groupNode', data: { label: 'Prompt' } },
     { id: 'start', type: 'diagramNode', data: { label: '开始' } },
   ]
 
@@ -67,6 +69,9 @@ test('diagram nodes are only draggable when dragging is enabled and the node is 
   })
 
   assert.equal(disabled[0].draggable, false)
+  assert.equal(disabled[1].draggable, false)
   assert.equal(enabled[0].draggable, true)
-  assert.equal(editing[0].draggable, false)
+  assert.equal(enabled[1].draggable, true)
+  assert.equal(editing[0].draggable, true)
+  assert.equal(editing[1].draggable, false)
 })

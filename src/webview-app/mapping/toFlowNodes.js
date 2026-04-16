@@ -6,9 +6,6 @@ const DEFAULT_LAYOUT = {
   w: 140,
   h: 56,
 }
-const GROUP_PADDING_X = 24
-const GROUP_PADDING_TOP = 42
-const GROUP_PADDING_BOTTOM = 24
 
 export function toFlowNodes(graphOrNodes, layout) {
   const graphNodes = Array.isArray(graphOrNodes) ? graphOrNodes : graphOrNodes.nodes
@@ -28,6 +25,7 @@ export function toFlowNodes(graphOrNodes, layout) {
       data: {
         label: node.label,
         nodeType: node.type ?? 'default',
+        ...(node.groupId ? { groupId: node.groupId } : {}),
         ...(node.color ? { nodeColor: node.color } : {}),
         ...handlePositions,
       },
@@ -46,36 +44,50 @@ export function toFlowNodes(graphOrNodes, layout) {
 }
 
 function toGroupNode(group, graphNodes, layout) {
-  const childLayouts = graphNodes
-    .filter((node) => node.groupId === group.id)
-    .map((node) => layout?.nodes?.[node.id])
-    .filter(Boolean)
+  let groupLayout = layout?.groups?.[group.id]
+  if (!groupLayout) {
+    const childLayouts = graphNodes
+      .filter((node) => node.groupId === group.id)
+      .map((node) => layout?.nodes?.[node.id])
+      .filter(Boolean)
 
-  if (childLayouts.length === 0) {
-    return null
+    if (childLayouts.length === 0) {
+      return null
+    }
+
+    const minX = Math.min(...childLayouts.map((nodeLayout) => nodeLayout.x))
+    const minY = Math.min(...childLayouts.map((nodeLayout) => nodeLayout.y))
+    const maxX = Math.max(...childLayouts.map((nodeLayout) => nodeLayout.x + nodeLayout.w))
+    const maxY = Math.max(...childLayouts.map((nodeLayout) => nodeLayout.y + nodeLayout.h))
+
+    groupLayout = {
+      x: minX - 24,
+      y: minY - 42,
+      w: maxX - minX + 48,
+      h: maxY - minY + 66,
+    }
   }
 
-  const minX = Math.min(...childLayouts.map((nodeLayout) => nodeLayout.x))
-  const minY = Math.min(...childLayouts.map((nodeLayout) => nodeLayout.y))
-  const maxX = Math.max(...childLayouts.map((nodeLayout) => nodeLayout.x + nodeLayout.w))
-  const maxY = Math.max(...childLayouts.map((nodeLayout) => nodeLayout.y + nodeLayout.h))
+  if (!groupLayout) {
+    return null
+  }
 
   return {
     id: `group:${group.id}`,
     type: 'groupNode',
     className: 'diagram-flow-group',
     position: {
-      x: minX - GROUP_PADDING_X,
-      y: minY - GROUP_PADDING_TOP,
+      x: groupLayout.x,
+      y: groupLayout.y,
     },
     data: {
       label: group.label,
+      groupId: group.id,
+      memberNodeIds: graphNodes.filter((node) => node.groupId === group.id).map((node) => node.id),
     },
-    draggable: false,
-    selectable: false,
     style: {
-      width: maxX - minX + GROUP_PADDING_X * 2,
-      height: maxY - minY + GROUP_PADDING_TOP + GROUP_PADDING_BOTTOM,
+      width: groupLayout.w,
+      height: groupLayout.h,
     },
   }
 }

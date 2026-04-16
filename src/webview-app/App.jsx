@@ -4,6 +4,7 @@ import { ReactFlowProvider, addEdge, useEdgesState, useNodesState } from '@xyflo
 import { FlowCanvas } from './components/FlowCanvas.jsx'
 import { FloatingCanvasControls } from './components/FloatingCanvasControls.jsx'
 import { FloatingEdgeEditor } from './components/FloatingEdgeEditor.jsx'
+import { FloatingGroupEditor } from './components/FloatingGroupEditor.jsx'
 import { NormalReadEdge } from './components/edges/NormalReadEdge.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
 import { GroupNode } from './components/nodes/GroupNode.jsx'
@@ -28,8 +29,8 @@ const edgeTypes = {
 function AppInner() {
   const initialDocument = window.__DIAGRAM_DOCUMENT__ ?? {
     sourcePath: '',
-    graph: { direction: 'LR', nodes: [], edges: [] },
-    layout: { nodes: {} },
+    graph: { direction: 'LR', groups: [], nodes: [], edges: [] },
+    layout: { version: 1, nodes: {}, groups: {}, edges: {} },
     fitViewOnLoad: false,
     fitViewRequestToken: 0,
   }
@@ -113,11 +114,28 @@ function AppInner() {
     [edges, selectedElement],
   )
 
+  const selectedGroup = React.useMemo(
+    () => selectedElement?.type === 'group'
+      ? documentModel.graph.groups.find((group) => group.id === selectedElement.groupId) ?? null
+      : null,
+    [documentModel.graph.groups, selectedElement],
+  )
+
   const handleNodeClick = React.useCallback((_event, node) => {
+    if (node.type === 'groupNode') {
+      setSelectedElement({ type: 'group', id: node.id, groupId: node.data.groupId })
+      return
+    }
+
     setSelectedElement({ type: 'node', id: node.id })
   }, [])
 
   const handleNodeDoubleClick = React.useCallback((_event, node) => {
+    if (node.type === 'groupNode') {
+      setSelectedElement({ type: 'group', id: node.id, groupId: node.data.groupId })
+      return
+    }
+
     setSelectedElement({ type: 'node', id: node.id })
     editingNodeIdRef.current = node.id
     editingNodeLabelRef.current = node.data.label ?? ''
@@ -275,6 +293,23 @@ function AppInner() {
     })
   }, [])
 
+  const handleCreateGroup = React.useCallback(() => {
+    const groupId = generateGroupId(documentModel.graph.groups ?? [])
+    postToHost({
+      type: 'createGroup',
+      group: {
+        id: groupId,
+        label: '新分组',
+      },
+      layout: {
+        x: 40 + (documentModel.graph.groups?.length ?? 0) * 24,
+        y: 40 + (documentModel.graph.groups?.length ?? 0) * 24,
+        w: 320,
+        h: 180,
+      },
+    })
+  }, [documentModel.graph.groups])
+
   const handleCreateSuccessorNode = React.useCallback((nodeId) => {
     postToHost({
       type: 'createSuccessorNode',
@@ -354,6 +389,49 @@ function AppInner() {
   }, [setEdges])
 
   const handleNodeDragStop = React.useCallback((_event, node) => {
+    if (node.type === 'groupNode') {
+      const groupId = node.data.groupId
+      const previousLayout = documentModel.layout.groups?.[groupId]
+      if (!previousLayout) {
+        return
+      }
+
+      const delta = {
+        x: node.position.x - previousLayout.x,
+        y: node.position.y - previousLayout.y,
+      }
+
+      setNodes((currentNodes) =>
+        currentNodes.map((currentNode) => {
+          if (currentNode.id === node.id) {
+            return {
+              ...currentNode,
+              position: node.position,
+            }
+          }
+
+          if (node.data.memberNodeIds?.includes(currentNode.id)) {
+            return {
+              ...currentNode,
+              position: {
+                x: currentNode.position.x + delta.x,
+                y: currentNode.position.y + delta.y,
+              },
+            }
+          }
+
+          return currentNode
+        }),
+      )
+
+      postToHost({
+        type: 'dragGroup',
+        groupId,
+        delta,
+      })
+      return
+    }
+
     setNodes((currentNodes) =>
       currentNodes.map((currentNode) =>
         currentNode.id === node.id
@@ -362,7 +440,49 @@ function AppInner() {
       ),
     )
     postToHost(fromNodeDragMessage(node))
-  }, [setNodes])
+
+    const currentGroupId = documentModel.graph.nodes.find((graphNode) => graphNode.id === node.id)?.groupId ?? null
+    const nextGroupId = findStrictDropGroupId(node, nodes)
+
+    if (nextGroupId !== currentGroupId) {
+      postToHost({
+        type: 'moveNodeToGroup',
+        nodeId: node.id,
+        groupId: nextGroupId,
+      })
+    }
+  }, [documentModel.graph.nodes, documentModel.layout.groups, nodes, setNodes])
+
+  const handleRenameGroupLabel = React.useCallback((nextLabel) => {
+    if (selectedElement?.type !== 'group') {
+      return
+    }
+
+    const trimmedLabel = nextLabel.trim()
+    if (!trimmedLabel) {
+      return
+    }
+
+    setNodes((currentNodes) =>
+      currentNodes.map((node) =>
+        node.id === `group:${selectedElement.groupId}`
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                label: trimmedLabel,
+              },
+            }
+          : node,
+      ),
+    )
+
+    postToHost({
+      type: 'renameGroup',
+      groupId: selectedElement.groupId,
+      label: trimmedLabel,
+    })
+  }, [selectedElement, setNodes])
 
   const interactiveNodes = React.useMemo(
     () => withNodeActions(nodes, {
@@ -425,6 +545,7 @@ function AppInner() {
           isNodeDraggingEnabled={isNodeDraggingEnabled}
           onAutoLayout={handleAutoLayout}
           onCreateNode={handleCreateNode}
+          onCreateGroup={handleCreateGroup}
           onLayoutSpacingChange={handleLayoutSpacingChange}
           onNodeDraggingToggle={handleNodeDraggingToggle}
           onBackgroundStyleChange={handleBackgroundStyleChange}
@@ -433,6 +554,11 @@ function AppInner() {
         <FloatingEdgeEditor
           selectedEdge={selectedEdge}
           onRenameEdgeLabel={handleRenameEdgeLabel}
+        />
+
+        <FloatingGroupEditor
+          selectedGroup={selectedGroup}
+          onRenameGroupLabel={handleRenameGroupLabel}
         />
       </section>
     </main>
@@ -444,5 +570,51 @@ export function App() {
     <ReactFlowProvider>
       <AppInner />
     </ReactFlowProvider>
+  )
+}
+
+function generateGroupId(groups) {
+  const existingIds = new Set((groups ?? []).map((group) => group.id))
+  if (!existingIds.has('group')) {
+    return 'group'
+  }
+
+  let index = 2
+  while (existingIds.has(`group-${index}`)) {
+    index += 1
+  }
+
+  return `group-${index}`
+}
+
+function findStrictDropGroupId(node, allNodes) {
+  const groupNodes = allNodes.filter((candidate) => candidate.type === 'groupNode')
+  const nodeBox = {
+    x: node.position.x,
+    y: node.position.y,
+    w: node.width ?? node.measured?.width ?? node.style?.width ?? 140,
+    h: node.height ?? node.measured?.height ?? node.style?.height ?? 56,
+  }
+
+  for (const groupNode of groupNodes) {
+    if (isNodeInsideGroupContent(nodeBox, groupNode)) {
+      return groupNode.data.groupId
+    }
+  }
+
+  return null
+}
+
+function isNodeInsideGroupContent(nodeBox, groupNode) {
+  const left = groupNode.position.x + 16
+  const right = groupNode.position.x + (groupNode.style?.width ?? 0) - 16
+  const top = groupNode.position.y + 40
+  const bottom = groupNode.position.y + (groupNode.style?.height ?? 0) - 16
+
+  return (
+    nodeBox.x >= left &&
+    nodeBox.y >= top &&
+    nodeBox.x + nodeBox.w <= right &&
+    nodeBox.y + nodeBox.h <= bottom
   )
 }

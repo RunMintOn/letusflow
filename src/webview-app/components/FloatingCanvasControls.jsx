@@ -6,6 +6,7 @@ export function FloatingCanvasControls({
   isNodeDraggingEnabled,
   onAutoLayout,
   onCreateNode,
+  onCreateGroup,
   onLayoutSpacingChange,
   onNodeDraggingToggle,
   onBackgroundStyleChange,
@@ -109,6 +110,14 @@ export function FloatingCanvasControls({
           onClick={onCreateNode}
         >
           新增节点
+        </button>
+
+        <button
+          type="button"
+          className="canvas-hud__button canvas-hud__button--full"
+          onClick={onCreateGroup}
+        >
+          新增分组
         </button>
 
         <button
