@@ -21,6 +21,10 @@ test('buildElkGraph emits compound children and labeled edges', () => {
   const groupNode = elkGraph.children.find((child) => child.id === 'group:stage_1')
 
   assert.equal(elkGraph.layoutOptions['elk.algorithm'], 'layered')
+  assert.equal(elkGraph.layoutOptions['elk.hierarchyHandling'], 'INCLUDE_CHILDREN')
+  assert.equal(elkGraph.layoutOptions['elk.edgeRouting'], 'ORTHOGONAL')
+  assert.equal(elkGraph.layoutOptions['elk.layered.considerModelOrder.strategy'], 'NODES_AND_EDGES')
+  assert.equal(elkGraph.layoutOptions['elk.layered.crossingMinimization.forceNodeModelOrder'], 'true')
   assert.ok(groupNode)
   assert.equal(groupNode.children[0].id, 'router')
   assert.equal(elkGraph.edges[0].labels[0].text, '复杂任务')
