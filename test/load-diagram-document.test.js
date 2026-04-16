@@ -55,6 +55,9 @@ test('loads a diagram document directly from source text', async () => {
   assert.equal(model.sourceText, 'dir LR\nnode start "开始"\n')
   assert.equal(model.graph.nodes.length, 1)
   assert.ok(model.layout.nodes.start)
+  assert.equal(model.routeC.enabled, true)
+  assert.ok(model.routeC.viewModel)
+  assert.equal(model.routeC.viewModel.nodes[0].id, 'start')
 })
 
 test('normalizes parsed edges with runtime ids before layout', async () => {
@@ -69,4 +72,5 @@ test('normalizes parsed edges with runtime ids before layout', async () => {
   )
 
   assert.equal(model.graph.edges[0].id, 'edge_1')
+  assert.equal(model.routeC.viewModel.edges[0].id, 'edge_1')
 })

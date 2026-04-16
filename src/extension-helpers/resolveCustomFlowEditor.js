@@ -78,6 +78,10 @@ function createEmptyDocumentModel(sourcePath, sourceText = '') {
     layout: {
       nodes: {},
     },
+    routeC: {
+      enabled: false,
+      viewModel: null,
+    },
   }
 }
 
@@ -112,6 +116,7 @@ export async function resolveCustomFlowEditor({
     { renameEdgeLabel },
     { createSuccessorNode },
     { placeSuccessorNode },
+    { runRouteCLayout },
     { toWebviewSyncState },
   ] = await Promise.all([
     loadModule('./extension-helpers/createWebviewDocumentModel.js'),
@@ -129,6 +134,7 @@ export async function resolveCustomFlowEditor({
     loadModule('./model/renameEdgeLabel.js'),
     loadModule('./model/createSuccessorNode.js'),
     loadModule('./model/placeSuccessorNode.js'),
+    loadModule('./model/layout/runRouteCLayout.js'),
     loadModule('./webview/toWebviewSyncState.js'),
   ])
 
@@ -157,6 +163,13 @@ export async function resolveCustomFlowEditor({
   outputChannel.appendLine(`[resolveCustomFlowEditor] opened ${document.uri.fsPath}`)
 
   const autoLayoutCurrentGraph = () => autoLayoutGraph(documentModel.graph, { spacing: layoutSpacing })
+  const updateRouteCState = async () => {
+    const routeCResult = await runRouteCLayout(documentModel.graph)
+    documentModel.routeC = {
+      enabled: true,
+      viewModel: routeCResult.viewModel,
+    }
+  }
 
   const rerender = async (nextModel = documentModel, options = {}) => {
     webviewPanel.webview.html = renderGraphHtml(
@@ -262,6 +275,7 @@ export async function resolveCustomFlowEditor({
         }
 
         documentModel.graph = renameNodeLabel(documentModel.graph, message.nodeId, nextLabel)
+        await updateRouteCState()
         const mode = await persistGraph()
         outputChannel.appendLine(`[renameNode] persisted via ${mode}`)
         postHostDebug(webviewPanel, `renameNode saved via ${mode}: ${message.nodeId} -> ${nextLabel}`)
@@ -277,6 +291,7 @@ export async function resolveCustomFlowEditor({
 
         documentModel.graph = createNode(documentModel.graph, { id: nodeId, label })
         documentModel.layout = autoLayoutCurrentGraph()
+        await updateRouteCState()
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createNode saved via ${mode}: ${nodeId}`)
@@ -313,6 +328,7 @@ export async function resolveCustomFlowEditor({
               },
             }
           : autoLayoutCurrentGraph()
+        await updateRouteCState()
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createSuccessorNode saved via ${mode}: ${message.nodeId} -> ${nodeId}`)
@@ -364,6 +380,7 @@ export async function resolveCustomFlowEditor({
             Object.entries(documentModel.layout.nodes ?? {}).filter(([nodeId]) => nodeId !== message.nodeId),
           ),
         }
+        await updateRouteCState()
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteNode saved via ${mode}: ${message.nodeId}`)
@@ -378,6 +395,7 @@ export async function resolveCustomFlowEditor({
         }
 
         documentModel.graph = deleteEdge(documentModel.graph, edgeIdentity)
+        await updateRouteCState()
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteEdge saved via ${mode}`)
@@ -410,6 +428,7 @@ export async function resolveCustomFlowEditor({
         }
 
         documentModel.graph = renameEdgeLabel(documentModel.graph, edgeIdentity, nextLabel)
+        await updateRouteCState()
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `renameEdgeLabel saved via ${mode}: ${currentEdge.from} -> ${currentEdge.to}`)
         await postSyncState()
@@ -435,6 +454,7 @@ export async function resolveCustomFlowEditor({
         }
 
         documentModel.graph = createEdge(documentModel.graph, { from, to, label })
+        await updateRouteCState()
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `createEdge saved via ${mode}: ${from} -> ${to}`)
         await postSyncState()

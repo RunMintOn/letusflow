@@ -49,6 +49,13 @@ test('custom flow editor posts incremental sync messages for structure edits', a
   assert.match(source, /postSyncState/)
 })
 
+test('custom flow editor recomputes route-c view models on host-side graph refreshes', async () => {
+  const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
+
+  assert.match(source, /runRouteCLayout/)
+  assert.match(source, /documentModel\.routeC/)
+})
+
 test('external text refreshes still use full rerender', async () => {
   const source = await readFile('src/extension-helpers/resolveCustomFlowEditor.js', 'utf8')
 
