@@ -1,15 +1,28 @@
 import * as vscode from 'vscode'
 
 function createTextDocumentFsLike(document) {
+  const decoder = new TextDecoder()
+  const documentPath = document.uri.fsPath
+
   return {
-    async readFile() {
-      return document.getText()
+    async readFile(targetPath = documentPath) {
+      if (targetPath === documentPath) {
+        return document.getText()
+      }
+
+      const bytes = await vscode.workspace.fs.readFile(vscode.Uri.file(targetPath))
+      return decoder.decode(bytes)
     },
     async writeFile(targetPath, content) {
       const encoder = new TextEncoder()
       await vscode.workspace.fs.writeFile(vscode.Uri.file(targetPath), encoder.encode(content))
     },
   }
+}
+
+async function persistLayoutDocument(layoutPath, layoutDocument, fsLike, saveLayoutDocument) {
+  await saveLayoutDocument(fsLike, layoutPath, layoutDocument)
+  return 'fsWrite'
 }
 
 async function persistSourceText(sourcePath, sourceText, fsLike, saveDiagramSource) {
@@ -69,6 +82,7 @@ function createEmptyDocumentModel(sourcePath, sourceText = '') {
   return {
     sourcePath,
     sourceText,
+    layoutPath: `${sourcePath}.layout.json`,
     graph: {
       direction: 'LR',
       groups: [],
@@ -76,7 +90,10 @@ function createEmptyDocumentModel(sourcePath, sourceText = '') {
       edges: [],
     },
     layout: {
+      version: 1,
       nodes: {},
+      groups: {},
+      edges: {},
     },
   }
 }
@@ -99,10 +116,12 @@ export async function resolveCustomFlowEditor({
   const [
     { createWebviewDocumentModel },
     { renameNodeLabel },
+    { reconcileLayout },
     { serializeDiagram },
-    { loadDiagramDocumentFromSource },
+    { loadDiagramDocument, loadDiagramDocumentFromSource },
     { renderGraphHtml },
     { saveDiagramSource },
+    { saveLayoutDocument },
     { autoLayoutGraph },
     { createNode },
     { createEdge },
@@ -116,10 +135,12 @@ export async function resolveCustomFlowEditor({
   ] = await Promise.all([
     loadModule('./extension-helpers/createWebviewDocumentModel.js'),
     loadModule('./model/renameNodeLabel.js'),
+    loadModule('./model/reconcileLayout.js'),
     loadModule('./model/serializeDiagram.js'),
     loadModule('./workspace/loadDiagramDocument.js'),
     loadModule('./webview/renderGraphHtml.js'),
     loadModule('./workspace/saveDiagramSource.js'),
+    loadModule('./workspace/saveLayoutDocument.js'),
     loadModule('./model/layout.js'),
     loadModule('./model/createNode.js'),
     loadModule('./model/createEdge.js'),
@@ -138,7 +159,7 @@ export async function resolveCustomFlowEditor({
   let initialDocumentError = null
 
   try {
-    documentModel = await loadDiagramDocumentFromSource(document.uri.fsPath, initialSourceText)
+    documentModel = await loadDiagramDocument(fsLike, document.uri.fsPath)
   } catch (error) {
     initialDocumentError = error?.message ?? String(error)
     documentModel = createEmptyDocumentModel(document.uri.fsPath, initialSourceText)
@@ -213,9 +234,16 @@ export async function resolveCustomFlowEditor({
     }
   }
 
+  const persistLayout = async () => persistLayoutDocument(
+    documentModel.layoutPath,
+    documentModel.layout,
+    fsLike,
+    saveLayoutDocument,
+  )
+
   const refreshFromDocument = async () => {
     try {
-      documentModel = await loadDiagramDocumentFromSource(document.uri.fsPath, document.getText())
+      documentModel = await loadDiagramDocument(fsLike, document.uri.fsPath)
       lastValidDocumentModel = documentModel
       await rerender({
         ...documentModel,
@@ -321,7 +349,11 @@ export async function resolveCustomFlowEditor({
       }
 
       if (message?.type === 'autoLayout') {
-        documentModel.layout = autoLayoutCurrentGraph()
+        documentModel.layout = reconcileLayout(
+          documentModel.graph,
+          autoLayoutCurrentGraph(),
+        )
+        await persistLayout()
         postHostDebug(webviewPanel, 'autoLayout applied')
         await postSyncState()
         return
