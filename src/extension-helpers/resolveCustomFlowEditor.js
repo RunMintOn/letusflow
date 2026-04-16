@@ -390,7 +390,6 @@ export async function resolveCustomFlowEditor({
 
       if (message?.type === 'setSpacing') {
         layoutSpacing = normalizeLayoutSpacing(message.value)
-        documentModel.layout = autoLayoutCurrentGraph()
         postHostDebug(webviewPanel, `setSpacing applied: ${layoutSpacing}`)
         await postSyncState()
         return

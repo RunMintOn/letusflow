@@ -13,7 +13,7 @@ test('extension handles layout spacing as view state without persisting graph so
   const setSpacingBlock = source.match(/if \(message\?\.type === 'setSpacing'\) \{[\s\S]*?return\n      \}/)?.[0]
   assert.ok(setSpacingBlock)
   assert.doesNotMatch(setSpacingBlock, /persistGraph\(\)/)
-  assert.match(setSpacingBlock, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
+  assert.doesNotMatch(setSpacingBlock, /documentModel\.layout\s*=/)
   assert.match(setSpacingBlock, /await postSyncState\(\)/)
 })
 
