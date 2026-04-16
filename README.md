@@ -2,7 +2,7 @@
 
 一个用于编写和预览流程图的轻量级 VS Code 插件。
 
-使用 `.flow` 声明式语法描述图结构，自动计算布局并实时预览，无需手动拖拽排布节点。
+使用 `.flow` 声明式语法描述图结构，使用 `.flow.layout.json` 保存稳定画布布局，让 AI 继续低成本改语义，让人类继续稳定整理空间关系。
 
 ---
 
@@ -27,9 +27,11 @@
 ## 特性
 
 - **简洁的 DSL** — 4 个关键字（`dir` / `group` / `node` / `edge`），5 分钟上手
-- **自动布局** — 基于 Dagre 算法，生成清晰的有向图排版
+- **双文件模型** — `.flow` 存语义，`.flow.layout.json` 存稳定布局
+- **稳定画布编辑** — 用户拖拽和整理后的空间结构会被保存
+- **自动布局** — 基于 Dagre 算法提供初始布局和显式整理能力
 - **实时预览** — 在 VS Code 内打开 Webview 预览，所见即所得
-- **双向编辑** — 在属性面板修改标签或拖拽节点，变更写回 `.flow` 源文件
+- **双向编辑** — 结构编辑写回 `.flow`，布局编辑写回 `.flow.layout.json`
 - **间距调节** — 工具栏滑条实时调整图密度，无需修改源码
 - **反馈边外侧路由** — 回环连线自动绕行主图，避免遮挡
 
@@ -67,7 +69,7 @@ node call "调用工具" in tools type=input
 node end "结束" type=end colour=#d14d8b
 
 edge start -> decision
-edge decision -> call "是"
+edge decision -> call "是" id=e_call
 edge decision -> end "否"
 edge call -> decision dashed
 # 注释也支持：
@@ -81,7 +83,7 @@ edge call -> decision dashed
 | `dir LR\|TD\|TB` | 设置布局方向 |
 | `group <id> "标题"` | 声明分组 |
 | `node <id> "标签" [in <组>] [type=<预设>] [color=<颜色名或#hex>]` | 定义节点 |
-| `edge <起点> -> <终点> ["标签"] [dashed\|dotted\|dashdot]` | 定义连线 |
+| `edge <起点> -> <终点> ["标签"] [dashed\|dotted\|dashdot] [id=<边ID>]` | 定义连线 |
 
 完整语法参考 → [`docs/flow-syntax.md`](docs/flow-syntax.md)
 
@@ -89,7 +91,7 @@ edge call -> decision dashed
 
 ## 截图
 
-> 在预览面板中，拖拽节点仅临时调整视图；点击 **整理布局** 恢复算法排版。
+> 在预览面板中，拖拽节点和分组会写入 `.flow.layout.json`；点击 **整理布局** 会重算并保存布局。
 
 ---
 

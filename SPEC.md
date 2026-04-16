@@ -1,6 +1,6 @@
 # .flow Technical Specification (v0.1)
 
-This document defines the formal grammar, parsing logic, and synchronization behavior of the `.flow` domain-specific language (DSL).
+This document defines the formal grammar, parsing logic, and synchronization behavior of the `.flow` DSL and its paired `layout.json` sidecar model.
 
 ---
 
@@ -17,8 +17,8 @@ A `.flow` file is a line-based text format. Each line is either a directive, a d
 ### 1.2 Statements
 - **Direction**: `dir (LR | TD | TB)`
 - **Group**: `group <ID> <STRING>`
-- **Node**: `node <ID> <STRING> [in <ID>] [type=<ID>] [color=<COLOR>] [pos=<COORD>,<COORD>]`
-- **Edge**: `edge <ID> -> <ID> [<STRING>] [dashed | dotted | dashdot]`
+- **Node**: `node <ID> <STRING> [in <ID>] [type=<ID>] [color=<COLOR>]`
+- **Edge**: `edge <ID> -> <ID> [<STRING>] [dashed | dotted | dashdot] [id=<ID>]`
 - **Comment**: Lines starting with `#` or `//`.
 
 ---
@@ -45,7 +45,11 @@ When serializing a `node`, attributes MUST follow this exact order:
 2. `in <groupID>` (optional)
 3. `type=<type>` (optional)
 4. `color=<color>` (optional, unified from `colour`)
-5. `pos=<x>,<y>` (optional)
+
+When serializing an `edge`, attributes MUST follow this exact order:
+1. `label` (quoted, optional)
+2. `style` (optional)
+3. `id=<edgeId>` (required after the first automatic upgrade)
 
 ### 3.2 Whitespace & Formatting
 - Tokens SHOULD be separated by exactly one space.
@@ -60,16 +64,18 @@ When serializing a `node`, attributes MUST follow this exact order:
 
 This is the core behavior for editors implementing `.flow`.
 
-### 4.1 Coordinate Management (`pos`)
-- **Auto-layout Priority**: By default, the editor SHOULD use an automatic layout engine (e.g., Dagre) to position elements. This ensures the DSL remains clean and focused on logic.
-- **Optional Persistence**: The `pos=x,y` attribute is OPTIONAL. An editor MAY support it for manual overrides, but it MUST NOT be injected automatically unless explicitly requested by the user (e.g., via a "Pin Position" action).
-- **Reset**: A "Reset Layout" action MUST remove all `pos` attributes to return to full auto-layout mode.
+### 4.1 Layout Sidecar Management
+- `.flow` stores only graph semantics.
+- `<name>.flow.layout.json` stores node, group, and edge-side layout data.
+- By default, the editor SHOULD read both files and reconcile them before rendering.
+- A "Reset Layout" or "Auto Layout" action MUST rewrite `layout.json`, not inject coordinates into `.flow`.
 
 ### 4.2 Element Renaming
 - If a `node ID` is renamed via UI, the editor MUST update all corresponding `edge` statements (both `start` and `end` IDs) to maintain graph integrity.
 
-### 4.3 Partial Updates
-- When a user modifies a single property (e.g., changing a label), the editor SHOULD perform a **surgical update** on that specific line in the source text, rather than re-generating the entire file, to preserve comments and layout.
+### 4.3 Source Rewrites
+- In Phase 1, the editor MAY rewrite the entire `.flow` file after semantic edits as long as the graph meaning remains correct.
+- Layout changes MUST NOT rewrite `.flow`; they belong in `layout.json`.
 
 ---
 
