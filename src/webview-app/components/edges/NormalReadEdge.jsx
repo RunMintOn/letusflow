@@ -22,6 +22,8 @@ export function NormalReadEdge({
     sourceY,
     targetX,
     targetY,
+    sections: data?.sections,
+    labelLayout: data?.labelLayout,
     sourceNode: data?.sourceNode,
     targetNode: data?.targetNode,
     parallelIndex: data?.parallelIndex,

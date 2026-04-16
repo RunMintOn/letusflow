@@ -18,3 +18,9 @@ test('normal read edge prefers labelLayout from edge data when present', async (
   assert.match(source, /labelX=\{/)
   assert.match(source, /labelY=\{/)
 })
+
+test('normal read edge forwards precomputed routing sections into path resolution', async () => {
+  const source = await readFile('src/webview-app/components/edges/NormalReadEdge.jsx', 'utf8')
+
+  assert.match(source, /sections:\s*data\?\.sections/)
+})

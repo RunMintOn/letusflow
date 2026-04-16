@@ -80,8 +80,10 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
         parallelIndex,
         parallelCount,
         edgeRef,
+        ...(edge.sections ? { sections: edge.sections } : {}),
         ...(sourceNode ? { sourceNode } : {}),
         ...(targetNode ? { targetNode } : {}),
+        ...(edge.labelLayout ? { labelLayout: edge.labelLayout } : {}),
         ...(layout?.edgeLabels?.[edgeId] ? { labelLayout: layout.edgeLabels[edgeId] } : {}),
       },
     }

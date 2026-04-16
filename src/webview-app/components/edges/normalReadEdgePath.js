@@ -9,6 +9,34 @@ export function toNormalReadEdgePath({
   sourceY,
   targetX,
   targetY,
+  sections = [],
+  labelLayout,
+  sourceNode,
+  targetNode,
+  parallelIndex = 0,
+  parallelCount = 1,
+}) {
+  if (sections.length > 0) {
+    return toSectionEdgeGeometry(sections, labelLayout)
+  }
+
+  return toLegacyReadEdgePath({
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourceNode,
+    targetNode,
+    parallelIndex,
+    parallelCount,
+  })
+}
+
+function toLegacyReadEdgePath({
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
   sourceNode,
   targetNode,
   parallelIndex = 0,
@@ -43,6 +71,38 @@ export function toNormalReadEdgePath({
     label: {
       x: Math.round(labelX),
       y: Math.round(labelY + labelOffsetY),
+    },
+  }
+}
+
+function toSectionEdgeGeometry(sections, labelLayout) {
+  const [section] = sections
+  const points = [
+    section.startPoint,
+    ...(section.bendPoints ?? []),
+    section.endPoint,
+  ].filter(Boolean)
+  const path = points
+    .map((point, index) => `${index === 0 ? 'M' : 'L'}${point.x},${point.y}`)
+    .join(' ')
+
+  if (labelLayout) {
+    return {
+      path,
+      label: {
+        x: Math.round(labelLayout.x + labelLayout.w / 2),
+        y: Math.round(labelLayout.y + labelLayout.h / 2),
+      },
+    }
+  }
+
+  const centerPoint = points[Math.floor(points.length / 2)] ?? points[0] ?? { x: 0, y: 0 }
+
+  return {
+    path,
+    label: {
+      x: Math.round(centerPoint.x),
+      y: Math.round(centerPoint.y),
     },
   }
 }

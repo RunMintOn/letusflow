@@ -82,3 +82,23 @@ test('nudges labels upward for nearly horizontal edges to reduce node overlap', 
   assert.equal(geometry.label.x, 270)
   assert.ok(geometry.label.y < 264)
 })
+
+test('returns a path from precomputed route sections when present', () => {
+  const geometry = toNormalReadEdgePath({
+    sourceX: 10,
+    sourceY: 20,
+    targetX: 100,
+    targetY: 120,
+    sections: [
+      {
+        startPoint: { x: 10, y: 20 },
+        bendPoints: [{ x: 10, y: 70 }, { x: 100, y: 70 }],
+        endPoint: { x: 100, y: 120 },
+      },
+    ],
+    labelLayout: { x: 50, y: 60, w: 80, h: 20 },
+  })
+
+  assert.equal(geometry.path, 'M10,20 L10,70 L100,70 L100,120')
+  assert.deepEqual(geometry.label, { x: 90, y: 70 })
+})
