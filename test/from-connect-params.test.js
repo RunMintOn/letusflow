@@ -5,7 +5,12 @@ import { fromConnectParams } from '../src/webview-app/mapping/fromConnectParams.
 
 test('maps XYFlow connect params back to graph edge shape', () => {
   assert.deepEqual(
-    fromConnectParams({ source: 'start', target: 'review' }),
-    { from: 'start', to: 'review', label: undefined },
+    fromConnectParams({
+      source: 'start',
+      sourceHandle: 'bottom-source',
+      target: 'review',
+      targetHandle: 'top-target',
+    }),
+    { from: 'start', to: 'review', label: undefined, sourceSide: 'bottom', targetSide: 'top' },
   )
 })

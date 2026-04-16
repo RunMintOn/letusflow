@@ -206,3 +206,23 @@ test('binds labelLayout by runtime edge id instead of from-to-label key', () => 
   assert.equal(edges[0].id, 'edge_2')
   assert.deepEqual(edges[0].data.labelLayout, { x: 180, y: 96, w: 52, h: 24 })
 })
+
+test('maps persisted edge sides into flow source and target handles', () => {
+  const edges = toFlowEdges(
+    [{ id: 'e_review', from: 'start', to: 'review', label: '通过' }],
+    [{ id: 'start' }, { id: 'review' }],
+    {
+      nodes: {
+        start: { x: 0, y: 0, w: 140, h: 56 },
+        review: { x: 200, y: 0, w: 140, h: 56 },
+      },
+      groups: {},
+      edges: {
+        e_review: { sourceSide: 'bottom', targetSide: 'top' },
+      },
+    },
+  )
+
+  assert.equal(edges[0].sourceHandle, 'bottom-source')
+  assert.equal(edges[0].targetHandle, 'top-target')
+})

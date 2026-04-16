@@ -7,6 +7,7 @@ import { FloatingEdgeEditor } from './components/FloatingEdgeEditor.jsx'
 import { NormalReadEdge } from './components/edges/NormalReadEdge.jsx'
 import { DiagramNode } from './components/nodes/DiagramNode.jsx'
 import { GroupNode } from './components/nodes/GroupNode.jsx'
+import { fromNodeDragMessage } from './bridge/fromNodeDragMessage.js'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
 import { fromConnectParams } from './mapping/fromConnectParams.js'
 import { useEditorState } from './state/useEditorState.jsx'
@@ -337,7 +338,9 @@ function AppInner() {
       addEdge(
         {
           source: connection.source,
+          sourceHandle: connection.sourceHandle,
           target: connection.target,
+          targetHandle: connection.targetHandle,
           type: 'readEdge',
         },
         currentEdges,
@@ -358,6 +361,7 @@ function AppInner() {
           : currentNode,
       ),
     )
+    postToHost(fromNodeDragMessage(node))
   }, [setNodes])
 
   const interactiveNodes = React.useMemo(

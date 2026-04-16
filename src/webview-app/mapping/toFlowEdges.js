@@ -57,6 +57,7 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
     const sourceNode = toEdgeEndpointNode(nodesById.get(edge.from), layout?.nodes?.[edge.from])
     const targetNode = toEdgeEndpointNode(nodesById.get(edge.to), layout?.nodes?.[edge.to])
     const edgeId = edge.id ?? `${edge.from}->${edge.to}#${edge.label ?? ''}`
+    const edgeLayout = layout?.edges?.[edgeId] ?? null
     const parallelGroup = parallelGroups.get(`${edge.from}=>${edge.to}`) ?? [edge]
     const parallelPosition = parallelGroup.findIndex((candidate) => (candidate.id ?? candidate) === (edge.id ?? edge))
     const parallelCount = parallelGroup.length
@@ -75,6 +76,8 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
       labelBgPadding: [4, 2],
       labelBgBorderRadius: 2,
       labelStyle: READ_EDGE_LABEL_STYLE,
+      ...(edgeLayout ? { sourceHandle: toHandleId(edgeLayout.sourceSide, 'source') } : {}),
+      ...(edgeLayout ? { targetHandle: toHandleId(edgeLayout.targetSide, 'target') } : {}),
       data: {
         edgeId,
         parallelIndex,
@@ -93,6 +96,11 @@ export function toFlowEdges(graphEdges, graphNodesOrLayout = [], layoutMaybe) {
 
     return flowEdge
   })
+}
+
+function toHandleId(side, type) {
+  const resolvedSide = typeof side === 'string' && side ? side : type === 'source' ? 'right' : 'left'
+  return `${resolvedSide}-${type}`
 }
 
 function toEdgeEndpointNode(node, layoutNode) {

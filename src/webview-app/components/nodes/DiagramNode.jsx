@@ -28,7 +28,14 @@ export function DiagramNode({ id, data, selected }) {
 
   return (
     <div className={nodeClassName} style={nodeStyle}>
-      <Handle type="target" position={data.targetPosition ?? Position.Left} />
+      <Handle id="top-target" type="target" position={Position.Top} />
+      <Handle id="right-target" type="target" position={Position.Right} />
+      <Handle id="bottom-target" type="target" position={Position.Bottom} />
+      <Handle id="left-target" type="target" position={Position.Left} />
+      <Handle id="top-source" type="source" position={Position.Top} />
+      <Handle id="right-source" type="source" position={Position.Right} />
+      <Handle id="bottom-source" type="source" position={Position.Bottom} />
+      <Handle id="left-source" type="source" position={Position.Left} />
       {data.isEditing ? (
         <input
           ref={inputRef}
@@ -70,7 +77,6 @@ export function DiagramNode({ id, data, selected }) {
           +
         </button>
       ) : null}
-      <Handle type="source" position={data.sourcePosition ?? Position.Right} />
     </div>
   )
 }

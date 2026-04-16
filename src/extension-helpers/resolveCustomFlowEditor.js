@@ -467,8 +467,35 @@ export async function resolveCustomFlowEditor({
         }
 
         documentModel.graph = createEdge(documentModel.graph, { from, to, label })
+        const createdEdge = documentModel.graph.edges.at(-1)
+        if (createdEdge?.id) {
+          documentModel.layout = {
+            ...documentModel.layout,
+            edges: {
+              ...(documentModel.layout.edges ?? {}),
+              [createdEdge.id]: {
+                sourceSide: message.edge.sourceSide ?? 'right',
+                targetSide: message.edge.targetSide ?? 'left',
+              },
+            },
+          }
+        }
         const mode = await persistGraph()
+        await persistLayout()
         postHostDebug(webviewPanel, `createEdge saved via ${mode}: ${from} -> ${to}`)
+        await postSyncState()
+        return
+      }
+
+      if (message?.type === 'saveNodeLayout' && message.nodeId && message.layout) {
+        documentModel.layout = {
+          ...documentModel.layout,
+          nodes: {
+            ...(documentModel.layout.nodes ?? {}),
+            [message.nodeId]: message.layout,
+          },
+        }
+        await persistLayout()
         await postSyncState()
       }
     } catch (error) {
