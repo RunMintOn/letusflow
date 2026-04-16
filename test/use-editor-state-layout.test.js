@@ -89,3 +89,34 @@ test('toFlowCollections prefers route-c view model when enabled', () => {
   assert.equal(flowNodes[0].position.x, 100)
   assert.deepEqual(flowEdges, [])
 })
+
+test('toFlowCollections uses route-c as the default render path when a view model is present', () => {
+  const documentModel = {
+    graph: {
+      direction: 'TD',
+      groups: [],
+      nodes: [{ id: 'router', label: 'Router' }],
+      edges: [],
+    },
+    routeC: {
+      enabled: false,
+      viewModel: {
+        nodes: [
+          {
+            id: 'router',
+            position: { x: 310, y: 420 },
+            data: { label: 'Router' },
+            style: { width: 132, height: 46 },
+          },
+        ],
+        groups: [],
+        edges: [],
+      },
+    },
+  }
+
+  const { flowNodes } = toFlowCollections(documentModel, { nodes: {} })
+
+  assert.equal(flowNodes[0].position.x, 310)
+  assert.equal(flowNodes[0].position.y, 420)
+})

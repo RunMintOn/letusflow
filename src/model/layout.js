@@ -16,6 +16,7 @@ const DAGRE_NEUTRAL_EDGE_WEIGHT = 1
 const DAGRE_EDGE_MINLEN = 1
 
 export function autoLayoutGraph(graph, options = {}) {
+  // Legacy dagre pipeline remains for reset/preview compatibility while Route C matures.
   const spacing = toDagreSpacing(options)
   const { graph: augmentedGraph, edgeLabelMap } = buildLabelAugmentedGraph(graph)
   const dagreGraph = new dagre.graphlib.Graph({ multigraph: true })

@@ -2,7 +2,7 @@ import { toFlowNodes } from '../mapping/toFlowNodes.js'
 import { toFlowEdges } from '../mapping/toFlowEdges.js'
 
 export function toFlowCollections(documentModel, activeLayout) {
-  if (documentModel.routeC?.enabled && documentModel.routeC?.viewModel) {
+  if (documentModel.routeC?.viewModel) {
     return {
       flowNodes: [
         ...(documentModel.routeC.viewModel.groups ?? []),
