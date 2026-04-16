@@ -17,7 +17,7 @@ export async function runRouteCLayout(graph) {
     layoutResult,
     routingResult,
     viewModel: toFlowViewModel({
-      graph,
+      graph: ir,
       layoutResult,
       routingResult,
     }),

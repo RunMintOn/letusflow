@@ -33,7 +33,7 @@ export function toFlowViewModel({ graph, layoutResult, routingResult }) {
       data: {
         label: node.label,
         nodeType: node.type ?? 'default',
-        ...(node.color ? { nodeColor: node.color } : {}),
+        ...((node.color ?? node.style?.color) ? { nodeColor: node.color ?? node.style?.color } : {}),
         ...handlePositions,
       },
       style: {
