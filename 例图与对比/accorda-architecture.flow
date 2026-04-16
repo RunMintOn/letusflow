@@ -1,0 +1,93 @@
+dir LR
+
+group User "用户层"
+
+node user "用户输入" in User type=info
+node tui "TUI 界面" in User type=info
+
+group Core "核心层 (src/core)"
+
+node config "配置" in Core type=info
+node contracts "合约定义" in Core type=info
+
+group Runtime "运行时 (src/runtime)"
+
+node stageOne "Stage 1: 路由判断" in Runtime type=decision
+node controlDecision "Control Decision" in Runtime type=decision
+node stageTwo "Stage 2: 执行" in Runtime type=action
+node engine "Engine" in Runtime type=action
+node defaultRunner "Default Runner" in Runtime type=action
+node responsePolicy "响应策略" in Runtime type=info
+
+group Prompt "Prompt 层"
+
+node promptCompiler "Prompt Compiler" in Prompt type=action
+
+group Provider "Provider 层"
+
+node openaiClient "OpenAI Client" in Provider type=action
+
+group Store "存储层 (src/store)"
+
+node sessionStore "Session Store" in Store type=info
+node eventLogStore "Event Log Store" in Store type=info
+
+group Tools "工具层 (src/tools)"
+
+node toolRegistry "Tool Registry" in Tools type=decision
+node readOnlyTools "Read-Only 工具" in Tools type=action
+node builtinTools "内置工具 (ls/read/grep...)" in Tools type=action
+
+group Permissions "权限层 (src/permissions)"
+
+node permissionPolicy "权限策略" in Permissions type=info
+
+group CLI "CLI 入口 (src/cli)"
+
+node bootstrap "Bootstrap" in CLI type=action
+node runOnce "RunOnce" in CLI type=action
+
+group UI "UI 层 (src/ui)"
+
+node app "App.tsx" in UI type=info
+node components "Components" in UI type=info
+node messages "Messages" in UI type=info
+node events "Events" in UI type=info
+node input "Input" in UI type=info
+
+edge user -> tui
+edge tui -> stageOne
+
+edge stageOne -> controlDecision "流转决策"
+edge controlDecision -> stageTwo "execute"
+edge controlDecision -> promptCompiler "answer"
+edge controlDecision -> stageTwo "clarify"
+edge controlDecision -> stageTwo "task_mode"
+
+edge stageTwo -> engine
+edge engine -> defaultRunner
+edge defaultRunner -> toolRegistry
+edge toolRegistry -> readOnlyTools "只读工具"
+edge toolRegistry -> builtinTools "内置工具"
+
+edge readOnlyTools -> promptCompiler
+edge builtinTools -> promptCompiler
+edge builtinTools -> permissionPolicy
+
+edge promptCompiler -> responsePolicy
+edge responsePolicy -> openaiClient
+edge openaiClient -> tui
+
+edge stageOne -> sessionStore
+edge stageOne -> eventLogStore
+
+edge sessionStore -> config
+edge eventLogStore -> config
+
+edge bootstrap -> app
+edge runOnce -> app
+
+edge app -> components
+edge app -> messages
+edge app -> events
+edge app -> input

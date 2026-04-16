@@ -1,0 +1,71 @@
+dir TD
+
+# ==================== GROUP DECLARATIONS ====================
+group input_layer "📥 Input Layer"
+group stage1 "🧠 Stage 1: 意图分析器"
+group stage2 " Stage 2: 任务执行"
+group core_engine "🤖 Core Engine"
+group output_storage "📤 Output & Storage"
+
+# ==================== NODE DEFINITIONS ====================
+
+# Input Layer
+node user_cmd "用户输入 (指令/问题)" type=input in input_layer
+node event_store "事件流 (Event Records)" in input_layer
+node context_snap "上下文快照 (防止丢失)" in input_layer
+
+# Stage 1: Intent Analysis
+node router "意图分析器 (分流决策)" type=decision in stage1
+node clarify "追问澄清 (补齐必要信息)" in stage1
+node direct_reply "直接响应 (无需工具的回答)" in stage1
+
+# Stage 2: Task Execution
+node task_entry "任务模式 (需要工具/多步执行)" color=blue in stage2
+node planner "执行规划 (Plan/Act/Observe)" in stage2
+node tool_exec "工具执行器 (ls/read/grep/write...)" in stage2
+
+# Core Engine
+node prompt_factory "Prompt 组装 (身份+工具+历史)" in core_engine
+node llm_engine "LLM 供应商 (OpenAI/Claude...)" in core_engine
+node risk_gate "权限闸口 (高风险动作拦截)" type=decision in core_engine
+
+# Output & Storage
+node ui_display "终端界面显示 (状态/工具/回答)" in output_storage
+node artifact_db "产物库 (模型原始请求/结果文件)" in output_storage
+
+# ==================== FLOW CONNECTIONS ====================
+
+# Input Flow
+edge user_cmd -> event_store "1. 存入事件日志"
+edge event_store -> router "2. 读取历史与当前指令"
+edge event_store -> context_snap "定期持久化状态" dashed
+edge context_snap -> router
+
+# Stage 1: Intent Analysis Branches
+edge router -> clarify "信息缺失"
+edge router -> direct_reply "简单闲聊/常识"
+edge router -> task_entry "复杂任务/读写文件"
+
+# Clarification path
+edge clarify -> ui_display "向用户提问"
+
+# Direct reply path
+edge direct_reply -> prompt_factory "开始生成回复"
+
+# Stage 2: Task Execution Loop
+edge task_entry -> planner "初始化执行计划"
+edge planner -> prompt_factory
+edge prompt_factory -> llm_engine "获取推理结果"
+edge llm_engine -> risk_gate "解析工具调用"
+
+# Risk gate decisions
+edge risk_gate -> ui_display "高风险: 等待用户授权"
+edge risk_gate -> tool_exec "低风险: 自动执行" dashed
+
+# Tool execution feedback loop
+edge tool_exec -> planner "反馈观察结果 (Loop)"
+edge tool_exec -> event_store "记录执行结果"
+
+# Final output
+edge llm_engine -> ui_display "返回答案"
+edge llm_engine -> artifact_db "保存原始 Payload"

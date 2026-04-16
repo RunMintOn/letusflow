@@ -1,0 +1,58 @@
+dir TD
+
+group foundation "基础能力（已完成）"
+group editor_mvp "编辑器 MVP（已完成）"
+group mermaid_done "Mermaid 对齐（已完成）"
+group mermaid_now "Mermaid 对齐（当前主线）"
+group next_steps "下一阶段（建议）"
+
+node source_dsl "定义 .flow DSL\n(dir/group/node/edge)" in foundation type=start
+node parser_model "Parser + Graph Model\n(parse/serialize/edit helpers)" in foundation
+node layout_base "Dagre 自动布局\n基础 ranksep/nodesep" in foundation
+node webview_base "XYFlow Webview\n节点/边/同步链路" in foundation
+
+node custom_editor "VS Code Custom Editor\n打开 .flow 即预览" in editor_mvp
+node document_sync "Host/Webview 双向同步\n增删改节点和边" in editor_mvp
+node layout_controls "布局间距 / 背景 / 视口\n预览层状态" in editor_mvp
+node runtime_edge_ids "运行时 edge id / 多重边支持" in editor_mvp
+
+node node_presets "节点预设\n(default/decision/start/end/input)" in mermaid_done
+node group_render "Group 背景框渲染\nsubgraph 基础视觉" in mermaid_done
+node rank_post "Post-layout rank 排序\n主路径更清晰" in mermaid_done
+node edge_labels "Dummy label node\nlabel 参与布局" in mermaid_done
+node label_fix "最终 label realign\n解决标签漂浮" in mermaid_done
+
+node group_first "Group-first / banded layout\n先定大结构再摆节点" in mermaid_now
+node local_rows "组内局部分层\n同组节点更像 Mermaid" in mermaid_now
+node td_edges "TD 边优先 smooth-step\n减少大弧线观感" in mermaid_now
+
+node group_ports "跨组边出入口\n按 group 边界进出" in next_steps type=decision
+node edge_router "跨组边路由优化\n减少长斜线 / 穿越感" in next_steps
+node cluster_layout "更完整的 cluster-aware layout\n让 group 真正参与布局求解" in next_steps
+node visual_polish "视觉细化\n标题/留白/边标签节奏" in next_steps
+node target_80 "Mermaid 对齐目标\n达到 80 分左右" in next_steps type=end
+
+edge source_dsl -> parser_model "已完成"
+edge parser_model -> layout_base "已完成"
+edge layout_base -> webview_base "已完成"
+
+edge webview_base -> custom_editor "已完成"
+edge custom_editor -> document_sync "已完成"
+edge document_sync -> layout_controls "已完成"
+edge layout_controls -> runtime_edge_ids "已完成"
+
+edge runtime_edge_ids -> node_presets "已完成"
+edge node_presets -> group_render "已完成"
+edge group_render -> rank_post "已完成"
+edge rank_post -> edge_labels "已完成"
+edge edge_labels -> label_fix "已完成"
+
+edge label_fix -> group_first "当前主线"
+edge group_first -> local_rows "当前主线"
+edge local_rows -> td_edges "当前主线"
+
+edge td_edges -> group_ports "下一步"
+edge group_ports -> edge_router "下一步"
+edge edge_router -> cluster_layout "中期能力"
+edge cluster_layout -> visual_polish "收尾"
+edge visual_polish -> target_80 "目标"
