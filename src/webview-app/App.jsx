@@ -29,6 +29,10 @@ function AppInner() {
     sourcePath: '',
     graph: { direction: 'LR', nodes: [], edges: [] },
     layout: { nodes: {} },
+    routeC: {
+      enabled: false,
+      viewModel: null,
+    },
     fitViewOnLoad: false,
     fitViewRequestToken: 0,
   }

@@ -115,7 +115,7 @@ test('auto-layout keeps the accorda overview graph within a readable TD footprin
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
 
-  const graph = parseDiagram(await readFile('例图与对比/accorda-full-overview.flow', 'utf8'))
+  const graph = parseDiagram(await readFile('test/fixtures/accorda-full-overview.flow', 'utf8'))
   const next = autoLayoutGraph(graph)
 
   const boxes = Object.values(next.nodes)
@@ -133,7 +133,7 @@ test('auto-layout keeps labeled edges in the accorda overview graph with stable 
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
 
-  const graph = parseDiagram(await readFile('例图与对比/accorda-full-overview.flow', 'utf8'))
+  const graph = parseDiagram(await readFile('test/fixtures/accorda-full-overview.flow', 'utf8'))
   const next = autoLayoutGraph(graph)
 
   assert.ok(Object.keys(next.edgeLabels).length >= 8)
@@ -327,7 +327,7 @@ test('auto-layout keeps the accorda overview stage-2 group compact after post-la
   const { readFile } = await import('node:fs/promises')
   const { parseDiagram } = await import('../src/model/parseDiagram.js')
 
-  const graph = parseDiagram(await readFile('例图与对比/accorda-full-overview.flow', 'utf8'))
+  const graph = parseDiagram(await readFile('test/fixtures/accorda-full-overview.flow', 'utf8'))
   const next = autoLayoutGraph(graph)
 
   const stage2 = ['task_entry', 'planner', 'tool_exec'].map((id) => next.nodes[id]).filter(Boolean)

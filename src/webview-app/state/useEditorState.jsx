@@ -29,9 +29,15 @@ export function useEditorState(
     [activeLayout, documentModel.graph.edges, documentModel.graph.nodes],
   )
 
+  const activeViewModel = React.useMemo(
+    () => documentModel.routeC?.enabled ? documentModel.routeC.viewModel ?? null : null,
+    [documentModel.routeC],
+  )
+
   return {
     documentModel,
     setDocumentModel,
+    activeViewModel,
     flowNodes,
     flowEdges,
   }
