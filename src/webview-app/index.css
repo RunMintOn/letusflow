@@ -9,8 +9,9 @@
   --node-stroke: #b7b0a2;
   --node-stroke-strong: #87807a;
   --edge: #706d64;
-  --group-fill: rgba(194, 164, 84, 0.12);
-  --group-stroke: rgba(161, 131, 58, 0.42);
+  --group-fill: rgba(194, 164, 84, 0.035);
+  --group-stroke: rgba(143, 124, 94, 0.52);
+  --group-stroke-strong: rgba(119, 106, 84, 0.9);
   --border: rgba(76, 70, 54, 0.16);
   --edge-label-bg: rgba(246, 244, 236, 0.94);
 }
@@ -27,8 +28,9 @@ body.vscode-high-contrast {
   --node-stroke: #57524a;
   --node-stroke-strong: #87807a;
   --edge: #8f8d83;
-  --group-fill: rgba(184, 142, 65, 0.1);
-  --group-stroke: rgba(198, 159, 88, 0.34);
+  --group-fill: rgba(184, 142, 65, 0.028);
+  --group-stroke: rgba(196, 177, 142, 0.3);
+  --group-stroke-strong: rgba(214, 199, 166, 0.72);
   --border: rgba(228, 219, 196, 0.12);
   --edge-label-bg: rgba(28, 31, 33, 0.92);
 }
@@ -45,8 +47,9 @@ body.vscode-high-contrast {
     --node-stroke: #57524a;
     --node-stroke-strong: #87807a;
     --edge: #8f8d83;
-    --group-fill: rgba(184, 142, 65, 0.1);
-    --group-stroke: rgba(198, 159, 88, 0.34);
+    --group-fill: rgba(184, 142, 65, 0.028);
+    --group-stroke: rgba(196, 177, 142, 0.3);
+    --group-stroke-strong: rgba(214, 199, 166, 0.72);
     --border: rgba(228, 219, 196, 0.12);
     --edge-label-bg: rgba(28, 31, 33, 0.92);
   }
@@ -297,6 +300,15 @@ body.vscode-high-contrast .flow-canvas--obsidian {
   top: 16px;
   right: 16px;
   padding: 8px;
+}
+
+.canvas-hud__meta {
+  margin-top: 8px;
+  max-width: 180px;
+  color: var(--muted-ink);
+  font-size: 11px;
+  line-height: 1.35;
+  text-align: right;
 }
 
 .canvas-hud--bottom {
@@ -668,19 +680,111 @@ body.vscode-high-contrast .flow-canvas--obsidian {
 .group-node {
   width: 100%;
   height: 100%;
+  position: relative;
   border: 1px solid var(--group-stroke);
-  border-radius: 18px;
-  background: var(--group-fill);
+  border-radius: 14px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--group-fill) 78%, transparent), transparent 34%);
   box-sizing: border-box;
+  pointer-events: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease, transform 120ms ease;
+}
+
+.react-flow__node.diagram-flow-group {
   pointer-events: none;
 }
 
+.react-flow__node.diagram-flow-group .group-node__label,
+.react-flow__node.diagram-flow-group .group-node__resize-line,
+.react-flow__node.diagram-flow-group .react-flow__resize-control {
+  pointer-events: auto;
+}
+
+.group-node.is-selected {
+  border-color: var(--group-stroke-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--group-stroke-strong) 30%, transparent);
+}
+
+.group-node.is-dragging {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--group-fill) 92%, white), transparent 36%);
+  transform: translateY(-1px);
+}
+
+.group-node.is-selected.is-dragging {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--group-stroke-strong) 34%, transparent),
+    0 8px 22px rgba(0, 0, 0, 0.08);
+}
+
 .group-node__label {
-  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  max-width: calc(100% - 28px);
+  padding: 0 6px;
+  transform: translateY(-52%);
   font-size: 12px;
   font-weight: 500;
   color: var(--muted-ink);
-  text-align: center;
+  letter-spacing: 0.01em;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border-radius: 6px;
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.group-node.is-dragging .group-node__label {
+  cursor: grabbing;
+}
+
+.group-node .react-flow__resize-control.handle {
+  display: none;
+}
+
+.group-node .react-flow__resize-control {
+  pointer-events: auto;
+}
+
+.group-node__resize-line {
+  border-color: transparent !important;
+  opacity: 1;
+}
+
+.group-node__resize-line.left,
+.group-node__resize-line.right {
+  width: 12px !important;
+}
+
+.group-node__resize-line.top,
+.group-node__resize-line.bottom {
+  height: 12px !important;
+}
+
+.group-node__resize-line.left,
+.group-node__resize-line.right {
+  cursor: ew-resize;
+}
+
+.group-node__resize-line.top,
+.group-node__resize-line.bottom {
+  cursor: ns-resize;
+}
+
+.react-flow__edge-text {
+  fill: color-mix(in srgb, var(--ink) 92%, var(--muted-ink)) !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.react-flow__edge-textbg {
+  fill: color-mix(in srgb, var(--panel) 88%, transparent) !important;
+  stroke: color-mix(in srgb, var(--border) 70%, transparent) !important;
+  stroke-width: 1px;
 }
 
 .diagram-node .react-flow__handle {

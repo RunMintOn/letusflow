@@ -14,6 +14,7 @@ test('maps graph nodes and layout entries to XYFlow nodes', () => {
       id: 'start',
       type: 'diagramNode',
       className: 'diagram-flow-node',
+      zIndex: 2,
       position: { x: 80, y: 120 },
       data: { label: '开始', nodeType: 'default', targetPosition: 'left', sourcePosition: 'right' },
       style: { width: 140, height: 56 },
@@ -32,6 +33,7 @@ test('maps graph nodes with default layout when a layout entry is missing', () =
       id: 'start',
       type: 'diagramNode',
       className: 'diagram-flow-node',
+      zIndex: 2,
       position: { x: 10, y: 20 },
       data: { label: '开始', nodeType: 'default', targetPosition: 'left', sourcePosition: 'right' },
       style: { width: 140, height: 56 },
@@ -64,7 +66,14 @@ test('maps persisted group layout boxes into group nodes', () => {
   assert.equal(nodes[0].className, 'diagram-flow-group')
   assert.equal(nodes[0].data.label, 'Prompt Assembly')
   assert.deepEqual(nodes[0].position, { x: 76, y: 78 })
-  assert.deepEqual(nodes[0].style, { width: 488, height: 122 })
+  assert.deepEqual(nodes[0].style, { width: 488, height: 122, pointerEvents: 'none' })
+  assert.equal(nodes[0].dragHandle, '.group-node__label')
+  assert.equal(nodes[0].zIndex, 0)
+  assert.equal(nodes[1].zIndex, 2)
+  assert.equal(nodes[1].parentId, 'group:prompt')
+  assert.deepEqual(nodes[1].position, { x: 24, y: 42 })
+  assert.equal(nodes[2].parentId, 'group:prompt')
+  assert.deepEqual(nodes[2].position, { x: 284, y: 42 })
 })
 
 test('diagram nodes carry read-mode classes for Mermaid-like styling', () => {

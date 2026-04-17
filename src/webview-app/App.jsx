@@ -16,7 +16,6 @@ import { useEditorState } from './state/useEditorState.jsx'
 import { reconcileSelectedElement } from './state/reconcileSelectedElement.js'
 import { resetFlowLayout } from './actions/resetFlowLayout.js'
 import { deleteSelectedElement } from './actions/deleteSelectedElement.js'
-import { applyLiveGroupDrag } from './actions/applyLiveGroupDrag.js'
 import { withNodeActions } from './actions/withNodeActions.js'
 
 const nodeTypes = {
@@ -55,6 +54,7 @@ function AppInner() {
   const [editingNodeLabel, setEditingNodeLabel] = React.useState('')
   const [isNodeDraggingEnabled, setIsNodeDraggingEnabled] = React.useState(true)
   const reconnectSuccessfulRef = React.useRef(false)
+  const suppressSelectionUntilRef = React.useRef(0)
   const editingNodeIdRef = React.useRef(null)
   const editingNodeLabelRef = React.useRef('')
 
@@ -130,6 +130,14 @@ function AppInner() {
   )
 
   const handleNodeClick = React.useCallback((_event, node) => {
+    if (shouldIgnorePointerSelection(_event, suppressSelectionUntilRef.current)) {
+      return
+    }
+
+    if (node.type === 'groupNode' && !isInteractiveGroupHit(_event)) {
+      return
+    }
+
     if (node.type === 'groupNode') {
       setSelectedElement({ type: 'group', id: node.id, groupId: node.data.groupId })
       return
@@ -139,6 +147,14 @@ function AppInner() {
   }, [])
 
   const handleNodeDoubleClick = React.useCallback((_event, node) => {
+    if (shouldIgnorePointerSelection(_event, suppressSelectionUntilRef.current)) {
+      return
+    }
+
+    if (node.type === 'groupNode' && !isInteractiveGroupHit(_event)) {
+      return
+    }
+
     if (node.type === 'groupNode') {
       setSelectedElement({ type: 'group', id: node.id, groupId: node.data.groupId })
       return
@@ -152,6 +168,10 @@ function AppInner() {
   }, [])
 
   const handleEdgeClick = React.useCallback((_event, edge) => {
+    if (shouldIgnorePointerSelection(_event, suppressSelectionUntilRef.current)) {
+      return
+    }
+
     setSelectedElement({
       type: 'edge',
       id: edge.id,
@@ -298,6 +318,10 @@ function AppInner() {
   }, [])
 
   const handlePaneClick = React.useCallback((event) => {
+    if (shouldIgnorePointerSelection(event, suppressSelectionUntilRef.current)) {
+      return
+    }
+
     if (event.detail >= 2) {
       handleCreateNode()
       return
@@ -305,6 +329,21 @@ function AppInner() {
 
     setSelectedElement(null)
   }, [handleCreateNode])
+
+  const handleCanvasMoveStart = React.useCallback((event) => {
+    if (isSecondaryPointerEvent(event)) {
+      suppressSelectionUntilRef.current = Number.POSITIVE_INFINITY
+    }
+  }, [])
+
+  const handleCanvasMoveEnd = React.useCallback((event) => {
+    if (isSecondaryPointerEvent(event) || suppressSelectionUntilRef.current === Number.POSITIVE_INFINITY) {
+      suppressSelectionUntilRef.current = nowMs() + 160
+      return
+    }
+
+    suppressSelectionUntilRef.current = 0
+  }, [])
 
   const handleCreateGroup = React.useCallback(() => {
     const groupId = generateGroupId(documentModel.graph.groups ?? [])
@@ -497,13 +536,22 @@ function AppInner() {
     })
   }, [selectedElement, setEdges])
 
-  const handleNodeDrag = React.useCallback((_event, node) => {
-    if (node.type !== 'groupNode') {
+  const handleGroupResizeEnd = React.useCallback((groupId, params) => {
+    if (!groupId || !params) {
       return
     }
 
-    setNodes((currentNodes) => applyLiveGroupDrag(currentNodes, node))
-  }, [setNodes])
+    postToHost({
+      type: 'resizeGroup',
+      groupId,
+      layout: {
+        x: params.x,
+        y: params.y,
+        w: params.width,
+        h: params.height,
+      },
+    })
+  }, [])
 
   const handleNodeDragStop = React.useCallback((_event, node) => {
     if (node.type === 'groupNode') {
@@ -517,8 +565,6 @@ function AppInner() {
         x: node.position.x - previousLayout.x,
         y: node.position.y - previousLayout.y,
       }
-
-      setNodes((currentNodes) => applyLiveGroupDrag(currentNodes, node))
 
       postToHost({
         type: 'dragGroup',
@@ -535,19 +581,9 @@ function AppInner() {
           : currentNode,
       ),
     )
-    postToHost(fromNodeDragMessage(node))
-
-    const currentGroupId = documentModel.graph.nodes.find((graphNode) => graphNode.id === node.id)?.groupId ?? null
-    const nextGroupId = findStrictDropGroupId(node, nodes)
-
-    if (nextGroupId !== currentGroupId) {
-      postToHost({
-        type: 'moveNodeToGroup',
-        nodeId: node.id,
-        groupId: nextGroupId,
-      })
-    }
-  }, [documentModel.graph.nodes, documentModel.layout.groups, nodes, setNodes])
+    const absoluteLayoutPosition = resolveAbsoluteNodeLayout(node, nodes)
+    postToHost(fromNodeDragMessage(node, absoluteLayoutPosition))
+  }, [documentModel.layout.groups, nodes, setNodes])
 
   const handleRenameGroupLabel = React.useCallback((nextLabel) => {
     if (selectedElement?.type !== 'group') {
@@ -583,6 +619,7 @@ function AppInner() {
   const interactiveNodes = React.useMemo(
     () => withNodeActions(nodes, {
       onCreateSuccessor: handleCreateSuccessorNode,
+      onResizeGroup: handleGroupResizeEnd,
       isNodeDraggingEnabled,
       editingNodeId,
       editingLabel: editingNodeLabel,
@@ -595,6 +632,7 @@ function AppInner() {
       editingNodeId,
       editingNodeLabel,
       handleCreateSuccessorNode,
+      handleGroupResizeEnd,
       handleNodeEditChange,
       isNodeDraggingEnabled,
       nodes,
@@ -624,10 +662,11 @@ function AppInner() {
           onReconnectEnd={handleReconnectEnd}
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
-          onNodeDrag={handleNodeDrag}
           onEdgeClick={handleEdgeClick}
           onPaneClick={handlePaneClick}
           onNodeDragStop={handleNodeDragStop}
+          onMoveStart={handleCanvasMoveStart}
+          onMoveEnd={handleCanvasMoveEnd}
           nodesDraggable={isNodeDraggingEnabled}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
@@ -643,6 +682,7 @@ function AppInner() {
           layoutSpacing={layoutSpacing}
           backgroundStyle={backgroundStyle}
           isNodeDraggingEnabled={isNodeDraggingEnabled}
+          autoLayoutHint="自动布局会覆盖当前自动分配结果"
           onAutoLayout={handleAutoLayout}
           onCreateNode={handleCreateNode}
           onCreateGroup={handleCreateGroup}
@@ -674,6 +714,46 @@ export function App() {
   )
 }
 
+function shouldIgnorePointerSelection(event, suppressSelectionUntil) {
+  return isSecondaryPointerEvent(event) || suppressSelectionUntil > nowMs()
+}
+
+function resolveAbsoluteNodeLayout(node, allNodes) {
+  if (!node?.parentId) {
+    return node?.position ?? { x: 0, y: 0 }
+  }
+
+  const parentNode = (allNodes ?? []).find((candidate) => candidate.id === node.parentId)
+  if (!parentNode) {
+    return node.position
+  }
+
+  return {
+    x: parentNode.position.x + node.position.x,
+    y: parentNode.position.y + node.position.y,
+  }
+}
+
+function isInteractiveGroupHit(event) {
+  const target = event?.target ?? event?.nativeEvent?.target
+  return Boolean(target?.closest?.('.group-node__label, .group-node__resize-line'))
+}
+
+function isSecondaryPointerEvent(event) {
+  return (
+    event?.button === 2 ||
+    event?.nativeEvent?.button === 2 ||
+    event?.buttons === 2 ||
+    event?.nativeEvent?.buttons === 2
+  )
+}
+
+function nowMs() {
+  return typeof globalThis.performance?.now === 'function'
+    ? globalThis.performance.now()
+    : Date.now()
+}
+
 function generateGroupId(groups) {
   const existingIds = new Set((groups ?? []).map((group) => group.id))
   if (!existingIds.has('group')) {
@@ -686,36 +766,4 @@ function generateGroupId(groups) {
   }
 
   return `group-${index}`
-}
-
-function findStrictDropGroupId(node, allNodes) {
-  const groupNodes = allNodes.filter((candidate) => candidate.type === 'groupNode')
-  const nodeBox = {
-    x: node.position.x,
-    y: node.position.y,
-    w: node.width ?? node.measured?.width ?? node.style?.width ?? 140,
-    h: node.height ?? node.measured?.height ?? node.style?.height ?? 56,
-  }
-
-  for (const groupNode of groupNodes) {
-    if (isNodeInsideGroupContent(nodeBox, groupNode)) {
-      return groupNode.data.groupId
-    }
-  }
-
-  return null
-}
-
-function isNodeInsideGroupContent(nodeBox, groupNode) {
-  const left = groupNode.position.x + 16
-  const right = groupNode.position.x + (groupNode.style?.width ?? 0) - 16
-  const top = groupNode.position.y + 40
-  const bottom = groupNode.position.y + (groupNode.style?.height ?? 0) - 16
-
-  return (
-    nodeBox.x >= left &&
-    nodeBox.y >= top &&
-    nodeBox.x + nodeBox.w <= right &&
-    nodeBox.y + nodeBox.h <= bottom
-  )
 }

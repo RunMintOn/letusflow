@@ -29,6 +29,14 @@ test('floating canvas controls keep the layout spacing slider visible', async ()
   assert.match(source, /canvas-slider__input-wrap/)
 })
 
+test('floating canvas controls explain what auto layout will overwrite', async () => {
+  const source = await readFile('src/webview-app/components/FloatingCanvasControls.jsx', 'utf8')
+
+  assert.match(source, /autoLayoutHint/)
+  assert.match(source, /自动布局/)
+  assert.match(source, /当前自动分配/)
+})
+
 test('floating canvas controls expose create-node and drag toggle actions in the right-side stack', async () => {
   const source = await readFile('src/webview-app/components/FloatingCanvasControls.jsx', 'utf8')
 

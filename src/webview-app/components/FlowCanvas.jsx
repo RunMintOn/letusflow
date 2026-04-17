@@ -21,10 +21,11 @@ export function FlowCanvas({
   onReconnectEnd,
   onNodeClick,
   onNodeDoubleClick,
-  onNodeDrag,
   onEdgeClick,
   onPaneClick,
   onNodeDragStop,
+  onMoveStart,
+  onMoveEnd,
   nodesDraggable = true,
   nodeTypes,
   edgeTypes,
@@ -82,17 +83,21 @@ export function FlowCanvas({
         onReconnectEnd={onReconnectEnd}
         onNodeClick={onNodeClick}
         onNodeDoubleClick={onNodeDoubleClick}
-        onNodeDrag={onNodeDrag}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         onPaneContextMenu={(event) => event.preventDefault()}
         onNodeDragStop={onNodeDragStop}
+        onMoveStart={onMoveStart}
         nodesDraggable={nodesDraggable}
         edgesReconnectable={true}
         zoomOnDoubleClick={false}
         zoomOnPinch={false}
         panOnDrag={[2]}
-        onMoveEnd={(_event, nextViewport) => onViewportChange?.(nextViewport)}
+        selectNodesOnDrag={false}
+        onMoveEnd={(event, nextViewport) => {
+          onMoveEnd?.(event, nextViewport)
+          onViewportChange?.(nextViewport)
+        }}
         proOptions={{ hideAttribution: true }}
       >
         {shouldRenderObsidianBackground ? (

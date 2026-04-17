@@ -28,7 +28,7 @@ Recent commits use concise Conventional Commit-style prefixes such as `feat:`, `
 Do not overwrite user-edited `.flow` examples, docs, or generated layout files without checking the diff first. Treat `dist/` as generated output and rebuild it instead of editing bundled files directly.
 
 用户补充:
-- 在开始一次实际的代码修改之前,对此次改动复杂度进行评估,目的是为了更有效率的推进项目.
+- 在开始一次实际的代码修改之前,对此次改动复杂度进行评估,目的是为了减少不必要的时间消耗和更有效率的推进项目.
 - 若低复杂度
 	- 不走superpowers的spec--plan等流程
 	- 我会手动切换到plan-only mode, 这是codex(你)自己的计划模式
@@ -43,6 +43,12 @@ Do not overwrite user-edited `.flow` examples, docs, or generated layout files w
 	- 默认采用superpowers完整流程
 	- 不为压缩流程而省略关键分析、设计、验证步骤
 	- 适配高复杂度改动
+- 验证策略默认走最小充分原则
+	- 开发中默认只跑与当前改动直接相关的测试, 不默认跑全量 `npm test`
+	- 需要定向测试时, 优先直接使用 `node --test <具体测试文件...>`, 不要使用会隐式带上全量测试的命令写法
+	- 仅在里程碑节点才考虑全量验证, 例如准备提交 commit、准备明确宣称“已完成/已修复”、改动面较大、或局部验证结果异常需要排查连锁影响
+	- 仅在修改 `src/webview-app/` 或构建相关配置时默认运行 `npm run build`, 其他改动按需决定是否 build
+	- 向用户汇报验证结果时默认只给摘要, 例如“相关测试 3/3 通过”“build 通过”“已跳过全量测试”, 不回贴大段测试日志, 以减少 token 消耗
 - 你就简洁直接回答我你的判断
 ```
 缺少相关信息可以使用deepwiki mcp获取

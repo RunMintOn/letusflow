@@ -4,6 +4,7 @@ export function FloatingCanvasControls({
   layoutSpacing,
   backgroundStyle,
   isNodeDraggingEnabled,
+  autoLayoutHint,
   onAutoLayout,
   onCreateNode,
   onCreateGroup,
@@ -81,6 +82,9 @@ export function FloatingCanvasControls({
         >
           整理布局
         </button>
+        <div className="canvas-hud__meta">
+          {autoLayoutHint ?? '自动布局会覆盖当前自动分配结果'}
+        </div>
       </div>
 
       <div className="canvas-hud canvas-hud--right">

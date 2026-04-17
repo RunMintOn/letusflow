@@ -10,3 +10,12 @@ test('app defaults node dragging to on and wires the toggle into flow canvas', a
   assert.match(source, /isNodeDraggingEnabled=\{isNodeDraggingEnabled\}/)
   assert.match(source, /onNodeDraggingToggle=\{handleNodeDraggingToggle\}/)
 })
+
+test('app suppresses selection during secondary-button panning', async () => {
+  const source = await readFile('src/webview-app/App.jsx', 'utf8')
+
+  assert.match(source, /suppressSelectionUntilRef/)
+  assert.match(source, /handleCanvasMoveStart/)
+  assert.match(source, /handleCanvasMoveEnd/)
+  assert.match(source, /shouldIgnorePointerSelection/)
+})

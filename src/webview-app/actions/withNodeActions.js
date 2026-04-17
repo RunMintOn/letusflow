@@ -15,6 +15,7 @@ export function withNodeActions(nodes, actions) {
       data: {
         ...node.data,
         ...(isDiagramNode ? { onCreateSuccessor: actions.onCreateSuccessor } : {}),
+        ...(isGroupNode ? { onResizeGroup: actions.onResizeGroup } : {}),
         isEditing,
         editingLabel: isEditing ? actions.editingLabel : node.data.label,
         onEditChange: actions.onEditChange,

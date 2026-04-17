@@ -44,10 +44,10 @@ test('clips a vertical incoming edge to the visible decision boundary', () => {
     },
   })
 
-  assert.match(geometry.path, /^M212,120/)
+  assert.match(geometry.path, /^M212,116/)
   assert.match(geometry.path, /212,301/)
   assert.match(geometry.path, /C/)
-  assert.deepEqual(geometry.label, { x: 212, y: 211 })
+  assert.deepEqual(geometry.label, { x: 212, y: 209 })
 })
 
 test('clips a horizontal outgoing edge to the visible decision boundary', () => {
@@ -66,9 +66,9 @@ test('clips a horizontal outgoing edge to the visible decision boundary', () => 
   })
 
   assert.match(geometry.path, /^M257,346/)
-  assert.match(geometry.path, /400,346/)
+  assert.match(geometry.path, /404,346/)
   assert.match(geometry.path, /C/)
-  assert.deepEqual(geometry.label, { x: 329, y: 334 })
+  assert.deepEqual(geometry.label, { x: 331, y: 334 })
 })
 
 test('nudges labels upward for nearly horizontal edges to reduce node overlap', () => {
@@ -81,4 +81,15 @@ test('nudges labels upward for nearly horizontal edges to reduce node overlap', 
 
   assert.equal(geometry.label.x, 270)
   assert.ok(geometry.label.y < 264)
+})
+
+test('pulls left-right edge endpoints closer to node frames', () => {
+  const geometry = toNormalReadEdgePath({
+    sourceX: 120,
+    sourceY: 180,
+    targetX: 360,
+    targetY: 180,
+  })
+
+  assert.equal(geometry.path, 'M116,180 C240,180 240,180 364,180')
 })

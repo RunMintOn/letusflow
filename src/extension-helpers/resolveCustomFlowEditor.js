@@ -430,6 +430,19 @@ export async function resolveCustomFlowEditor({
         return
       }
 
+      if (message?.type === 'resizeGroup' && message.groupId && message.layout) {
+        documentModel.layout = {
+          ...documentModel.layout,
+          groups: {
+            ...(documentModel.layout.groups ?? {}),
+            [message.groupId]: createDefaultGroupLayout(message.layout),
+          },
+        }
+        await persistLayout()
+        await postSyncState()
+        return
+      }
+
       if (message?.type === 'deleteNode' && message.nodeId) {
         documentModel.graph = deleteNode(documentModel.graph, message.nodeId)
         documentModel.layout = {

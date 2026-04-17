@@ -3,6 +3,7 @@ import { getBezierPath } from '@xyflow/react'
 const DECISION_DIAMOND_SIDE = 64
 const DECISION_DIAMOND_RADIUS = DECISION_DIAMOND_SIDE * Math.SQRT2 / 2
 const PARALLEL_EDGE_OFFSET = 18
+const ENDPOINT_INSET = 4
 
 export function toNormalReadEdgePath({
   sourceX,
@@ -28,15 +29,21 @@ export function toNormalReadEdgePath({
   )
   const sourcePosition = resolveHandlePosition(offsetSource, offsetTarget)
   const targetPosition = resolveHandlePosition(offsetTarget, offsetSource)
+  const alignedSource = isDecisionNode(sourceNode)
+    ? offsetSource
+    : insetEndpoint(offsetSource, sourcePosition)
+  const alignedTarget = isDecisionNode(targetNode)
+    ? offsetTarget
+    : insetEndpoint(offsetTarget, targetPosition)
   const [path, labelX, labelY] = getBezierPath({
-    sourceX: offsetSource.x,
-    sourceY: offsetSource.y,
+    sourceX: alignedSource.x,
+    sourceY: alignedSource.y,
     sourcePosition,
-    targetX: offsetTarget.x,
-    targetY: offsetTarget.y,
+    targetX: alignedTarget.x,
+    targetY: alignedTarget.y,
     targetPosition,
   })
-  const labelOffsetY = Math.abs(offsetSource.y - offsetTarget.y) <= 24 ? -12 : 0
+  const labelOffsetY = Math.abs(alignedSource.y - alignedTarget.y) <= 24 ? -12 : 0
 
   return {
     path,
@@ -105,4 +112,20 @@ function applyParallelOffset(fromPoint, toPoint, parallelIndex, parallelCount) {
       y: Math.round(toPoint.y + offsetY),
     },
   }
+}
+
+function insetEndpoint(point, handlePosition) {
+  if (handlePosition === 'right') {
+    return { x: point.x - ENDPOINT_INSET, y: point.y }
+  }
+
+  if (handlePosition === 'left') {
+    return { x: point.x + ENDPOINT_INSET, y: point.y }
+  }
+
+  if (handlePosition === 'top') {
+    return { x: point.x, y: point.y + ENDPOINT_INSET }
+  }
+
+  return { x: point.x, y: point.y - ENDPOINT_INSET }
 }

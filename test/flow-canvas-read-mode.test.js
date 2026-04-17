@@ -59,5 +59,13 @@ test('flow canvas disables double-click zoom and limits panning to right-drag', 
   assert.match(source, /zoomOnDoubleClick=\{false\}/)
   assert.match(source, /zoomOnPinch=\{false\}/)
   assert.match(source, /panOnDrag=\{\[2\]\}/)
+  assert.match(source, /selectNodesOnDrag=\{false\}/)
   assert.match(source, /onPaneContextMenu=\{\(event\) => event\.preventDefault\(\)\}/)
+})
+
+test('flow canvas exposes move lifecycle hooks so secondary-button panning can suppress selection', async () => {
+  const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
+
+  assert.match(source, /onMoveStart/)
+  assert.match(source, /onMoveEnd/)
 })
