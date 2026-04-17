@@ -56,6 +56,37 @@ test('fills missing edge handle sides from auto layout while preserving user-edi
   assert.deepEqual(layout.edges.edge_2, { sourceSide: 'left', targetSide: 'right' })
 })
 
+test('derives non-overlapping group boxes for parallel auto-laid groups', () => {
+  const graph = {
+    direction: 'TD',
+    groups: [
+      { id: 'g1', label: 'Group 1' },
+      { id: 'g2', label: 'Group 2' },
+    ],
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'a1', label: '阶段 A1', groupId: 'g1' },
+      { id: 'a2', label: '阶段 A2', groupId: 'g1' },
+      { id: 'b1', label: '阶段 B1', groupId: 'g2' },
+      { id: 'b2', label: '阶段 B2', groupId: 'g2' },
+    ],
+    edges: [
+      { id: 'edge_1', from: 'start', to: 'a1' },
+      { id: 'edge_2', from: 'a1', to: 'a2' },
+      { id: 'edge_3', from: 'start', to: 'b1' },
+      { id: 'edge_4', from: 'b1', to: 'b2' },
+    ],
+  }
+
+  const layout = reconcileLayout(graph)
+  const group1 = layout.groups.g1
+  const group2 = layout.groups.g2
+
+  assert.ok(group1)
+  assert.ok(group2)
+  assert.ok(group1.x + group1.w <= group2.x || group2.x + group2.w <= group1.x)
+})
+
 test('drops stale node, group, and edge layout entries', () => {
   const graph = {
     direction: 'LR',

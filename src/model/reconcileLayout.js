@@ -6,7 +6,7 @@ import {
   createEmptyLayoutDocument,
   normalizeLayoutDocument,
 } from './layoutSchema.js'
-import { deriveDefaultGroupBox } from './groupLayout.js'
+import { deriveDefaultGroupBox, separateGroupLayouts } from './groupLayout.js'
 
 export function reconcileLayout(graph, currentLayout) {
   const normalized = normalizeLayoutDocument(currentLayout ?? createEmptyLayoutDocument())
@@ -21,13 +21,22 @@ export function reconcileLayout(graph, currentLayout) {
     ]),
   )
 
+  const autoDerivedGroupIds = []
   const groups = Object.fromEntries(
-    (graph.groups ?? []).map((group) => [
-      group.id,
-      normalized.groups[group.id]
-        ? createDefaultGroupLayout(normalized.groups[group.id])
-        : deriveDefaultGroupBox(group.id, graph.nodes, nodes) ?? createDefaultGroupLayout(),
-    ]),
+    (graph.groups ?? []).map((group) => {
+      if (normalized.groups[group.id]) {
+        return [
+          group.id,
+          createDefaultGroupLayout(normalized.groups[group.id]),
+        ]
+      }
+
+      autoDerivedGroupIds.push(group.id)
+      return [
+        group.id,
+        deriveDefaultGroupBox(group.id, graph.nodes, nodes) ?? createDefaultGroupLayout(),
+      ]
+    }),
   )
 
   const edges = Object.fromEntries(
@@ -37,11 +46,13 @@ export function reconcileLayout(graph, currentLayout) {
     ]),
   )
 
-  return {
+  const nextLayout = separateGroupLayouts({
     version: 1,
     nodes,
     groups,
     edges,
     edgeLabels: autoLayout.edgeLabels ?? {},
-  }
+  }, graph, autoDerivedGroupIds)
+
+  return nextLayout
 }

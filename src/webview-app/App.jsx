@@ -332,10 +332,6 @@ function AppInner() {
   }, [])
 
   const handleAutoLayout = React.useCallback(() => {
-    if (!window.confirm('整理布局会覆盖当前自动分配结果。继续吗？')) {
-      return
-    }
-
     resetFlowLayout({
       setNodes,
       setEdges,

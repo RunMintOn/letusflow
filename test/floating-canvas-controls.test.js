@@ -52,13 +52,14 @@ test('floating canvas controls expose background style choices', async () => {
 
 test('app renders floating controls instead of the old toolbar and inspector', async () => {
   const source = await readFile('src/webview-app/App.jsx', 'utf8')
+  const controlsSource = await readFile('src/webview-app/components/FloatingCanvasControls.jsx', 'utf8')
 
   assert.match(source, /FloatingCanvasControls/)
   assert.match(source, /FloatingEdgeEditor/)
   assert.match(source, /isNodeDraggingEnabled/)
   assert.match(source, /handleNodeDraggingToggle/)
-  assert.match(source, /window\.confirm/)
-  assert.match(source, /整理布局/)
+  assert.match(source, /resetFlowLayout/)
+  assert.match(controlsSource, /整理布局/)
   assert.doesNotMatch(source, /TopToolbar/)
   assert.doesNotMatch(source, /InspectorPanel/)
 })
