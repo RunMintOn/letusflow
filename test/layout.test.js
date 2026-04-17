@@ -157,6 +157,24 @@ test('auto-layout keys edgeLabels by runtime edge id', () => {
   assert.equal(next.edgeLabels['start->review#通过'], undefined)
 })
 
+test('auto-layout assigns edge sides from relative node positions', () => {
+  const next = autoLayoutGraph({
+    direction: 'TD',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+      { id: 'done', label: '完成' },
+    ],
+    edges: [
+      { id: 'edge_down', from: 'start', to: 'review' },
+      { id: 'edge_right', from: 'start', to: 'done' },
+    ],
+  })
+
+  assert.deepEqual(next.edges.edge_down, { sourceSide: 'bottom', targetSide: 'top' })
+  assert.ok(next.edges.edge_right)
+})
+
 test('dagre edge priority favors edges that follow declaration order', () => {
   const nodeOrder = new Map([
     ['start', 0],

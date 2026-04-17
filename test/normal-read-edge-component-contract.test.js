@@ -10,11 +10,10 @@ test('normal read edge accepts edge data before reading decision clipping metada
   assert.match(source, /targetNode:\s*data\?\.targetNode/)
 })
 
-test('normal read edge prefers labelLayout from edge data when present', async () => {
+test('normal read edge keeps labels attached to live edge geometry instead of persisted label boxes', async () => {
   const source = await readFile('src/webview-app/components/edges/NormalReadEdge.jsx', 'utf8')
 
-  assert.match(source, /labelLayout/)
-  assert.match(source, /data\?\.labelLayout/)
-  assert.match(source, /labelX=\{/)
-  assert.match(source, /labelY=\{/)
+  assert.doesNotMatch(source, /labelLayout/)
+  assert.match(source, /labelX=\{geometry\.label\.x\}/)
+  assert.match(source, /labelY=\{geometry\.label\.y\}/)
 })

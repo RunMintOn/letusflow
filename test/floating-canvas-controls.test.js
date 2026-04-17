@@ -57,6 +57,8 @@ test('app renders floating controls instead of the old toolbar and inspector', a
   assert.match(source, /FloatingEdgeEditor/)
   assert.match(source, /isNodeDraggingEnabled/)
   assert.match(source, /handleNodeDraggingToggle/)
+  assert.match(source, /window\.confirm/)
+  assert.match(source, /整理布局/)
   assert.doesNotMatch(source, /TopToolbar/)
   assert.doesNotMatch(source, /InspectorPanel/)
 })

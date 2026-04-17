@@ -1,6 +1,6 @@
 import React from 'react'
 
-export function FloatingEdgeEditor({ selectedEdge, onRenameEdgeLabel }) {
+export function FloatingEdgeEditor({ selectedEdge, onRenameEdgeLabel, onDeleteEdge }) {
   const [draftLabel, setDraftLabel] = React.useState('')
 
   React.useEffect(() => {
@@ -30,6 +30,9 @@ export function FloatingEdgeEditor({ selectedEdge, onRenameEdgeLabel }) {
       />
       <button type="button" onClick={() => onRenameEdgeLabel(draftLabel)}>
         保存
+      </button>
+      <button type="button" onClick={onDeleteEdge}>
+        删除连线
       </button>
     </div>
   )

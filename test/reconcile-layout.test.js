@@ -28,6 +28,34 @@ test('preserves existing node, group, and edge layout entries and allocates miss
   assert.ok(layout.edgeLabels)
 })
 
+test('fills missing edge handle sides from auto layout while preserving user-edited ones', () => {
+  const graph = {
+    direction: 'TD',
+    groups: [],
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+      { id: 'done', label: '完成' },
+    ],
+    edges: [
+      { id: 'edge_1', from: 'start', to: 'review' },
+      { id: 'edge_2', from: 'start', to: 'done' },
+    ],
+  }
+
+  const layout = reconcileLayout(graph, {
+    version: 1,
+    nodes: {},
+    groups: {},
+    edges: {
+      edge_2: { sourceSide: 'left', targetSide: 'right' },
+    },
+  })
+
+  assert.deepEqual(layout.edges.edge_1, { sourceSide: 'bottom', targetSide: 'top' })
+  assert.deepEqual(layout.edges.edge_2, { sourceSide: 'left', targetSide: 'right' })
+})
+
 test('drops stale node, group, and edge layout entries', () => {
   const graph = {
     direction: 'LR',

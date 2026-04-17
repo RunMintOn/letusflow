@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import { createSuccessorNode } from '../src/model/createSuccessorNode.js'
 import { deleteEdge } from '../src/model/deleteEdge.js'
 import { deleteNode } from '../src/model/deleteNode.js'
+import { reconnectEdge } from '../src/model/reconnectEdge.js'
 import { renameEdgeLabel } from '../src/model/renameEdgeLabel.js'
 
 test('deletes a node and its connected edges', () => {
@@ -94,6 +95,28 @@ test('renames and deletes edges by runtime id', () => {
     deleted.edges.map((edge) => edge.id),
     ['edge_2'],
   )
+})
+
+test('reconnects an existing edge by runtime id without changing its metadata', () => {
+  const graph = {
+    direction: 'LR',
+    nodes: [
+      { id: 'start', label: '开始' },
+      { id: 'review', label: '审批' },
+      { id: 'done', label: '完成' },
+    ],
+    edges: [
+      { id: 'edge_1', from: 'start', to: 'review', label: '通过', style: 'dashed' },
+      { id: 'edge_2', from: 'review', to: 'done', label: '继续' },
+    ],
+  }
+
+  const next = reconnectEdge(graph, { edgeId: 'edge_1' }, { from: 'start', to: 'done' })
+
+  assert.deepEqual(next.edges, [
+    { id: 'edge_1', from: 'start', to: 'done', label: '通过', style: 'dashed' },
+    { id: 'edge_2', from: 'review', to: 'done', label: '继续' },
+  ])
 })
 
 test('creates a successor node and edge from an existing node', () => {

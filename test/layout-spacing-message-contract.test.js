@@ -111,6 +111,7 @@ test('createSuccessorNode uses local placement instead of host auto-layout', asy
 
   assert.ok(block)
   assert.match(block, /placeSuccessorNode/)
+  assert.match(block, /reconcileLayout/)
   assert.doesNotMatch(block, /documentModel\.layout\s*=\s*autoLayoutCurrentGraph\(\)/)
 })
 

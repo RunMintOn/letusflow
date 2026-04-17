@@ -7,6 +7,7 @@ export function applyGroupMargins(graph, layout) {
     nodes: Object.fromEntries(
       Object.entries(layout.nodes).map(([nodeId, box]) => [nodeId, { ...box }]),
     ),
+    ...(layout.edges ? { edges: { ...layout.edges } } : {}),
     ...(layout.edgeLabels ? { edgeLabels: { ...layout.edgeLabels } } : {}),
   }
 

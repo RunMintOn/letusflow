@@ -16,8 +16,12 @@ export function FlowCanvas({
   onNodesChange,
   onEdgesChange,
   onConnect,
+  onReconnect,
+  onReconnectStart,
+  onReconnectEnd,
   onNodeClick,
   onNodeDoubleClick,
+  onNodeDrag,
   onEdgeClick,
   onPaneClick,
   onNodeDragStop,
@@ -73,13 +77,18 @@ export function FlowCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={onReconnect}
+        onReconnectStart={onReconnectStart}
+        onReconnectEnd={onReconnectEnd}
         onNodeClick={onNodeClick}
         onNodeDoubleClick={onNodeDoubleClick}
+        onNodeDrag={onNodeDrag}
         onEdgeClick={onEdgeClick}
         onPaneClick={onPaneClick}
         onPaneContextMenu={(event) => event.preventDefault()}
         onNodeDragStop={onNodeDragStop}
         nodesDraggable={nodesDraggable}
+        edgesReconnectable={true}
         zoomOnDoubleClick={false}
         zoomOnPinch={false}
         panOnDrag={[2]}

@@ -11,10 +11,12 @@ import { GroupNode } from './components/nodes/GroupNode.jsx'
 import { fromNodeDragMessage } from './bridge/fromNodeDragMessage.js'
 import { getVsCodeApi, postToHost } from './bridge/vscodeBridge.js'
 import { fromConnectParams } from './mapping/fromConnectParams.js'
+import { withLiveEdgeNodeGeometry } from './mapping/withLiveEdgeNodeGeometry.js'
 import { useEditorState } from './state/useEditorState.jsx'
 import { reconcileSelectedElement } from './state/reconcileSelectedElement.js'
 import { resetFlowLayout } from './actions/resetFlowLayout.js'
 import { deleteSelectedElement } from './actions/deleteSelectedElement.js'
+import { applyLiveGroupDrag } from './actions/applyLiveGroupDrag.js'
 import { withNodeActions } from './actions/withNodeActions.js'
 
 const nodeTypes = {
@@ -51,7 +53,8 @@ function AppInner() {
   const [selectedElement, setSelectedElement] = React.useState(null)
   const [editingNodeId, setEditingNodeId] = React.useState(null)
   const [editingNodeLabel, setEditingNodeLabel] = React.useState('')
-  const [isNodeDraggingEnabled, setIsNodeDraggingEnabled] = React.useState(false)
+  const [isNodeDraggingEnabled, setIsNodeDraggingEnabled] = React.useState(true)
+  const reconnectSuccessfulRef = React.useRef(false)
   const editingNodeIdRef = React.useRef(null)
   const editingNodeLabelRef = React.useRef('')
 
@@ -107,11 +110,16 @@ function AppInner() {
     }
   }, [])
 
+  const renderedEdges = React.useMemo(
+    () => withLiveEdgeNodeGeometry(edges, nodes),
+    [edges, nodes],
+  )
+
   const selectedEdge = React.useMemo(
     () => selectedElement?.type === 'edge'
-      ? edges.find((edge) => (edge.data?.edgeId ?? edge.id) === selectedElement?.edgeId) ?? null
+      ? renderedEdges.find((edge) => (edge.data?.edgeId ?? edge.id) === selectedElement?.edgeId) ?? null
       : null,
-    [edges, selectedElement],
+    [renderedEdges, selectedElement],
   )
 
   const selectedGroup = React.useMemo(
@@ -150,10 +158,6 @@ function AppInner() {
       edgeId: edge.data?.edgeId ?? edge.id,
       edgeRef: edge.data.edgeRef,
     })
-  }, [])
-
-  const handlePaneClick = React.useCallback(() => {
-    setSelectedElement(null)
   }, [])
 
   const handleRenameNode = React.useCallback((nodeId, nextLabel) => {
@@ -293,6 +297,15 @@ function AppInner() {
     })
   }, [])
 
+  const handlePaneClick = React.useCallback((event) => {
+    if (event.detail >= 2) {
+      handleCreateNode()
+      return
+    }
+
+    setSelectedElement(null)
+  }, [handleCreateNode])
+
   const handleCreateGroup = React.useCallback(() => {
     const groupId = generateGroupId(documentModel.graph.groups ?? [])
     postToHost({
@@ -319,6 +332,10 @@ function AppInner() {
   }, [])
 
   const handleAutoLayout = React.useCallback(() => {
+    if (!window.confirm('整理布局会覆盖当前自动分配结果。继续吗？')) {
+      return
+    }
+
     resetFlowLayout({
       setNodes,
       setEdges,
@@ -388,6 +405,110 @@ function AppInner() {
     })
   }, [setEdges])
 
+  const handleReconnect = React.useCallback((oldEdge, connection) => {
+    if (!oldEdge?.id || !connection?.source || !connection?.target) {
+      return
+    }
+
+    reconnectSuccessfulRef.current = true
+    const nextEdge = fromConnectParams(connection)
+    const edgeId = oldEdge.data?.edgeId ?? oldEdge.id
+
+    setEdges((currentEdges) =>
+      currentEdges.map((edge) =>
+        edge.id === oldEdge.id
+          ? {
+              ...edge,
+              source: connection.source,
+              target: connection.target,
+              sourceHandle: connection.sourceHandle,
+              targetHandle: connection.targetHandle,
+              data: {
+                ...(edge.data ?? {}),
+                edgeRef: {
+                  ...(edge.data?.edgeRef ?? {}),
+                  from: nextEdge.from,
+                  to: nextEdge.to,
+                },
+              },
+            }
+          : edge,
+      ),
+    )
+
+    setSelectedElement((current) =>
+      current?.type === 'edge' && current.edgeId === edgeId
+        ? {
+            ...current,
+            edgeRef: {
+              ...(current.edgeRef ?? {}),
+              from: nextEdge.from,
+              to: nextEdge.to,
+            },
+          }
+        : current,
+    )
+
+    postToHost({
+      type: 'reconnectEdge',
+      edgeId,
+      edge: nextEdge,
+    })
+  }, [setEdges])
+
+  const handleReconnectStart = React.useCallback(() => {
+    reconnectSuccessfulRef.current = false
+  }, [])
+
+  const handleReconnectEnd = React.useCallback((_event, edge) => {
+    if (reconnectSuccessfulRef.current) {
+      return
+    }
+
+    const edgeId = edge?.data?.edgeId ?? edge?.id
+    if (!edgeId) {
+      return
+    }
+
+    setEdges((currentEdges) =>
+      currentEdges.filter((currentEdge) => (currentEdge.data?.edgeId ?? currentEdge.id) !== edgeId),
+    )
+    setSelectedElement((current) =>
+      current?.type === 'edge' && current.edgeId === edgeId
+        ? null
+        : current,
+    )
+    postToHost({
+      type: 'deleteEdge',
+      edgeId,
+      edge: edge.data?.edgeRef,
+    })
+  }, [setEdges])
+
+  const handleDeleteSelectedEdge = React.useCallback(() => {
+    if (selectedElement?.type !== 'edge') {
+      return
+    }
+
+    setEdges((currentEdges) =>
+      currentEdges.filter((edge) => (edge.data?.edgeId ?? edge.id) !== selectedElement.edgeId),
+    )
+    setSelectedElement(null)
+    postToHost({
+      type: 'deleteEdge',
+      edgeId: selectedElement.edgeId,
+      edge: selectedElement.edgeRef,
+    })
+  }, [selectedElement, setEdges])
+
+  const handleNodeDrag = React.useCallback((_event, node) => {
+    if (node.type !== 'groupNode') {
+      return
+    }
+
+    setNodes((currentNodes) => applyLiveGroupDrag(currentNodes, node))
+  }, [setNodes])
+
   const handleNodeDragStop = React.useCallback((_event, node) => {
     if (node.type === 'groupNode') {
       const groupId = node.data.groupId
@@ -401,28 +522,7 @@ function AppInner() {
         y: node.position.y - previousLayout.y,
       }
 
-      setNodes((currentNodes) =>
-        currentNodes.map((currentNode) => {
-          if (currentNode.id === node.id) {
-            return {
-              ...currentNode,
-              position: node.position,
-            }
-          }
-
-          if (node.data.memberNodeIds?.includes(currentNode.id)) {
-            return {
-              ...currentNode,
-              position: {
-                x: currentNode.position.x + delta.x,
-                y: currentNode.position.y + delta.y,
-              },
-            }
-          }
-
-          return currentNode
-        }),
-      )
+      setNodes((currentNodes) => applyLiveGroupDrag(currentNodes, node))
 
       postToHost({
         type: 'dragGroup',
@@ -519,12 +619,16 @@ function AppInner() {
       <section className="app-canvas-stage">
         <FlowCanvas
           nodes={interactiveNodes}
-          edges={edges}
+          edges={renderedEdges}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={handleConnect}
+          onReconnect={handleReconnect}
+          onReconnectStart={handleReconnectStart}
+          onReconnectEnd={handleReconnectEnd}
           onNodeClick={handleNodeClick}
           onNodeDoubleClick={handleNodeDoubleClick}
+          onNodeDrag={handleNodeDrag}
           onEdgeClick={handleEdgeClick}
           onPaneClick={handlePaneClick}
           onNodeDragStop={handleNodeDragStop}
@@ -554,6 +658,7 @@ function AppInner() {
         <FloatingEdgeEditor
           selectedEdge={selectedEdge}
           onRenameEdgeLabel={handleRenameEdgeLabel}
+          onDeleteEdge={handleDeleteSelectedEdge}
         />
 
         <FloatingGroupEditor

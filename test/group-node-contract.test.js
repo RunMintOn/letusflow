@@ -10,6 +10,8 @@ test('app wires group creation and group editor support', async () => {
   assert.match(source, /type:\s*'renameGroup'/)
   assert.match(source, /type:\s*'dragGroup'/)
   assert.match(source, /type:\s*'moveNodeToGroup'/)
+  assert.match(source, /handleNodeDrag/)
+  assert.match(source, /applyLiveGroupDrag/)
 })
 
 test('floating canvas controls expose a create group action', async () => {

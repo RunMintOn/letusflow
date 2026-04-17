@@ -33,7 +33,7 @@ export function reconcileLayout(graph, currentLayout) {
   const edges = Object.fromEntries(
     (graph.edges ?? []).map((edge) => [
       edge.id,
-      createDefaultEdgeLayout(normalized.edges[edge.id]),
+      createDefaultEdgeLayout(normalized.edges[edge.id] ?? autoLayout.edges?.[edge.id]),
     ]),
   )
 

@@ -1,6 +1,7 @@
 import { applyGroupMargins } from './applyGroupMargins.js'
 import dagre from 'dagre'
 import { buildLabelAugmentedGraph } from './buildLabelAugmentedGraph.js'
+import { autoAssignEdgeSides } from './autoAssignEdgeSides.js'
 import { derivePrimaryFlow } from './derivePrimaryFlow.js'
 import { getNodeDimensions } from './nodeDimensions.js'
 import { postLayoutRanks } from './postLayoutRanks.js'
@@ -52,7 +53,7 @@ export function autoLayoutGraph(graph, options = {}) {
   })
 
   dagre.layout(dagreGraph)
-  const layout = { nodes: {}, edgeLabels: {} }
+  const layout = { nodes: {}, edges: {}, edgeLabels: {} }
 
   for (const node of graph.nodes) {
     const dimensions = getNodeDimensions(node)
@@ -78,6 +79,8 @@ export function autoLayoutGraph(graph, options = {}) {
       h: meta.labelDimensions.h,
     }
   }
+
+  layout.edges = autoAssignEdgeSides(graph, layout.nodes)
 
   const primaryFlowScores = derivePrimaryFlow(graph)
   const postLayout = postLayoutRanks(graph, layout, spacing, primaryFlowScores)

@@ -27,9 +27,6 @@ export function NormalReadEdge({
     parallelIndex: data?.parallelIndex,
     parallelCount: data?.parallelCount,
   })
-  const labelLayout = data?.labelLayout
-  const resolvedLabelX = labelLayout ? Math.round(labelLayout.x + labelLayout.w / 2) : geometry.label.x
-  const resolvedLabelY = labelLayout ? Math.round(labelLayout.y + labelLayout.h / 2) : geometry.label.y
 
   return (
     <BaseEdge
@@ -38,8 +35,8 @@ export function NormalReadEdge({
       markerEnd={markerEnd}
       style={style}
       label={label}
-      labelX={resolvedLabelX}
-      labelY={resolvedLabelY}
+      labelX={geometry.label.x}
+      labelY={geometry.label.y}
       labelStyle={labelStyle}
       labelBgPadding={labelBgPadding}
       labelBgBorderRadius={labelBgBorderRadius}

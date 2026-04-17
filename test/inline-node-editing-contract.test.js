@@ -18,6 +18,7 @@ test('flow canvas forwards node double click events for inline editing', async (
   const source = await readFile('src/webview-app/components/FlowCanvas.jsx', 'utf8')
 
   assert.match(source, /onNodeDoubleClick/)
+  assert.match(source, /onNodeDrag/)
 })
 
 test('app manages inline node edit state', async () => {
@@ -26,6 +27,9 @@ test('app manages inline node edit state', async () => {
   assert.match(source, /editingNodeId/)
   assert.match(source, /editingNodeLabel/)
   assert.match(source, /handleNodeDoubleClick/)
+  assert.match(source, /handlePaneClick/)
+  assert.match(source, /event\.detail >= 2/)
+  assert.match(source, /handleCreateNode\(\)/)
   assert.match(source, /submitNodeEditing/)
   assert.match(source, /cancelNodeEditing/)
 })

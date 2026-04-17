@@ -26,3 +26,23 @@ Recent commits use concise Conventional Commit-style prefixes such as `feat:`, `
 ## Agent-Specific Instructions
 
 Do not overwrite user-edited `.flow` examples, docs, or generated layout files without checking the diff first. Treat `dist/` as generated output and rebuild it instead of editing bundled files directly.
+
+用户补充:
+- 在开始一次实际的代码修改之前,对此次改动复杂度进行评估,目的是为了更有效率的推进项目.
+- 若低复杂度
+	- 不走superpowers的spec--plan等流程
+	- 我会手动切换到plan-only mode, 这是codex(你)自己的计划模式
+	- 采用最小充分计划，避免过度流程化
+	- 适配简单的改动
+- 若中复杂度
+	- 保留superpowers流程骨架，但允许裁剪
+	- 可跳过 spec，直接写 plan；自行控制 plan 详略
+	- 允许省略不影响质量的步骤，避免不必要的流程开销
+	- 适配中等复杂度改动。
+- 若高复杂度
+	- 默认采用superpowers完整流程
+	- 不为压缩流程而省略关键分析、设计、验证步骤
+	- 适配高复杂度改动
+- 你就简洁直接回答我你的判断
+```
+缺少相关信息可以使用deepwiki mcp获取

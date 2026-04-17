@@ -128,6 +128,7 @@ export async function resolveCustomFlowEditor({
     { createNode },
     { createGroup },
     { createEdge },
+    { reconnectEdge },
     { generateNodeId },
     { deleteNode },
     { deleteGroup },
@@ -153,6 +154,7 @@ export async function resolveCustomFlowEditor({
     loadModule('./model/createNode.js'),
     loadModule('./model/createGroup.js'),
     loadModule('./model/createEdge.js'),
+    loadModule('./model/reconnectEdge.js'),
     loadModule('./model/generateNodeId.js'),
     loadModule('./model/deleteNode.js'),
     loadModule('./model/deleteGroup.js'),
@@ -362,13 +364,13 @@ export async function resolveCustomFlowEditor({
           layoutSpacing,
         )
         documentModel.layout = nextPlacement
-          ? {
+          ? reconcileLayout(documentModel.graph, {
               ...documentModel.layout,
               nodes: {
                 ...(documentModel.layout?.nodes ?? {}),
                 [nodeId]: nextPlacement,
               },
-            }
+            })
           : autoLayoutCurrentGraph()
 
         const mode = await persistGraph()
@@ -469,6 +471,46 @@ export async function resolveCustomFlowEditor({
 
         const mode = await persistGraph()
         postHostDebug(webviewPanel, `deleteEdge saved via ${mode}`)
+        await postSyncState()
+        return
+      }
+
+      if (message?.type === 'reconnectEdge') {
+        const edgeId = message.edgeId
+        const nextFrom = message.edge?.from
+        const nextTo = message.edge?.to
+        const currentEdge = documentModel.graph.edges.find((edge) => edge.id === edgeId)
+        if (!edgeId || !currentEdge || !nextFrom || !nextTo) {
+          return
+        }
+
+        const hasDuplicate = documentModel.graph.edges.some((edge) =>
+          edge.id !== currentEdge.id
+          && edge.from === nextFrom
+          && edge.to === nextTo
+          && (edge.label ?? '') === (currentEdge.label ?? '')
+          && (edge.style ?? '') === (currentEdge.style ?? '')
+        )
+        if (hasDuplicate) {
+          postHostDebug(webviewPanel, `reconnectEdge ignored: duplicate ${nextFrom} -> ${nextTo}`)
+          return
+        }
+
+        documentModel.graph = reconnectEdge(documentModel.graph, { edgeId }, { from: nextFrom, to: nextTo })
+        documentModel.layout = {
+          ...documentModel.layout,
+          edges: {
+            ...(documentModel.layout.edges ?? {}),
+            [edgeId]: {
+              sourceSide: message.edge?.sourceSide ?? documentModel.layout.edges?.[edgeId]?.sourceSide ?? 'right',
+              targetSide: message.edge?.targetSide ?? documentModel.layout.edges?.[edgeId]?.targetSide ?? 'left',
+            },
+          },
+        }
+
+        const mode = await persistGraph()
+        await persistLayout()
+        postHostDebug(webviewPanel, `reconnectEdge saved via ${mode}: ${currentEdge.id}`)
         await postSyncState()
         return
       }
