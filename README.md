@@ -6,6 +6,12 @@
 
 ---
 
+## 🎬 演示视频
+
+[点击观看项目演示视频](https://www.bilibili.com/video/BV1MydfBXEAx/)
+
+---
+
 ## 📖 文档
 
 - **[快速上手指南 (语法手册) →](docs/flow-syntax.md)** — 5 分钟掌握核心用法
